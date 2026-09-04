@@ -28,73 +28,61 @@
       overflow: hidden;
     }
 
-    /* 상단 네비게이션 & 제어 툴바 */
-    header {
-      background: var(--panel);
-      padding: 10px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid var(--border);
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .flex-row { display: flex; align-items: center; gap: 8px; }
+/* 헤더를 억지로 줄바꿈하지 않고 모바일에서 가로 스크롤 가능하게 변경 */
+header {
+  background: var(--panel);
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column; /* 1단: 곡 선택 및 도구, 2단: 피치 및 페이지 조작 */
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
 
-    button, select {
-      background: #2a2a2a;
-      color: var(--text);
-      border: 1px solid var(--border);
-      padding: 7px 12px;
-      border-radius: 6px;
-      font-size: 14px;
-      cursor: pointer;
-      transition: background 0.2s ease;
-    }
-    button:hover { background: #383838; }
-    button.btn-refresh {
-      background: #222;
-      border-color: #444;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-    button.btn-pitch {
-      background: var(--accent-pitch);
-      border-color: #3b82f6;
-      font-weight: 600;
-      padding: 6px 12px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    }
-    button.btn-pitch:active {
-      transform: scale(0.96);
-    }
+.header-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  overflow-x: auto; /* 버튼이 많아도 화면 밖으로 깨지지 않고 부드럽게 스크롤 */
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 2px;
+}
 
-    /* 메인 뷰어 영역 */
-    main {
-      flex: 1;
-      overflow: auto;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 16px;
-      position: relative;
-    }
-    .status-message {
-      margin-top: 120px;
-      text-align: center;
-      color: var(--text-muted);
-      line-height: 1.6;
-    }
-    .status-message strong { color: var(--text); }
+/* 스크롤바 숨기기 (깔끔한 UI) */
+.header-row::-webkit-scrollbar { display: none; }
 
-    canvas {
-      box-shadow: 0 4px 20px rgba(0,0,0,0.6);
-      max-width: 100%;
-      height: auto;
-      border-radius: 4px;
-      cursor: pointer;
-    }
+button, select {
+  flex-shrink: 0; /* 버튼 글자가 세로로 찌그러지는 현상 방지 */
+  white-space: nowrap;
+  font-size: 13px;
+  padding: 6px 10px;
+}
+
+#songSelect {
+  flex: 1; /* 모바일에서 곡 제목이 길어도 비율에 맞게 늘어남 */
+  min-width: 140px;
+}
+
+/* 캔버스가 모바일 가로 너비 100%에 꽉 차도록 설정 */
+main {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px;
+  -webkit-overflow-scrolling: touch;
+}
+
+canvas {
+  width: 100% !important; /* 기기 너비에 100% 맞춤 */
+  height: auto !important;
+  max-width: 900px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
 
     /* 무대용 흑백 반전 모드 */
     body.invert-mode canvas {
@@ -117,24 +105,28 @@
 <body>
 
   <!-- 상단 컨트롤 헤더 -->
-  <header>
-    <div class="flex-row">
-      <select id="songSelect">
-        <option value="">악보 불러오는 중...</option>
-      </select>
-      <button class="btn-refresh" id="refreshBtn" title="드라이브 새로고침">새로고침</button>
-      <button id="toggleInvert">반전 모드</button>
-    </div>
+<header>
+  <!-- 1번째 줄: 곡 선택, 링크 추가, 삭제, 새로고침, 반전 -->
+  <div class="header-row">
+    <select id="songSelect">
+      <option value="">악보 불러오는 중...</option>
+    </select>
+    <button class="btn-primary" id="openLinkModalBtn">+ 링크</button>
+    <button id="deleteLocalBtn" class="btn-danger" style="display: none;">삭제</button>
+    <button id="refreshBtn" title="새로고침">🔄</button>
+    <button id="toggleInvert">반전</button>
+  </div>
 
-    <!-- 파트별 첫 음 피치바 -->
+  <!-- 2번째 줄: 첫 음 피치바 & 페이지 넘김 -->
+  <div class="header-row" style="justify-content: space-between;">
     <div class="flex-row" id="pitchBar"></div>
-
-    <div class="flex-row">
+    <div class="flex-row" style="margin-left: auto;">
       <button id="prevPage">◀ 이전</button>
-      <span id="pageIndicator" style="font-size: 13px; min-width: 48px; text-align: center;">- / -</span>
+      <span id="pageIndicator" style="font-size: 13px; padding: 0 4px;">- / -</span>
       <button id="nextPage">다음 ▶</button>
     </div>
-  </header>
+  </div>
+</header>
 
   <!-- 메인 뷰어 영역 -->
   <main id="viewerMain">
@@ -326,20 +318,33 @@
       }
     }
 
-    function renderPage(num) {
-      if (!currentPdfDoc) return;
-      currentPdfDoc.getPage(num).then(page => {
-        const viewport = page.getViewport({ scale: 1.5 });
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
+function renderPage(num) {
+  if (!currentPdfDoc) return;
+  
+  currentPdfDoc.getPage(num).then(page => {
+    // 뷰어 컨테이너 너비 기준으로 딱 맞춤 (최대 900px)
+    const containerWidth = Math.min(document.getElementById('viewerMain').clientWidth - 16, 900);
+    const unscaledViewport = page.getViewport({ scale: 1.0 });
+    const scale = containerWidth / unscaledViewport.width;
+    
+    // 아이폰 등 고해상도(Retina) 디스플레이 선명도 보정
+    const dpr = window.devicePixelRatio || 1;
+    const viewport = page.getViewport({ scale: scale * dpr });
 
-        page.render({
-          canvasContext: ctx,
-          viewport: viewport
-        });
-        pageIndicator.textContent = `${num} / ${currentPdfDoc.numPages}`;
-      });
-    }
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    canvas.style.width = `${viewport.width / dpr}px`;
+    canvas.style.height = `${viewport.height / dpr}px`;
+
+    const renderContext = {
+      canvasContext: ctx,
+      viewport: viewport
+    };
+
+    page.render(renderContext);
+    pageIndicator.textContent = `${num} / ${currentPdfDoc.numPages}`;
+  });
+}
 
     function showStatus(text, isLoading) {
       statusView.style.display = 'block';
