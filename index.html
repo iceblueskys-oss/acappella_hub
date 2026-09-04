@@ -14,8 +14,8 @@
       --surface-elevated: #1a1b20;
       --surface-highlight: #24262d;
       
-      --border-subtle: rgba(255, 255, 255, 0.07);
-      --border-metallic: rgba(212, 175, 55, 0.25);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-metallic: rgba(212, 175, 55, 0.3);
       
       --text-primary: #f4f4f6;
       --text-secondary: #90939e;
@@ -26,6 +26,10 @@
       --color-alto: #e5c07b;
       --color-tenor: #98c379;
       --color-bass: #61afef;
+      
+      --pen-red: #ef4444;
+      --pen-gold: #d4af37;
+      --pen-highlighter: rgba(250, 204, 21, 0.4);
     }
 
     * { 
@@ -58,10 +62,10 @@
     header {
       background: var(--surface-deep);
       border-bottom: 1px solid var(--border-subtle);
-      padding: calc(env(safe-area-inset-top, 0px) + 8px) 14px 8px 14px;
+      padding: calc(env(safe-area-inset-top, 0px) + 6px) 12px 6px 12px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
       flex-shrink: 0;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
       z-index: 100;
@@ -84,61 +88,65 @@
       border: 1px solid var(--border-subtle);
       background: var(--surface-elevated);
       color: var(--text-primary);
-      padding: 7px 12px;
-      border-radius: 8px;
-      font-size: 13px;
+      padding: 6px 11px;
+      border-radius: 7px;
+      font-size: 12.5px;
       font-weight: 500;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      gap: 4px;
+      transition: all 0.15s ease;
       flex-shrink: 0;
     }
-    button:active {
-      transform: scale(0.96);
-      background: var(--surface-highlight);
-    }
-    button:hover {
-      border-color: rgba(255, 255, 255, 0.15);
-      background: var(--surface-highlight);
+    button:active { transform: scale(0.96); background: var(--surface-highlight); }
+    button:hover { border-color: rgba(255, 255, 255, 0.2); background: var(--surface-highlight); }
+    button.active {
+      background: var(--text-gold) !important;
+      color: #000 !important;
+      border-color: var(--text-gold) !important;
+      font-weight: 700;
     }
 
     #songSelect {
       flex: 1;
       min-width: 140px;
       font-weight: 600;
-      padding-right: 26px;
+      padding-right: 24px;
       appearance: none;
       background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%2390939E' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
-      background-position: right 10px center;
+      background-position: right 8px center;
       border-color: rgba(255, 255, 255, 0.1);
     }
 
+    .btn-gold {
+      border-color: var(--border-metallic);
+      color: var(--text-gold);
+      background: rgba(212, 175, 55, 0.08);
+    }
+
     /* 줌 컨트롤 바 */
-    .zoom-group {
+    .compact-group {
       display: inline-flex;
       align-items: center;
       background: var(--surface-elevated);
       border: 1px solid var(--border-subtle);
-      border-radius: 8px;
-      padding: 2px 4px;
+      border-radius: 7px;
+      padding: 1px 3px;
       gap: 2px;
     }
-    .zoom-group button {
+    .compact-group button {
       border: none;
       background: transparent;
-      padding: 4px 7px;
-      border-radius: 6px;
-      box-shadow: none;
+      padding: 4px 6px;
+      border-radius: 5px;
     }
-    .zoom-group button:hover { background: rgba(255,255,255,0.08); }
-    .zoom-label {
+    .compact-label {
       font-size: 11px;
       font-weight: 600;
       color: var(--text-secondary);
-      min-width: 38px;
+      min-width: 34px;
       text-align: center;
       user-select: none;
     }
@@ -147,37 +155,55 @@
     .part-btn {
       border: 1px solid var(--border-subtle);
       background: #141519;
-      padding: 5px 12px;
+      padding: 4px 10px;
       border-radius: 6px;
       font-weight: 600;
-      font-size: 12px;
-      letter-spacing: 0.02em;
+      font-size: 11.5px;
       display: inline-flex;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
     }
-    .part-indicator {
-      width: 6px;
-      height: 6px;
+    .part-indicator { width: 5px; height: 5px; border-radius: 50%; display: inline-block; }
+    .part-sop .part-indicator { background: var(--color-sop); box-shadow: 0 0 6px var(--color-sop); }
+    .part-alto .part-indicator { background: var(--color-alto); box-shadow: 0 0 6px var(--color-alto); }
+    .part-tenor .part-indicator { background: var(--color-tenor); box-shadow: 0 0 6px var(--color-tenor); }
+    .part-bass .part-indicator { background: var(--color-bass); box-shadow: 0 0 6px var(--color-bass); }
+
+    /* 메트로놈 펄스 LED */
+    .metro-led {
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
+      background: #333;
       display: inline-block;
+      transition: background 0.05s ease, box-shadow 0.05s ease;
     }
-    .part-sop .part-indicator { background: var(--color-sop); box-shadow: 0 0 8px var(--color-sop); }
-    .part-alto .part-indicator { background: var(--color-alto); box-shadow: 0 0 8px var(--color-alto); }
-    .part-tenor .part-indicator { background: var(--color-tenor); box-shadow: 0 0 8px var(--color-tenor); }
-    .part-bass .part-indicator { background: var(--color-bass); box-shadow: 0 0 8px var(--color-bass); }
-
-    .btn-gold {
-      border-color: var(--border-metallic);
-      color: var(--text-gold);
-      background: rgba(212, 175, 55, 0.06);
-    }
-    .btn-gold:hover {
-      background: rgba(212, 175, 55, 0.12);
-      border-color: rgba(212, 175, 55, 0.4);
+    .metro-led.flash {
+      background: var(--text-gold);
+      box-shadow: 0 0 10px var(--text-gold);
     }
 
-    /* 메인 뷰어 영역 (스와이프 및 가로 스크롤 대응) */
+    /* 오디오 플레이어 바 (하단 플로팅) */
+    #audioBar {
+      position: fixed;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(22, 23, 28, 0.95);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 30px;
+      padding: 6px 14px;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      z-index: 150;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.7);
+      max-width: 92%;
+    }
+    #audioBar.show { display: flex; }
+
+    /* 메인 뷰어 */
     main {
       flex: 1;
       overflow-y: auto;
@@ -186,7 +212,7 @@
       flex-direction: column;
       align-items: center;
       padding: 0;
-      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 60px);
       position: relative;
       touch-action: pan-y pinch-zoom;
       overscroll-behavior-y: contain;
@@ -195,34 +221,41 @@
     }
 
     .sheet-wrapper {
+      position: relative;
       background: #ffffff;
       width: 100%;
       display: flex;
       justify-content: center;
       align-items: flex-start;
       box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-      transition: width 0.15s ease-out;
     }
 
-    canvas {
-      display: block;
-      cursor: default;
-    }
+    #pdfCanvas { display: block; }
 
-    /* 무대용 반전 모드 */
+    /* 드로잉 오버레이 캔버스 */
+    #drawCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      cursor: crosshair;
+      touch-action: none;
+      display: none;
+    }
+    #drawCanvas.active { display: block; }
+
+    /* 반전 모드 */
     body.invert-mode { background: #000000; }
-    body.invert-mode .sheet-wrapper {
-      filter: invert(0.92) hue-rotate(180deg) brightness(0.95);
-    }
+    body.invert-mode .sheet-wrapper { filter: invert(0.92) hue-rotate(180deg) brightness(0.95); }
 
-    /* 럭셔리 모달 */
+    /* 모달 공통 */
     .modal-backdrop {
       display: none;
       position: fixed;
       inset: 0;
       background: rgba(0, 0, 0, 0.75);
       backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
       z-index: 999;
       align-items: center;
       justify-content: center;
@@ -235,37 +268,25 @@
       width: 90%;
       max-width: 440px;
       border-radius: 16px;
-      padding: 22px;
+      padding: 20px;
       display: flex;
       flex-direction: column;
       gap: 14px;
-      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8), 0 0 1px rgba(255, 255, 255, 0.2);
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8);
     }
-    .modal h3 { font-size: 16px; font-weight: 600; color: #ffffff; }
+    .modal h3 { font-size: 15px; font-weight: 600; color: #ffffff; }
     .form-group { display: flex; flex-direction: column; gap: 5px; }
-    .form-group label {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--text-secondary);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
+    .form-group label { font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; }
     .form-group input {
       width: 100%;
-      border-radius: 8px;
+      border-radius: 7px;
       cursor: text;
-      padding: 9px 11px;
+      padding: 8px 10px;
       border: 1px solid rgba(255, 255, 255, 0.1);
       background: #0e0f12;
       color: #fff;
     }
-    .form-group input:focus { outline: none; border-color: var(--text-gold); }
-
-    .pitch-editor-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 6px;
-    }
+    .pitch-editor-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
     .pitch-cell {
       display: flex;
       flex-direction: column;
@@ -275,24 +296,8 @@
       border-radius: 8px;
       border: 1px solid var(--border-subtle);
     }
-    .pitch-cell span {
-      font-size: 10px;
-      font-weight: 600;
-      color: var(--text-secondary);
-      margin-bottom: 5px;
-      text-transform: uppercase;
-    }
-    .pitch-cell input {
-      width: 100%;
-      text-align: center;
-      font-weight: 700;
-      font-size: 13.5px;
-      padding: 5px 2px;
-      border-radius: 6px;
-      background: #18191f;
-      color: #fff;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-    }
+    .pitch-cell span { font-size: 10px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; }
+    .pitch-cell input { width: 100%; text-align: center; font-weight: 700; font-size: 13px; padding: 4px 2px; }
 
     .spinner {
       border: 2px solid rgba(255, 255, 255, 0.08);
@@ -309,58 +314,62 @@
 <body>
 
   <header>
-    <!-- Row 1: 트랙 탐색 & 줌 컨트롤 & 도구 -->
+    <!-- Row 1: 트랙 탐색 & 줌 & 메트로놈 & 모드 토글 -->
     <div class="console-row">
       <select id="songSelect">
         <option value="">악보 불러오는 중...</option>
       </select>
       
       <!-- 줌 컨트롤 -->
-      <div class="zoom-group">
-        <button id="zoomOutBtn" title="축소">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/></svg>
-        </button>
-        <span class="zoom-label" id="zoomLevelText">100%</span>
-        <button id="zoomInBtn" title="확대">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-        </button>
+      <div class="compact-group">
+        <button id="zoomOutBtn" title="축소">－</button>
+        <span class="compact-label" id="zoomLevelText">100%</span>
+        <button id="zoomInBtn" title="확대">＋</button>
       </div>
 
-      <button class="btn-gold" id="openLinkModalBtn">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-        링크 추가
+      <!-- 메트로놈 퀵 트리거 -->
+      <button id="metroToggleBtn" title="메트로놈 켜기/끄기">
+        <span class="metro-led" id="metroLed"></span>
+        <span id="metroBpmLabel">100 BPM</span>
       </button>
-      <button id="deleteLocalBtn" style="display:none; color: #ef4444;" title="곡 삭제">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+      <button id="openMetroModalBtn" title="템포/사운드 설정">⚙</button>
+
+      <!-- 드로잉/메모 토글 버튼 -->
+      <button id="drawToggleBtn" title="악보 메모 모드">
+        ✏️ 메모
       </button>
-      <button id="refreshBtn" title="새로고침">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-      </button>
-      <button id="toggleInvert" title="무대용 반전 모드">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10 10 10 0 0 1-10 10V2z"/></svg>
-      </button>
+
+      <!-- 도구 버튼 -->
+      <button class="btn-gold" id="openLinkModalBtn">＋링크</button>
+      <button id="deleteLocalBtn" style="display:none; color: #ef4444;" title="곡 삭제">🗑</button>
+      <button id="refreshBtn" title="새로고침">🔄</button>
+      <button id="toggleInvert" title="반전">◐</button>
     </div>
 
-    <!-- Row 2: 파트별 첫 음 모니터 & 내비게이션 -->
-    <div class="console-row" style="justify-content: space-between;">
+    <!-- Row 2: 파트별 첫 음 모니터 / 드로잉 툴바 (동적 전환) -->
+    <div class="console-row" id="normalToolbar" style="justify-content: space-between;">
       <div class="console-row" id="pitchBar" style="width: auto; gap: 5px;"></div>
       
       <div class="console-row" style="width: auto; margin-left: auto; gap: 5px;">
-        <button id="openPitchEditorBtn" title="첫 음 간편 설정">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        </button>
-        <button id="prevPage">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
-        </button>
-        <span id="pageIndicator" style="font-size: 11.5px; font-weight: 600; min-width: 40px; text-align: center; color: var(--text-secondary); letter-spacing: 0.05em;">- / -</span>
-        <button id="nextPage">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
-        </button>
+        <button id="openPitchEditorBtn" title="첫 음 설정">⚙음</button>
+        <button id="prevPage">◀</button>
+        <span id="pageIndicator" style="font-size: 11.5px; font-weight: 600; min-width: 40px; text-align: center; color: var(--text-secondary);">- / -</span>
+        <button id="nextPage">▶</button>
       </div>
+    </div>
+
+    <!-- 드로잉 모드 활성화 시 나타나는 서브 툴바 -->
+    <div class="console-row" id="drawingToolbar" style="display: none; gap: 6px;">
+      <button class="active" id="toolPenBtn">펜(빨강)</button>
+      <button id="toolBreathBtn">V 숨표</button>
+      <button id="toolHighlighterBtn">형광펜</button>
+      <button id="toolEraserBtn">지우개</button>
+      <button id="undoDrawBtn">↩ 취소</button>
+      <button id="clearDrawBtn" style="color: #ef4444;">전체삭제</button>
     </div>
   </header>
 
-  <!-- 메인 악보 뷰어 -->
+  <!-- 메인 악보 뷰어 및 드로잉 레이어 -->
   <main id="viewerMain">
     <div id="statusView" style="margin-top: 120px; text-align: center; color: var(--text-secondary);">
       <div class="spinner" id="loadingSpinner"></div>
@@ -368,34 +377,48 @@
     </div>
     <div class="sheet-wrapper" id="sheetCard" style="display: none;">
       <canvas id="pdfCanvas"></canvas>
+      <canvas id="drawCanvas"></canvas>
     </div>
   </main>
+
+  <!-- 하단 오디오 미니 플레이어 -->
+  <div id="audioBar">
+    <button id="audioPlayBtn" style="border-radius: 50%; width: 32px; height: 32px; padding: 0; justify-content: center;">▶</button>
+    <span id="audioTrackName" style="font-size: 11.5px; font-weight: 600; max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">가이드 음원</span>
+    <span id="audioTimeText" style="font-size: 10.5px; color: var(--text-secondary);">0:00</span>
+    <button id="audioRateBtn" style="font-size: 11px; padding: 3px 6px;">1.0x</button>
+    <button id="closeAudioBtn" style="border: none; background: transparent; padding: 4px; color: #888;">✕</button>
+    <audio id="guideAudioElement" preload="none"></audio>
+  </div>
+
+  <!-- 메트로놈 세부 설정 모달 -->
+  <div class="modal-backdrop" id="metroModal">
+    <div class="modal">
+      <h3>메트로놈 설정</h3>
+      <div class="form-group">
+        <label>템포 (BPM): <span id="modalBpmDisplay" style="color: var(--text-gold); font-size: 13px;">100</span></label>
+        <input type="range" id="bpmSlider" min="40" max="220" value="100" style="padding: 0; cursor: pointer;" />
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button id="tapTempoBtn" class="btn-gold" style="flex: 1; justify-content: center; padding: 10px;">🖐 TAP TEMPO</button>
+        <button id="metroSoundToggleBtn" style="flex: 1; justify-content: center;">소리: 켜짐</button>
+      </div>
+      <div style="display: flex; justify-content: flex-end; margin-top: 6px;">
+        <button id="closeMetroModalBtn">닫기</button>
+      </div>
+    </div>
+  </div>
 
   <!-- 첫 음 보정 모달 -->
   <div class="modal-backdrop" id="pitchModal">
     <div class="modal">
       <h3>첫 음 보정</h3>
-      <p style="font-size: 12px; color: var(--text-secondary); margin-top: -6px;">현재 마스터 악보의 파트별 시작 음을 재정의합니다.</p>
-      
       <div class="pitch-editor-grid">
-        <div class="pitch-cell">
-          <span>Soprano</span>
-          <input type="text" id="quickS" placeholder="E4" />
-        </div>
-        <div class="pitch-cell">
-          <span>Alto</span>
-          <input type="text" id="quickA" placeholder="C4" />
-        </div>
-        <div class="pitch-cell">
-          <span>Tenor</span>
-          <input type="text" id="quickT" placeholder="G3" />
-        </div>
-        <div class="pitch-cell">
-          <span>Bass</span>
-          <input type="text" id="quickB" placeholder="C3" />
-        </div>
+        <div class="pitch-cell"><span>Soprano</span><input type="text" id="quickS" placeholder="E4" /></div>
+        <div class="pitch-cell"><span>Alto</span><input type="text" id="quickA" placeholder="C4" /></div>
+        <div class="pitch-cell"><span>Tenor</span><input type="text" id="quickT" placeholder="G3" /></div>
+        <div class="pitch-cell"><span>Bass</span><input type="text" id="quickB" placeholder="C3" /></div>
       </div>
-
       <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px;">
         <button id="closePitchModalBtn">닫기</button>
         <button class="btn-gold" id="savePitchModalBtn" style="font-weight:600;">저장</button>
@@ -406,7 +429,7 @@
   <!-- 링크 추가 모달 -->
   <div class="modal-backdrop" id="linkModal">
     <div class="modal">
-      <h3>악보 링크 등록</h3>
+      <h3>악보 및 가이드 음원 등록</h3>
       <div class="form-group">
         <label>곡 명</label>
         <input type="text" id="inputTitle" placeholder="예: Java Jive" required />
@@ -414,6 +437,10 @@
       <div class="form-group">
         <label>악보 URL (구글 드라이브 공유 링크 또는 PDF)</label>
         <input type="text" id="inputUrl" placeholder="https://drive.google.com/file/d/..." required />
+      </div>
+      <div class="form-group">
+        <label>가이드 음원 URL (MP3 링크, 선택사항)</label>
+        <input type="text" id="inputAudioUrl" placeholder="https://.../guide.mp3" />
       </div>
       <div class="form-group">
         <label>시작 음 (선택)</label>
@@ -433,7 +460,7 @@
 
   <script>
     // ==========================================
-    // ⚙️ 1. 설정 동기화
+    // ⚙️ 1. 설정 및 초기화
     // ==========================================
     let GOOGLE_API_KEY = "";
     let DRIVE_FOLDER_ID = "";
@@ -454,16 +481,17 @@
       'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
     // ==========================================
-    // 🗄️ 2. IndexedDB
+    // 🗄️ 2. IndexedDB (드로잉 메모, 오버라이드, 커스텀곡 저장)
     // ==========================================
     let db;
     function initDB() {
       return new Promise((resolve, reject) => {
-        const req = indexedDB.open('AcappellaStudioDB_V2', 1);
+        const req = indexedDB.open('AcappellaStudioDB_V3', 1);
         req.onupgradeneeded = (e) => {
           const d = e.target.result;
           if (!d.objectStoreNames.contains('custom_songs')) d.createObjectStore('custom_songs', { keyPath: 'id' });
           if (!d.objectStoreNames.contains('pitch_overrides')) d.createObjectStore('pitch_overrides', { keyPath: 'songId' });
+          if (!d.objectStoreNames.contains('drawings')) d.createObjectStore('drawings', { keyPath: 'id' }); // key: songId_page
         };
         req.onsuccess = () => { db = req.result; resolve(); };
         req.onerror = () => reject(req.error);
@@ -475,6 +503,14 @@
         const tx = db.transaction(storeName, 'readonly');
         const req = tx.objectStore(storeName).getAll();
         req.onsuccess = () => resolve(req.result || []);
+      });
+    }
+
+    async function getStoredItem(storeName, key) {
+      return new Promise((resolve) => {
+        const tx = db.transaction(storeName, 'readonly');
+        const req = tx.objectStore(storeName).get(key);
+        req.onsuccess = () => resolve(req.result);
       });
     }
 
@@ -495,9 +531,15 @@
     }
 
     // ==========================================
-    // 🎵 3. 스튜디오 톤 피치 엔진
+    // 🎵 3. 오디오 & 피치 & 메트로놈 엔진 (Web Audio API)
     // ==========================================
     let audioCtx = null;
+    function getAudioContext() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      return audioCtx;
+    }
+
     const noteFrequencies = {
       "C3": 130.81, "C#3": 138.59, "DB3": 138.59, "D3": 146.83, "D#3": 155.56, "EB3": 155.56, "E3": 164.81, "F3": 174.61, "F#3": 185.00, "GB3": 185.00, "G3": 196.00, "G#3": 207.65, "AB3": 207.65, "A3": 220.00, "A#3": 233.08, "BB3": 233.08, "B3": 246.94,
       "C4": 261.63, "C#4": 277.18, "DB4": 277.18, "D4": 293.66, "D#4": 311.13, "EB4": 311.13, "E4": 329.63, "F4": 349.23, "F#4": 369.99, "GB4": 369.99, "G4": 392.00, "G#4": 415.30, "AB4": 415.30, "A4": 440.00, "A#4": 466.16, "BB4": 466.16, "B4": 493.88,
@@ -510,23 +552,112 @@
       const freq = noteFrequencies[clean];
       if (!freq) return;
 
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
+      const ctx = getAudioContext();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
 
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      osc.frequency.setValueAtTime(freq, ctx.currentTime);
 
-      gain.gain.setValueAtTime(0.001, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.35, audioCtx.currentTime + 0.04);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.8);
+      gain.gain.setValueAtTime(0.001, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.35, ctx.currentTime + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.8);
 
       osc.connect(gain);
-      gain.connect(audioCtx.destination);
+      gain.connect(ctx.destination);
 
       osc.start();
-      osc.stop(audioCtx.currentTime + 1.8);
+      osc.stop(ctx.currentTime + 1.8);
     }
+
+    // 메트로놈 로직
+    let metroBpm = 100;
+    let isMetroRunning = false;
+    let isMetroSoundOn = true;
+    let metroTimerId = null;
+
+    function playMetroClick() {
+      if (!isMetroSoundOn) return;
+      const ctx = getAudioContext();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(1000, ctx.currentTime);
+
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.05);
+    }
+
+    const metroLed = document.getElementById('metroLed');
+    function metroTick() {
+      // 1) LED 플래시
+      metroLed.classList.add('flash');
+      setTimeout(() => metroLed.classList.remove('flash'), 80);
+      // 2) 클릭 사운드
+      playMetroClick();
+    }
+
+    function startMetro() {
+      isMetroRunning = true;
+      document.getElementById('metroToggleBtn').classList.add('active');
+      const interval = (60 / metroBpm) * 1000;
+      metroTick();
+      metroTimerId = setInterval(metroTick, interval);
+    }
+
+    function stopMetro() {
+      isMetroRunning = false;
+      document.getElementById('metroToggleBtn').classList.remove('active');
+      if (metroTimerId) clearInterval(metroTimerId);
+      metroLed.classList.remove('flash');
+    }
+
+    document.getElementById('metroToggleBtn').onclick = () => {
+      if (isMetroRunning) stopMetro();
+      else startMetro();
+    };
+
+    // Tap Tempo 로직
+    let tapTimes = [];
+    document.getElementById('tapTempoBtn').onclick = () => {
+      const now = performance.now();
+      tapTimes.push(now);
+      if (tapTimes.length > 4) tapTimes.shift();
+      if (tapTimes.length >= 2) {
+        const intervals = [];
+        for (let i = 1; i < tapTimes.length; i++) {
+          intervals.push(tapTimes[i] - tapTimes[i - 1]);
+        }
+        const avg = intervals.reduce((a, b) => a + b) / intervals.length;
+        const calcBpm = Math.round(60000 / avg);
+        if (calcBpm >= 40 && calcBpm <= 240) {
+          metroBpm = calcBpm;
+          document.getElementById('bpmSlider').value = calcBpm;
+          document.getElementById('modalBpmDisplay').textContent = calcBpm;
+          document.getElementById('metroBpmLabel').textContent = `${calcBpm} BPM`;
+          if (isMetroRunning) { stopMetro(); startMetro(); }
+        }
+      }
+    };
+
+    document.getElementById('bpmSlider').oninput = (e) => {
+      metroBpm = Number(e.target.value);
+      document.getElementById('modalBpmDisplay').textContent = metroBpm;
+      document.getElementById('metroBpmLabel').textContent = `${metroBpm} BPM`;
+      if (isMetroRunning) { stopMetro(); startMetro(); }
+    };
+
+    document.getElementById('metroSoundToggleBtn').onclick = (e) => {
+      isMetroSoundOn = !isMetroSoundOn;
+      e.target.textContent = `소리: ${isMetroSoundOn ? '켜짐' : '무음'}`;
+    };
 
     // ==========================================
     // 🔍 4. 파싱 유틸
@@ -552,16 +683,19 @@
     }
 
     // ==========================================
-    // 📂 5. 악보 데이터 로딩 & 줌/렌더링 엔진
+    // 📂 5. 악보 데이터 로딩 & 줌/렌더링
     // ==========================================
     let allSongs = [];
     let currentSong = null;
     let currentPdfDoc = null;
     let currentPageNum = 1;
-    let zoomScale = 1.0; // 기본 100%
+    let zoomScale = 1.0;
 
     const pdfCanvas = document.getElementById('pdfCanvas');
-    const ctx = pdfCanvas ? pdfCanvas.getContext('2d') : null;
+    const pdfCtx = pdfCanvas ? pdfCanvas.getContext('2d') : null;
+    const drawCanvas = document.getElementById('drawCanvas');
+    const drawCtx = drawCanvas ? drawCanvas.getContext('2d') : null;
+
     const songSelect = document.getElementById('songSelect');
     const pitchBar = document.getElementById('pitchBar');
     const pageIndicator = document.getElementById('pageIndicator');
@@ -633,6 +767,9 @@
 
       deleteLocalBtn.style.display = song.type === 'custom' ? 'inline-flex' : 'none';
 
+      // 가이드 음원 준비
+      setupAudioPlayer(song);
+
       // 파트 배지 생성
       pitchBar.innerHTML = '';
       const partClassMap = { 'S': 'part-sop', 'A': 'part-alto', 'T': 'part-tenor', 'B': 'part-bass' };
@@ -654,7 +791,7 @@
       if (!hasAnyPitch) {
         const hint = document.createElement('span');
         hint.style.cssText = "font-size: 11.5px; color: var(--text-secondary); padding: 4px 6px;";
-        hint.textContent = "첫 음 미지정 (우측 ⚙)";
+        hint.textContent = "첫 음 미지정 (⚙음)";
         pitchBar.appendChild(hint);
       }
 
@@ -697,12 +834,11 @@
       }
     }
 
-    // 줌 배율을 반영한 정밀 렌더링
+    // 악보 및 드로잉 캔버스 동기화 렌더링
     function renderPage(num) {
-      if (!currentPdfDoc || !pdfCanvas || !ctx) return;
+      if (!currentPdfDoc || !pdfCanvas || !pdfCtx) return;
       currentPdfDoc.getPage(num).then(page => {
         const viewerWidth = document.getElementById('viewerMain').clientWidth;
-        // 기본 꽉 채움 폭에 줌 배율(zoomScale) 적용
         const baseWidth = Math.min(viewerWidth, 900);
         const targetWidth = baseWidth * zoomScale;
 
@@ -712,29 +848,36 @@
         const dpr = window.devicePixelRatio || 1;
         const viewport = page.getViewport({ scale: scale * dpr });
 
+        // PDF 캔버스 크기
         pdfCanvas.width = viewport.width;
         pdfCanvas.height = viewport.height;
         pdfCanvas.style.width = `${targetWidth}px`;
         pdfCanvas.style.height = `${(viewport.height / dpr)}px`;
 
+        // 드로잉 오버레이 캔버스 크기 일치
+        drawCanvas.width = viewport.width;
+        drawCanvas.height = viewport.height;
+        drawCanvas.style.width = `${targetWidth}px`;
+        drawCanvas.style.height = `${(viewport.height / dpr)}px`;
+
         sheetCard.style.width = `${targetWidth}px`;
 
         page.render({
-          canvasContext: ctx,
+          canvasContext: pdfCtx,
           viewport: viewport
         });
         pageIndicator.textContent = `${num} / ${currentPdfDoc.numPages}`;
+
+        // 해당 페이지 저장된 메모 불러오기
+        loadPageDrawing(num);
       });
     }
 
     function updateZoomDisplay() {
-      if (zoomLevelText) {
-        zoomLevelText.textContent = `${Math.round(zoomScale * 100)}%`;
-      }
+      if (zoomLevelText) zoomLevelText.textContent = `${Math.round(zoomScale * 100)}%`;
     }
 
     function setZoom(newScale) {
-      // 줌 배율 최소 60% ~ 최대 250% 제한
       zoomScale = Math.min(Math.max(newScale, 0.6), 2.5);
       updateZoomDisplay();
       if (currentPdfDoc) renderPage(currentPageNum);
@@ -742,79 +885,254 @@
 
     document.getElementById('zoomInBtn').onclick = () => setZoom(zoomScale + 0.15);
     document.getElementById('zoomOutBtn').onclick = () => setZoom(zoomScale - 0.15);
-    zoomLevelText.ondblclick = () => setZoom(1.0); // 배율 더블클릭 시 100% 리셋
-
-    window.addEventListener('resize', () => {
-      if (currentPdfDoc) renderPage(currentPageNum);
-    });
+    zoomLevelText.ondblclick = () => setZoom(1.0);
 
     // ==========================================
-    // 👆 6. 터치 스와이프(Swipe) & 핀치 줌(Pinch) 제어
+    // ✏️ 6. 악보 위 드로잉 & 숨표 메모 레이어 (Praise Hub 스타일)
+    // ==========================================
+    let isDrawingMode = false;
+    let currentTool = 'pen'; // 'pen', 'breath', 'highlighter', 'eraser'
+    let isDrawing = false;
+    let drawHistory = [];
+
+    const drawToggleBtn = document.getElementById('drawToggleBtn');
+    const drawingToolbar = document.getElementById('drawingToolbar');
+    const normalToolbar = document.getElementById('normalToolbar');
+
+    drawToggleBtn.onclick = () => {
+      isDrawingMode = !isDrawingMode;
+      if (isDrawingMode) {
+        drawToggleBtn.classList.add('active');
+        drawingToolbar.style.display = 'flex';
+        drawCanvas.classList.add('active');
+      } else {
+        drawToggleBtn.classList.remove('active');
+        drawingToolbar.style.display = 'none';
+        drawCanvas.classList.remove('active');
+      }
+    };
+
+    function setDrawTool(tool) {
+      currentTool = tool;
+      ['toolPenBtn', 'toolBreathBtn', 'toolHighlighterBtn', 'toolEraserBtn'].forEach(id => {
+        document.getElementById(id).classList.remove('active');
+      });
+      if (tool === 'pen') document.getElementById('toolPenBtn').classList.add('active');
+      if (tool === 'breath') document.getElementById('toolBreathBtn').classList.add('active');
+      if (tool === 'highlighter') document.getElementById('toolHighlighterBtn').classList.add('active');
+      if (tool === 'eraser') document.getElementById('toolEraserBtn').classList.add('active');
+    }
+
+    document.getElementById('toolPenBtn').onclick = () => setDrawTool('pen');
+    document.getElementById('toolBreathBtn').onclick = () => setDrawTool('breath');
+    document.getElementById('toolHighlighterBtn').onclick = () => setDrawTool('highlighter');
+    document.getElementById('toolEraserBtn').onclick = () => setDrawTool('eraser');
+
+    function getCanvasCoords(e) {
+      const rect = drawCanvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return {
+        x: ((clientX - rect.left) * drawCanvas.width) / rect.width,
+        y: ((clientY - rect.top) * drawCanvas.height) / rect.height
+      };
+    }
+
+    function startDraw(e) {
+      if (!isDrawingMode || !drawCtx) return;
+      isDrawing = true;
+      const { x, y } = getCanvasCoords(e);
+
+      // 숨표(V) 스탬프 툴 모드
+      if (currentTool === 'breath') {
+        drawBreathMark(x, y);
+        isDrawing = false;
+        savePageDrawing();
+        return;
+      }
+
+      drawCtx.beginPath();
+      drawCtx.moveTo(x, y);
+
+      if (currentTool === 'eraser') {
+        drawCtx.globalCompositeOperation = 'destination-out';
+        drawCtx.lineWidth = 24;
+      } else if (currentTool === 'highlighter') {
+        drawCtx.globalCompositeOperation = 'source-over';
+        drawCtx.strokeStyle = 'rgba(250, 204, 21, 0.45)';
+        drawCtx.lineWidth = 18;
+        drawCtx.lineCap = 'square';
+      } else {
+        // 일반 펜
+        drawCtx.globalCompositeOperation = 'source-over';
+        drawCtx.strokeStyle = '#ef4444'; // 레드 악센트
+        drawCtx.lineWidth = 3.5;
+        drawCtx.lineCap = 'round';
+        drawCtx.lineJoin = 'round';
+      }
+    }
+
+    function drawingMove(e) {
+      if (!isDrawing || !drawCtx || currentTool === 'breath') return;
+      const { x, y } = getCanvasCoords(e);
+      drawCtx.lineTo(x, y);
+      drawCtx.stroke();
+    }
+
+    function endDraw() {
+      if (!isDrawing || !drawCtx) return;
+      isDrawing = false;
+      drawCtx.closePath();
+      savePageDrawing();
+    }
+
+    function drawBreathMark(x, y) {
+      drawCtx.globalCompositeOperation = 'source-over';
+      drawCtx.strokeStyle = '#ef4444';
+      drawCtx.lineWidth = 4;
+      drawCtx.lineCap = 'round';
+      drawCtx.lineJoin = 'round';
+      
+      const size = 16;
+      drawCtx.beginPath();
+      drawCtx.moveTo(x - size, y - size);
+      drawCtx.lineTo(x, y);
+      drawCtx.lineTo(x + size, y - size);
+      drawCtx.stroke();
+      drawCtx.closePath();
+    }
+
+    // 터치/마우스 이벤트 연결
+    drawCanvas.addEventListener('mousedown', startDraw);
+    drawCanvas.addEventListener('mousemove', drawingMove);
+    window.addEventListener('mouseup', endDraw);
+
+    drawCanvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDraw(e); }, { passive: false });
+    drawCanvas.addEventListener('touchmove', (e) => { e.preventDefault(); drawingMove(e); }, { passive: false });
+    drawCanvas.addEventListener('touchend', endDraw);
+
+    // 드로잉 저장 및 복원
+    async function savePageDrawing() {
+      if (!currentSong) return;
+      const key = `${currentSong.id}_p${currentPageNum}`;
+      const dataUrl = drawCanvas.toDataURL();
+      await putStored('drawings', { id: key, data: dataUrl });
+    }
+
+    async function loadPageDrawing(num) {
+      if (!currentSong || !drawCtx) return;
+      drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+      const key = `${currentSong.id}_p${num}`;
+      const saved = await getStoredItem('drawings', key);
+      if (saved && saved.data) {
+        const img = new Image();
+        img.onload = () => {
+          drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+          drawCtx.drawImage(img, 0, 0, drawCanvas.width, drawCanvas.height);
+        };
+        img.src = saved.data;
+      }
+    }
+
+    document.getElementById('clearDrawBtn').onclick = async () => {
+      if (confirm('현재 페이지의 모든 메모를 지우시겠습니까?')) {
+        drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+        await savePageDrawing();
+      }
+    };
+
+    // ==========================================
+    // 🎧 7. 파트 연습용 가이드 음원 미니 플레이어
+    // ==========================================
+    const audioBar = document.getElementById('audioBar');
+    const guideAudio = document.getElementById('guideAudioElement');
+    const audioPlayBtn = document.getElementById('audioPlayBtn');
+    const audioTrackName = document.getElementById('audioTrackName');
+    const audioTimeText = document.getElementById('audioTimeText');
+    const audioRateBtn = document.getElementById('audioRateBtn');
+
+    function setupAudioPlayer(song) {
+      if (song.audioUrl) {
+        guideAudio.src = song.audioUrl;
+        audioTrackName.textContent = song.title;
+        audioBar.classList.add('show');
+      } else {
+        audioBar.classList.remove('show');
+        guideAudio.pause();
+      }
+    }
+
+    audioPlayBtn.onclick = () => {
+      if (guideAudio.paused) {
+        guideAudio.play();
+        audioPlayBtn.textContent = '❚❚';
+      } else {
+        guideAudio.pause();
+        audioPlayBtn.textContent = '▶';
+      }
+    };
+
+    guideAudio.ontimeupdate = () => {
+      const cur = Math.floor(guideAudio.currentTime);
+      const m = Math.floor(cur / 60);
+      const s = String(cur % 60).padStart(2, '0');
+      audioTimeText.textContent = `${m}:${s}`;
+    };
+
+    guideAudio.onended = () => { audioPlayBtn.textContent = '▶'; };
+
+    // 속도 조절 토글 (0.8x -> 1.0x -> 1.2x)
+    const rates = [1.0, 1.2, 0.8];
+    let rateIdx = 0;
+    audioRateBtn.onclick = () => {
+      rateIdx = (rateIdx + 1) % rates.length;
+      const r = rates[rateIdx];
+      guideAudio.playbackRate = r;
+      audioRateBtn.textContent = `${r}x`;
+    };
+
+    document.getElementById('closeAudioBtn').onclick = () => {
+      guideAudio.pause();
+      audioBar.classList.remove('show');
+    };
+
+    // ==========================================
+    // 👆 8. 터치 제스처 (스와이프 넘김)
     // ==========================================
     const viewerMain = document.getElementById('viewerMain');
     let touchStartX = 0;
     let touchStartY = 0;
-    let initialPinchDist = 0;
-    let initialZoom = 1.0;
-    let isPinching = false;
-
-    function getDistance(touches) {
-      const dx = touches[0].clientX - touches[1].clientX;
-      const dy = touches[0].clientY - touches[1].clientY;
-      return Math.sqrt(dx * dx + dy * dy);
-    }
 
     viewerMain.addEventListener('touchstart', (e) => {
-      if (e.touches.length === 2) {
-        // 핀치 줌 시작
-        isPinching = true;
-        initialPinchDist = getDistance(e.touches);
-        initialZoom = zoomScale;
-      } else if (e.touches.length === 1) {
-        isPinching = false;
+      if (isDrawingMode) return; // 드로잉 중엔 스와이프 방지
+      if (e.touches.length === 1) {
         touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
       }
     }, { passive: true });
 
-    viewerMain.addEventListener('touchmove', (e) => {
-      if (isPinching && e.touches.length === 2) {
-        // 두 손가락 핀치 줌 제스처 계산
-        const currentDist = getDistance(e.touches);
-        if (initialPinchDist > 0) {
-          const factor = currentDist / initialPinchDist;
-          setZoom(initialZoom * factor);
-        }
-      }
-    }, { passive: true });
-
     viewerMain.addEventListener('touchend', (e) => {
-      if (isPinching) {
-        if (e.touches.length < 2) isPinching = false;
-        return;
-      }
-
-      // 한 손가락 스와이프(Swipe) 판별
+      if (isDrawingMode) return;
       const touchEndX = e.changedTouches[0].clientX;
       const touchEndY = e.changedTouches[0].clientY;
       const diffX = touchEndX - touchStartX;
       const diffY = touchEndY - touchStartY;
 
-      // 수평 이동 거리가 45px 이상이고 수직 이동보다 클 때 스와이프로 인식
-      if (Math.abs(diffX) > 45 && Math.abs(diffX) > Math.abs(diffY) * 1.4) {
-        if (diffX < 0) {
-          // 오른쪽에서 왼쪽으로 쓸어넘김 -> 다음 페이지
-          nextPage();
-        } else {
-          // 왼쪽에서 오른쪽으로 쓸어넘김 -> 이전 페이지
-          prevPage();
-        }
+      if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(diffY) * 1.4) {
+        if (diffX < 0) nextPage();
+        else prevPage();
       }
     }, { passive: true });
 
     // ==========================================
-    // ⚙️ 7. 모달 제어
+    // ⚙️ 9. 모달 제어
     // ==========================================
+    // 메트로놈 모달
+    const metroModal = document.getElementById('metroModal');
+    document.getElementById('openMetroModalBtn').onclick = () => metroModal.classList.add('open');
+    document.getElementById('closeMetroModalBtn').onclick = () => metroModal.classList.remove('open');
+
+    // 피치 모달
     const pitchModal = document.getElementById('pitchModal');
     document.getElementById('openPitchEditorBtn').onclick = () => {
       if (!currentSong) return;
@@ -834,17 +1152,18 @@
         T: document.getElementById('quickT').value.trim().toUpperCase(),
         B: document.getElementById('quickB').value.trim().toUpperCase()
       };
-
       await putStored('pitch_overrides', { songId: currentSong.id, notes: newNotes });
       currentSong.notes = newNotes;
       pitchModal.classList.remove('open');
       loadSong(currentSong.id);
     };
 
+    // 링크 추가 모달
     const linkModal = document.getElementById('linkModal');
     document.getElementById('openLinkModalBtn').onclick = () => {
       document.getElementById('inputTitle').value = '';
       document.getElementById('inputUrl').value = '';
+      document.getElementById('inputAudioUrl').value = '';
       document.getElementById('noteS').value = '';
       document.getElementById('noteA').value = '';
       document.getElementById('noteT').value = '';
@@ -856,6 +1175,7 @@
     document.getElementById('saveLinkSongBtn').onclick = async () => {
       const title = document.getElementById('inputTitle').value.trim();
       const url = document.getElementById('inputUrl').value.trim();
+      const audioUrl = document.getElementById('inputAudioUrl').value.trim();
       if (!title || !url) { alert('곡 명과 악보 URL을 입력해주세요.'); return; }
 
       const newSong = {
@@ -863,6 +1183,7 @@
         type: 'custom',
         title: title,
         url: url,
+        audioUrl: audioUrl || null,
         notes: {
           S: document.getElementById('noteS').value.trim().toUpperCase(),
           A: document.getElementById('noteA').value.trim().toUpperCase(),
@@ -887,7 +1208,7 @@
     };
 
     // ==========================================
-    // 🎮 8. 페이지 내비게이션 & 이벤트
+    // 🎮 10. 페이지 내비게이션 & 단축키
     // ==========================================
     function nextPage() {
       if (currentPdfDoc && currentPageNum < currentPdfDoc.numPages) {
@@ -909,7 +1230,6 @@
     document.getElementById('refreshBtn').onclick = () => loadAllSongList(currentSong?.id);
     songSelect.onchange = (e) => { if (e.target.value) loadSong(e.target.value); };
 
-    // 키보드 방향키 / 블루투스 페달
     window.addEventListener('keydown', (e) => {
       if (['ArrowRight', 'PageDown', ' '].includes(e.key)) nextPage();
       else if (['ArrowLeft', 'PageUp'].includes(e.key)) prevPage();
@@ -919,7 +1239,7 @@
       document.body.classList.toggle('invert-mode');
     };
 
-    // 앱 초기화 진입점
+    // 진입점
     async function startApp() {
       try {
         await initDB();
