@@ -3,14 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>Acappella Studio — Master Suite</title>
-<title>Acappella Studio — Master Suite</title>
-  <!-- 브라우저 탭용 고해상도 SVG 파비콘 -->
+<title>Acappella Sheets</title>
+
+  <!-- 웹 표준 및 iOS PWA 메타 태그 (콘솔 경고 해결) -->
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Acappella" />
+
+  <!-- 브라우저 탭용 SVG 파비콘 -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='gold' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23F6E09E'/%3E%3Cstop offset='50%25' stop-color='%23D4AF37'/%3E%3Cstop offset='100%25' stop-color='%238A6F1D'/%3E%3C/linearGradient%3E%3CradialGradient id='bg' cx='50%25' cy='50%25' r='50%25'%3E%3Cstop offset='0%25' stop-color='%231B1C22'/%3E%3Cstop offset='100%25' stop-color='%2308090C'/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23bg)' stroke='rgba(255,255,255,0.1)' stroke-width='1.5'/%3E%3Cpath d='M25 15v18a7 7 0 0 0 14 0V15' fill='none' stroke='url(%23gold)' stroke-width='3.5' stroke-linecap='round'/%3E%3Cpath d='M32 39v12' fill='none' stroke='url(%23gold)' stroke-width='3.8' stroke-linecap='round'/%3E%3Ccircle cx='32' cy='53' r='2.8' fill='url(%23gold)'/%3E%3Ccircle cx='17' cy='23' r='1.8' fill='%23E06C75'/%3E%3Ccircle cx='47' cy='23' r='1.8' fill='%2361AFEF'/%3E%3C/svg%3E" />
 
-  <!-- iOS 홈 화면 추가 전용 180x180 PNG 규격 (Apple Touch Icon) -->
-  <link rel="apple-touch-icon" sizes="180x180" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAMAAAAKE/YAAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAABwUExURf///wAAAAsLCxsbGycnJy0tLTIyMjk5OUFBQUxMTE5OTlRUVFlZWWBgYGhoaG5ubnNzc3d3d4CAgIuLi5SUlJubm5+fn6SkpKurq7Ozs7q6usHBwcjIyM/Pz9TU1Nra2uLi4u3t7fLy8v39/eHn8P7+/sfQ25cAAAM2SURBVHja7dzZbhNBFAVRq6o6dUlV9f+/U2qLhJCQ6I6384L3HekhI42zZq7fWvPz4eHx40s+f/18uHz79en314eHp/z8+fX5z9vH948f3/L5h58fHl4+/v3y+enXh/z5/fNrvn57f8rfv/z+9vvb68f3T/n5/et7vH8/f/j179fvH9//nF9/fL1/fn14/+7f7//79fPr08Pr0/v/vv76+fbw8Pr17//9/frr4fH99+vPr69vDw/vX//6/fPj6/vn1+fXh8ef/3378/P3848/v37/fHh8fP35799/f/16fPz17+/Pj/e/336+fX97+P3n398fH7+/f/7x8ffHl//+/vr15eH3/9e/f/314eHvv7/f/+/v9/fvv18f/vv7/f/7/f7+/f/7/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f7+/f/7/f4X9yXnBwR12ZAAAAAElFTkSuQmCC" />
-
+  <!-- iOS 홈 화면 추가 전용 (상대경로 + 캐시 버스팅) -->
+  <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=2" />
+  <link rel="apple-touch-icon-precomposed" href="./apple-touch-icon.png?v=2" />
   <!-- iOS 웹앱 전체화면/상태바 최적화 메타 태그 -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
