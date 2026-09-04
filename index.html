@@ -8,14 +8,13 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <style>
     :root {
-      /* Apple Pastel Palette */
       --bg-gradient: linear-gradient(135deg, #f0f4fd 0%, #fdf2f8 50%, #f5f3ff 100%);
       --surface: rgba(255, 255, 255, 0.78);
       --surface-border: rgba(255, 255, 255, 0.85);
       --text-main: #1f2937;
       --text-muted: #6b7280;
       
-      /* Part Pastel Accents */
+      /* 파스텔 파트 색상 */
       --color-sop: #fda4af; 
       --color-alto: #fed7aa; 
       --color-tenor: #a7f3d0; 
@@ -63,7 +62,6 @@
     }
     .header-row::-webkit-scrollbar { display: none; }
 
-    /* 애플 스타일 컨트롤 요소 */
     select, button, input {
       font-family: inherit;
       border: 1px solid rgba(0, 0, 0, 0.08);
@@ -115,7 +113,7 @@
     .btn-icon-only { padding: 8px 10px; border-radius: 12px; }
     .btn-pill { border-radius: 20px; font-weight: 600; }
 
-    /* 메인 뷰어 영역 */
+    /* 메인 뷰어 영역 (PDF.js Canvas) */
     main {
       flex: 1;
       overflow-y: auto;
@@ -144,6 +142,7 @@
       width: 100% !important;
       height: auto !important;
       display: block;
+      cursor: pointer;
     }
 
     /* 반전 모드 (무대용) */
@@ -269,11 +268,11 @@
     </div>
   </header>
 
-  <!-- 메인 뷰어 영역 -->
+  <!-- PDF.js Canvas 뷰어 -->
   <main id="viewerMain">
     <div id="statusView" style="margin-top: 100px; text-align: center; color: var(--text-muted);">
       <div class="spinner" id="loadingSpinner"></div>
-      <p id="statusText" style="font-size: 14px; font-weight: 500;">설정 파일을 불러오는 중입니다...</p>
+      <p id="statusText" style="font-size: 14px; font-weight: 500;">설정을 확인하고 있습니다...</p>
     </div>
     <div class="sheet-card" id="sheetCard" style="display: none;">
       <canvas id="pdfCanvas"></canvas>
@@ -342,20 +341,21 @@
 
   <script>
     // ==========================================
-    // ⚙️ 1. 설정값 동적 로드 (config.json)
+    // ⚙️ 1. 설정 동기화
     // ==========================================
     let GOOGLE_API_KEY = "";
     let DRIVE_FOLDER_ID = "";
 
     async function loadConfig() {
       try {
-        const res = await fetch('./config.json');
-        if (!res.ok) throw new Error("config.json 파일을 찾을 수 없습니다.");
+        const res = await fetch('./config.json', { cache: 'no-cache' });
+        if (!res.ok) throw new Error("config.json 응답 오류");
         const config = await res.json();
-        GOOGLE_API_KEY = config.googleApiKey || "";
-        DRIVE_FOLDER_ID = config.driveFolderId || "";
+        GOOGLE_API_KEY = (config.googleApiKey || "").trim();
+        DRIVE_FOLDER_ID = (config.driveFolderId || "").trim();
+        console.log("config.json 로드 성공");
       } catch (err) {
-        console.warn("설정 파일 로드 주의:", err.message);
+        console.warn("config.json 로드 건너뜀 (로컬 곡 모드로 실행):", err.message);
       }
     }
 
@@ -404,7 +404,7 @@
     }
 
     // ==========================================
-    // 🎵 3. 피아노 사인파 톤 엔진
+    // 🎵 3. 피치 사운드 엔진
     // ==========================================
     let audioCtx = null;
     const noteFrequencies = {
@@ -417,10 +417,7 @@
       if (!noteName) return;
       const clean = noteName.trim().toUpperCase();
       const freq = noteFrequencies[clean];
-      if (!freq) {
-        alert(`음정을 인식할 수 없습니다: ${noteName}\n(예: C4, G3, Eb4 형식으로 적어주세요)`);
-        return;
-      }
+      if (!freq) return;
 
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       const osc = audioCtx.createOscillator();
@@ -444,6 +441,7 @@
     // 🔍 4. 파싱 유틸
     // ==========================================
     function extractDriveFileId(url) {
+      if (!url) return null;
       const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
       return match ? match[1] : null;
     }
@@ -463,7 +461,7 @@
     }
 
     // ==========================================
-    // 📂 5. 악보 데이터 로딩 및 뷰어 렌더링
+    // 📂 5. 악보 데이터 로딩 & PDF.js 렌더링
     // ==========================================
     let allSongs = [];
     let currentSong = null;
@@ -491,7 +489,7 @@
       if (GOOGLE_API_KEY && DRIVE_FOLDER_ID) {
         try {
           const q = `'${DRIVE_FOLDER_ID}' in parents and mimeType = 'application/pdf' and trashed = false`;
-          const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(queryCheck(q))}&fields=files(id,name)&orderBy=name&key=${GOOGLE_API_KEY}`;
+          const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name)&orderBy=name&key=${GOOGLE_API_KEY}`;
           const res = await fetch(url);
           if (res.ok) {
             const data = await res.json();
@@ -499,9 +497,11 @@
               const meta = parseFileName(f.name);
               return { id: `drive_${f.id}`, driveId: f.id, type: 'drive', title: meta.title, notes: meta.notes };
             });
+          } else {
+            console.error("드라이브 목록 응답 실패:", res.status);
           }
         } catch (e) {
-          console.warn("구글 드라이브 조회 실패:", e);
+          console.warn("구글 드라이브 연동 실패:", e);
         }
       }
 
@@ -535,10 +535,7 @@
       loadSong(targetId);
     }
 
-    function queryCheck(q) {
-      return q;
-    }
-
+    // PDF.js 기반 다운로드 & 렌더링
     async function loadSong(songId) {
       const song = allSongs.find(s => s.id === songId);
       if (!song) return;
@@ -549,9 +546,9 @@
       // 파스텔 피치 버튼 렌더링
       pitchBar.innerHTML = '';
       const partClassMap = { 'S': 'part-sop', 'A': 'part-alto', 'T': 'part-tenor', 'B': 'part-bass', 'L': 'part-lead' };
-
       const parts = ['S', 'A', 'T', 'B'];
       let hasAnyPitch = false;
+
       parts.forEach(p => {
         const note = song.notes?.[p];
         if (note) {
@@ -567,30 +564,30 @@
       if (!hasAnyPitch) {
         const hint = document.createElement('span');
         hint.style.cssText = "font-size: 12px; color: var(--text-muted); padding: 4px 6px;";
-        hint.textContent = "첫 음 미설정 (⚙️ 설정 가능)";
+        hint.textContent = "첫 음 미설정 (⚙️ 클릭)";
         pitchBar.appendChild(hint);
       }
 
-      // 악보 로드
+      // 악보 로딩 시작
       statusView.style.display = 'block';
       sheetCard.style.display = 'none';
       spinner.style.display = 'block';
-      statusText.innerHTML = `'${song.title}' 여는 중...`;
+      statusText.innerHTML = `'${song.title}' 렌더링 중...`;
 
-      let downloadUrl = '';
+      let targetUrl = '';
       if (song.type === 'drive') {
-        downloadUrl = `https://www.googleapis.com/drive/v3/files/${song.driveId}?alt=media&key=${GOOGLE_API_KEY}`;
+        targetUrl = `https://www.googleapis.com/drive/v3/files/${song.driveId}?alt=media&key=${GOOGLE_API_KEY}`;
       } else {
         const driveId = extractDriveFileId(song.url);
         if (driveId && GOOGLE_API_KEY) {
-          downloadUrl = `https://www.googleapis.com/drive/v3/files/${driveId}?alt=media&key=${GOOGLE_API_KEY}`;
+          targetUrl = `https://www.googleapis.com/drive/v3/files/${driveId}?alt=media&key=${GOOGLE_API_KEY}`;
         } else {
-          downloadUrl = song.url;
+          targetUrl = song.url;
         }
       }
 
       try {
-        const res = await fetch(downloadUrl);
+        const res = await fetch(targetUrl);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const arrayBuffer = await res.arrayBuffer();
 
@@ -602,9 +599,9 @@
         sheetCard.style.display = 'flex';
         renderPage(currentPageNum);
       } catch (err) {
-        console.error("악보 렌더링 실패:", err);
+        console.error("PDF.js 로드 실패:", err);
         spinner.style.display = 'none';
-        statusText.innerHTML = `악보를 열 수 없습니다.<br><small style="color:#ef4444;">(${err.message})<br>공유 링크 접근 권한 또는 config.json을 확인해주세요.</small>`;
+        statusText.innerHTML = `악보를 불러올 수 없습니다.<br><small style="color:#ef4444;">(${err.message})<br>구글 드라이브 공유 권한('링크가 있는 모든 사용자-뷰어')을 확인해주세요.</small>`;
       }
     }
 
@@ -632,7 +629,7 @@
     }
 
     // ==========================================
-    // ⚙️ 6. 피치 퀵 에디터 모달
+    // ⚙️ 6. 모달 동작
     // ==========================================
     const pitchModal = document.getElementById('pitchModal');
     document.getElementById('openPitchEditorBtn').onclick = () => {
@@ -660,9 +657,6 @@
       loadSong(currentSong.id);
     };
 
-    // ==========================================
-    // ➕ 7. 링크로 곡 추가 모달
-    // ==========================================
     const linkModal = document.getElementById('linkModal');
     document.getElementById('openLinkModalBtn').onclick = () => {
       document.getElementById('inputTitle').value = '';
@@ -709,7 +703,7 @@
     };
 
     // ==========================================
-    // 🎮 8. 페이지 제어 & 단축키
+    // 🎮 7. 페이지 제어
     // ==========================================
     function nextPage() {
       if (currentPdfDoc && currentPageNum < currentPdfDoc.numPages) {
@@ -745,10 +739,14 @@
       document.body.classList.toggle('invert-mode');
     };
 
-    // 초기화 흐름: DB 열기 -> config.json 읽기 -> 악보 목록 로드
-    initDB()
-      .then(() => loadConfig())
-      .then(() => loadAllSongList());
+    // 핵심: loadConfig() 완료 대기 후 loadAllSongList() 순차 실행
+    async function startApp() {
+      await initDB();
+      await loadConfig();
+      await loadAllSongList();
+    }
+
+    startApp();
   </script>
 </body>
 </html>
