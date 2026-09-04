@@ -8,22 +8,23 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <style>
     :root {
-      --bg-base: #090a0d;
-      --surface-deep: #111217;
-      --surface-elevated: #181a21;
-      --surface-highlight: #222530;
+      --bg-base: #07080a;
+      --surface-deep: #0f1015;
+      --surface-elevated: #161820;
+      --surface-highlight: #1f222d;
       
       --border-subtle: rgba(255, 255, 255, 0.08);
-      --border-metallic: rgba(212, 175, 55, 0.35);
+      --border-metallic: rgba(212, 175, 55, 0.4);
       
-      --text-primary: #f5f6f8;
-      --text-secondary: #8b8f9e;
+      --text-primary: #f6f7fa;
+      --text-secondary: #888d9e;
       --text-gold: #d4af37;
+      --gold-glow: rgba(212, 175, 55, 0.25);
       
-      --color-sop: #e06c75;
-      --color-alto: #e5c07b;
-      --color-tenor: #98c379;
-      --color-bass: #61afef;
+      --sop-accent: #f87171;
+      --alto-accent: #fbbf24;
+      --tenor-accent: #34d399;
+      --bass-accent: #60a5fa;
     }
 
     * { 
@@ -52,7 +53,7 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* 상단 마스터 헤더 */
+    /* 상단 콘솔 헤더 */
     header {
       background: var(--surface-deep);
       border-bottom: 1px solid var(--border-subtle);
@@ -61,7 +62,7 @@
       flex-direction: column;
       gap: 8px;
       flex-shrink: 0;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
       z-index: 100;
       touch-action: auto;
     }
@@ -92,15 +93,14 @@
       gap: 5px;
       transition: all 0.15s ease;
       flex-shrink: 0;
-      letter-spacing: -0.01em;
     }
     button:active { transform: scale(0.96); background: var(--surface-highlight); }
     button:hover { border-color: rgba(255, 255, 255, 0.2); background: var(--surface-highlight); }
     button.active {
       background: var(--text-gold) !important;
-      color: #050505 !important;
+      color: #060709 !important;
       border-color: var(--text-gold) !important;
-      font-weight: 600;
+      font-weight: 700;
     }
 
     #songSelect {
@@ -109,19 +109,16 @@
       font-weight: 600;
       padding-right: 24px;
       appearance: none;
-      background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%238B8F9E' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23888D9E' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
       background-position: right 8px center;
-      border-color: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.12);
     }
 
     .btn-gold {
       border-color: var(--border-metallic);
       color: var(--text-gold);
       background: rgba(212, 175, 55, 0.08);
-    }
-    .btn-gold:hover {
-      background: rgba(212, 175, 55, 0.16);
     }
 
     .compact-group {
@@ -133,70 +130,101 @@
       padding: 1px 3px;
       gap: 2px;
     }
-    .compact-group button {
-      border: none;
-      background: transparent;
-      padding: 4px 6px;
-      border-radius: 5px;
-    }
-    .compact-label {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--text-secondary);
-      min-width: 34px;
-      text-align: center;
-      user-select: none;
-    }
+    .compact-group button { border: none; background: transparent; padding: 4px 6px; }
+    .compact-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); min-width: 34px; text-align: center; }
 
-    .part-btn {
-      border: 1px solid var(--border-subtle);
-      background: #141519;
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-weight: 600;
-      font-size: 11.5px;
+    /* 🎛️ 하이엔드 하드웨어 스타일 피치 버튼 */
+    .pitch-capsule {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      background: #0d0e13;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 7px;
+      padding: 2px 8px 2px 4px;
+      gap: 6px;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.6), 0 1px 0 rgba(255,255,255,0.04);
+      transition: all 0.15s ease;
     }
-    .part-indicator { width: 5px; height: 5px; border-radius: 50%; display: inline-block; }
-    .part-sop .part-indicator { background: var(--color-sop); box-shadow: 0 0 6px var(--color-sop); }
-    .part-alto .part-indicator { background: var(--color-alto); box-shadow: 0 0 6px var(--color-alto); }
-    .part-tenor .part-indicator { background: var(--color-tenor); box-shadow: 0 0 6px var(--color-tenor); }
-    .part-bass .part-indicator { background: var(--color-bass); box-shadow: 0 0 6px var(--color-bass); }
+    .pitch-capsule:active {
+      transform: scale(0.95);
+      border-color: var(--text-gold);
+      box-shadow: 0 0 10px var(--gold-glow);
+    }
+    .pitch-badge {
+      font-size: 9.5px;
+      font-weight: 800;
+      padding: 2px 5px;
+      border-radius: 4px;
+      letter-spacing: 0.04em;
+    }
+    .pitch-capsule.sop .pitch-badge { background: rgba(248, 113, 113, 0.15); color: var(--sop-accent); border: 1px solid rgba(248, 113, 113, 0.3); }
+    .pitch-capsule.alto .pitch-badge { background: rgba(251, 191, 36, 0.15); color: var(--alto-accent); border: 1px solid rgba(251, 191, 36, 0.3); }
+    .pitch-capsule.tenor .pitch-badge { background: rgba(52, 211, 153, 0.15); color: var(--tenor-accent); border: 1px solid rgba(52, 211, 153, 0.3); }
+    .pitch-capsule.bass .pitch-badge { background: rgba(96, 165, 250, 0.15); color: var(--bass-accent); border: 1px solid rgba(96, 165, 250, 0.3); }
+    .pitch-val {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: #e5e7eb;
+    }
 
     .metro-led {
       width: 7px;
       height: 7px;
       border-radius: 50%;
-      background: #333;
+      background: #2a2c35;
       display: inline-block;
       transition: background 0.05s ease, box-shadow 0.05s ease;
     }
-    .metro-led.flash {
-      background: var(--text-gold);
-      box-shadow: 0 0 8px var(--text-gold);
-    }
+    .metro-led.flash { background: var(--text-gold); box-shadow: 0 0 8px var(--text-gold); }
 
-    /* 플로팅 오디오 플레이어 */
+    /* 🎧 하단 하이엔드 파트 오디오 플레이어 */
     #audioBar {
       position: fixed;
       bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(18, 19, 24, 0.94);
-      backdrop-filter: blur(14px);
-      border: 1px solid var(--border-subtle);
-      border-radius: 30px;
-      padding: 6px 14px;
+      background: rgba(14, 15, 20, 0.94);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      padding: 6px 12px;
       display: none;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       z-index: 150;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.75);
-      max-width: 92%;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.06);
+      max-width: 95%;
     }
     #audioBar.show { display: flex; }
+
+    /* 믹서형 파트 탭 셀렉터 */
+    .part-track-selector {
+      display: flex;
+      background: #08090c;
+      border-radius: 8px;
+      padding: 2px;
+      border: 1px solid var(--border-subtle);
+      gap: 2px;
+    }
+    .part-tab {
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .part-tab.has-audio { color: #d1d5db; }
+    .part-tab.active {
+      background: var(--surface-highlight);
+      color: var(--text-gold);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+    }
 
     /* 메인 뷰어 */
     main {
@@ -207,12 +235,12 @@
       flex-direction: column;
       align-items: center;
       padding: 0;
-      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 65px);
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 75px);
       position: relative;
       touch-action: pan-y pinch-zoom;
       overscroll-behavior-y: contain;
       -webkit-overflow-scrolling: touch;
-      background: #0d0d10;
+      background: #090a0d;
     }
 
     .sheet-wrapper {
@@ -222,17 +250,13 @@
       display: flex;
       justify-content: center;
       align-items: flex-start;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
     }
-
     #pdfCanvas { display: block; }
-
     #drawCanvas {
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
       cursor: crosshair;
       touch-action: none;
       display: none;
@@ -247,8 +271,9 @@
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.75);
+      background: rgba(0, 0, 0, 0.78);
       backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       z-index: 999;
       align-items: center;
       justify-content: center;
@@ -256,41 +281,84 @@
     }
     .modal-backdrop.open { display: flex; }
     .modal {
-      background: #15161c;
-      border: 1px solid var(--border-subtle);
+      background: #14161d;
+      border: 1px solid rgba(255, 255, 255, 0.1);
       width: 90%;
-      max-width: 440px;
-      border-radius: 16px;
+      max-width: 450px;
+      border-radius: 18px;
       padding: 20px;
       display: flex;
       flex-direction: column;
       gap: 14px;
-      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.85);
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9);
     }
-    .modal h3 { font-size: 15px; font-weight: 600; color: #ffffff; }
+    .modal h3 { font-size: 15px; font-weight: 700; color: #ffffff; letter-spacing: -0.01em; }
     .form-group { display: flex; flex-direction: column; gap: 5px; }
     .form-group label { font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; }
-    .form-group input {
+    .form-group input[type="text"], .form-group input[type="url"] {
       width: 100%;
       border-radius: 7px;
       cursor: text;
       padding: 8px 10px;
       border: 1px solid rgba(255, 255, 255, 0.1);
-      background: #0e0f12;
+      background: #0b0c10;
       color: #fff;
     }
-    .pitch-editor-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
-    .pitch-cell {
+
+    /* 🎹 모던 건반형 피치 에디터 그리드 */
+    .pitch-slot-container {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+    .pitch-edit-card {
+      background: #0c0d12;
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 8px 6px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      background: #0e0f12;
-      padding: 8px 4px;
-      border-radius: 8px;
-      border: 1px solid var(--border-subtle);
+      gap: 6px;
     }
-    .pitch-cell span { font-size: 10px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; }
-    .pitch-cell input { width: 100%; text-align: center; font-weight: 700; font-size: 13px; padding: 4px 2px; }
+    .pitch-edit-card span { font-size: 10.5px; font-weight: 800; }
+    .pitch-edit-card select {
+      width: 100%;
+      padding: 5px 2px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 700;
+      border-radius: 6px;
+      background: #1a1c24;
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    /* 파트별 음원 등록 리스트 */
+    .audio-upload-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #0b0c10;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 6px 10px;
+    }
+    .audio-upload-row span { font-size: 11px; font-weight: 700; width: 34px; color: var(--text-gold); }
+    .audio-upload-row input[type="file"] { display: none; }
+    .audio-upload-row .upload-btn {
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 5px;
+      background: #1b1d26;
+    }
+    .audio-upload-row .status-text {
+      font-size: 11px;
+      color: var(--text-secondary);
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
 
     .spinner {
       border: 2px solid rgba(255, 255, 255, 0.08);
@@ -316,11 +384,11 @@
       <!-- 줌 그룹 -->
       <div class="compact-group">
         <button id="zoomOutBtn" title="축소">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h14"/></svg>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/></svg>
         </button>
         <span class="compact-label" id="zoomLevelText">100%</span>
         <button id="zoomInBtn" title="확대">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
         </button>
       </div>
 
@@ -333,18 +401,18 @@
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       </button>
 
-      <!-- 개인 메모 모드 버튼 -->
+      <!-- 개인 메모 토글 -->
       <button id="drawToggleBtn" title="개인 메모 활성화">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/></svg>
         <span>메모</span>
       </button>
 
       <button class="btn-gold" id="openLinkModalBtn">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-        링크
+        곡/음원 추가
       </button>
       <button id="deleteLocalBtn" style="display:none; color: #ef4444;" title="곡 삭제">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
       </button>
       <button id="refreshBtn" title="새로고침">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
@@ -354,12 +422,12 @@
       </button>
     </div>
 
-    <!-- Row 2: 파트별 첫 음 모니터 -->
+    <!-- Row 2: 파트별 첫 음 모니터 (하드웨어 캡슐 디자인) -->
     <div class="console-row" id="normalToolbar" style="justify-content: space-between;">
-      <div class="console-row" id="pitchBar" style="width: auto; gap: 5px;"></div>
+      <div class="console-row" id="pitchBar" style="width: auto; gap: 6px;"></div>
       
       <div class="console-row" style="width: auto; margin-left: auto; gap: 5px;">
-        <button id="openPitchEditorBtn" title="파트 첫 음 설정">
+        <button id="openPitchEditorBtn" title="첫 음 지정">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
           <span>음정</span>
         </button>
@@ -373,7 +441,7 @@
       </div>
     </div>
 
-    <!-- 드로잉 툴바 (개인 메모 레이어) -->
+    <!-- 드로잉 툴바 -->
     <div class="console-row" id="drawingToolbar" style="display: none; gap: 6px;">
       <button class="active" id="toolPenBtn">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/></svg>
@@ -388,7 +456,7 @@
         <span>형광펜</span>
       </button>
       <button id="toolEraserBtn">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/></svg>
         <span>지우개</span>
       </button>
       <button id="clearDrawBtn" style="color: #ef4444;">
@@ -410,14 +478,25 @@
     </div>
   </main>
 
-  <!-- 하단 오디오 미니 플레이어 -->
+  <!-- 🎛️ 하단 파트별 오디오 콘솔 플레이어 -->
   <div id="audioBar">
-    <button id="audioPlayBtn" style="border-radius: 50%; width: 28px; height: 28px; padding: 0; justify-content: center;">
+    <!-- 재생/일시정지 -->
+    <button id="audioPlayBtn" style="border-radius: 50%; width: 30px; height: 30px; padding: 0; justify-content: center; background: #222530;">
       <svg id="playIconSvg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3l14 9-14 9V3z"/></svg>
     </button>
-    <span id="audioTrackName" style="font-size: 11.5px; font-weight: 600; max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">가이드 트랙</span>
-    <span id="audioTimeText" style="font-size: 10.5px; color: var(--text-secondary);">0:00</span>
+    
+    <!-- 파트 탭 셀렉터 -->
+    <div class="part-track-selector" id="partTabSelector">
+      <button class="part-tab active" data-part="ALL">ALL</button>
+      <button class="part-tab" data-part="S">S</button>
+      <button class="part-tab" data-part="A">A</button>
+      <button class="part-tab" data-part="T">T</button>
+      <button class="part-tab" data-part="B">B</button>
+    </div>
+
+    <span id="audioTimeText" style="font-size: 10.5px; color: var(--text-secondary); min-width: 28px; text-align: center;">0:00</span>
     <button id="audioRateBtn" style="font-size: 10.5px; padding: 2px 6px;">1.0x</button>
+    
     <button id="closeAudioBtn" style="border: none; background: transparent; padding: 4px; color: var(--text-secondary);">
       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
     </button>
@@ -442,15 +521,31 @@
     </div>
   </div>
 
-  <!-- 파트 첫 음 모달 -->
+  <!-- 🎹 첫 음 정밀 피커 모달 -->
   <div class="modal-backdrop" id="pitchModal">
     <div class="modal">
-      <h3>파트 첫 음 보정</h3>
-      <div class="pitch-editor-grid">
-        <div class="pitch-cell"><span>Soprano</span><input type="text" id="quickS" placeholder="E4" /></div>
-        <div class="pitch-cell"><span>Alto</span><input type="text" id="quickA" placeholder="C4" /></div>
-        <div class="pitch-cell"><span>Tenor</span><input type="text" id="quickT" placeholder="G3" /></div>
-        <div class="pitch-cell"><span>Bass</span><input type="text" id="quickB" placeholder="C3" /></div>
+      <h3>파트별 첫 음 지정</h3>
+      <div class="pitch-slot-container">
+        <!-- Soprano -->
+        <div class="pitch-edit-card">
+          <span style="color: var(--sop-accent);">Soprano</span>
+          <select id="quickS_select"></select>
+        </div>
+        <!-- Alto -->
+        <div class="pitch-edit-card">
+          <span style="color: var(--alto-accent);">Alto</span>
+          <select id="quickA_select"></select>
+        </div>
+        <!-- Tenor -->
+        <div class="pitch-edit-card">
+          <span style="color: var(--tenor-accent);">Tenor</span>
+          <select id="quickT_select"></select>
+        </div>
+        <!-- Bass -->
+        <div class="pitch-edit-card">
+          <span style="color: var(--bass-accent);">Bass</span>
+          <select id="quickB_select"></select>
+        </div>
       </div>
       <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px;">
         <button id="closePitchModalBtn">닫기</button>
@@ -459,31 +554,64 @@
     </div>
   </div>
 
-  <!-- 악보 링크 등록 모달 -->
+  <!-- 📂 악보 및 파트별 음원 등록 모달 -->
   <div class="modal-backdrop" id="linkModal">
-    <div class="modal">
-      <h3>악보 링크 등록</h3>
+    <div class="modal" style="max-height: 85vh; overflow-y: auto;">
+      <h3>악보 및 파트별 음원 등록</h3>
       <div class="form-group">
         <label>곡 명</label>
         <input type="text" id="inputTitle" placeholder="예: Java Jive" required />
       </div>
       <div class="form-group">
-        <label>악보 URL (구글 드라이브 공유 링크 또는 PDF)</label>
+        <label>악보 PDF URL (구글 드라이브 링크)</label>
         <input type="text" id="inputUrl" placeholder="https://drive.google.com/file/d/..." required />
       </div>
-      <div class="form-group">
-        <label>가이드 음원 URL (MP3 링크, 선택사항)</label>
-        <input type="text" id="inputAudioUrl" placeholder="https://.../guide.mp3" />
-      </div>
-      <div class="form-group">
-        <label>시작 음 (선택)</label>
-        <div class="pitch-editor-grid">
-          <input type="text" id="noteS" placeholder="S (E4)" />
-          <input type="text" id="noteA" placeholder="A (C4)" />
-          <input type="text" id="noteT" placeholder="T (G3)" />
-          <input type="text" id="noteB" placeholder="B (C3)" />
+
+      <!-- 파트별 음원 파일/링크 업로더 -->
+      <div class="form-group" style="gap: 6px;">
+        <label>파트별 음원 등록 (카톡에서 저장한 MP3 파일 선택)</label>
+        
+        <!-- ALL -->
+        <div class="audio-upload-row">
+          <span>ALL</span>
+          <button class="upload-btn" onclick="document.getElementById('audioFile_ALL').click()">파일 선택</button>
+          <input type="file" id="audioFile_ALL" accept="audio/*" onchange="handleAudioUpload('ALL', this)" />
+          <span class="status-text" id="status_ALL">미등록</span>
+        </div>
+
+        <!-- S -->
+        <div class="audio-upload-row">
+          <span style="color: var(--sop-accent);">SOP</span>
+          <button class="upload-btn" onclick="document.getElementById('audioFile_S').click()">파일 선택</button>
+          <input type="file" id="audioFile_S" accept="audio/*" onchange="handleAudioUpload('S', this)" />
+          <span class="status-text" id="status_S">미등록</span>
+        </div>
+
+        <!-- A -->
+        <div class="audio-upload-row">
+          <span style="color: var(--alto-accent);">ALT</span>
+          <button class="upload-btn" onclick="document.getElementById('audioFile_A').click()">파일 선택</button>
+          <input type="file" id="audioFile_A" accept="audio/*" onchange="handleAudioUpload('A', this)" />
+          <span class="status-text" id="status_A">미등록</span>
+        </div>
+
+        <!-- T -->
+        <div class="audio-upload-row">
+          <span style="color: var(--tenor-accent);">TEN</span>
+          <button class="upload-btn" onclick="document.getElementById('audioFile_T').click()">파일 선택</button>
+          <input type="file" id="audioFile_T" accept="audio/*" onchange="handleAudioUpload('T', this)" />
+          <span class="status-text" id="status_T">미등록</span>
+        </div>
+
+        <!-- B -->
+        <div class="audio-upload-row">
+          <span style="color: var(--bass-accent);">BAS</span>
+          <button class="upload-btn" onclick="document.getElementById('audioFile_B').click()">파일 선택</button>
+          <input type="file" id="audioFile_B" accept="audio/*" onchange="handleAudioUpload('B', this)" />
+          <span class="status-text" id="status_B">미등록</span>
         </div>
       </div>
+
       <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px;">
         <button id="closeLinkModalBtn">취소</button>
         <button class="btn-gold" id="saveLinkSongBtn" style="font-weight:600;">저장</button>
@@ -493,7 +621,7 @@
 
   <script>
     // ==========================================
-    // ⚙️ 1. 설정 동기화
+    // ⚙️ 1. 설정 및 초기화
     // ==========================================
     let GOOGLE_API_KEY = "";
     let DRIVE_FOLDER_ID = "";
@@ -514,18 +642,19 @@
       'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
     // ==========================================
-    // 🗄️ 2. IndexedDB (개인 독립 메모 레이어 보관)
+    // 🗄️ 2. IndexedDB
     // ==========================================
     let db;
     function initDB() {
       return new Promise((resolve, reject) => {
-        const req = indexedDB.open('AcappellaStudioDB_V4', 1);
+        const req = indexedDB.open('AcappellaStudioDB_V5', 1);
         req.onupgradeneeded = (e) => {
           const d = e.target.result;
           if (!d.objectStoreNames.contains('custom_songs')) d.createObjectStore('custom_songs', { keyPath: 'id' });
           if (!d.objectStoreNames.contains('pitch_overrides')) d.createObjectStore('pitch_overrides', { keyPath: 'songId' });
-          // 개인 기기 내부 격리 메모 저장소 (key: songId_pageNum)
           if (!d.objectStoreNames.contains('personal_drawings')) d.createObjectStore('personal_drawings', { keyPath: 'id' });
+          // 파트별 오디오 바이너리 로컬 영구 보관소 (key: songId_part)
+          if (!d.objectStoreNames.contains('part_audios')) d.createObjectStore('part_audios', { keyPath: 'id' });
         };
         req.onsuccess = () => { db = req.result; resolve(); };
         req.onerror = () => reject(req.error);
@@ -574,6 +703,12 @@
       return audioCtx;
     }
 
+    const availableNotes = [
+      "", "C3", "C#3", "D3", "Eb3", "E3", "F3", "F#3", "G3", "Ab3", "A3", "Bb3", "B3",
+      "C4", "C#4", "D4", "Eb4", "E4", "F4", "F#4", "G4", "Ab4", "A4", "Bb4", "B4",
+      "C5", "C#5", "D5", "Eb5", "E5"
+    ];
+
     const noteFrequencies = {
       "C3": 130.81, "C#3": 138.59, "DB3": 138.59, "D3": 146.83, "D#3": 155.56, "EB3": 155.56, "E3": 164.81, "F3": 174.61, "F#3": 185.00, "GB3": 185.00, "G3": 196.00, "G#3": 207.65, "AB3": 207.65, "A3": 220.00, "A#3": 233.08, "BB3": 233.08, "B3": 246.94,
       "C4": 261.63, "C#4": 277.18, "DB4": 277.18, "D4": 293.66, "D#4": 311.13, "EB4": 311.13, "E4": 329.63, "F4": 349.23, "F#4": 369.99, "GB4": 369.99, "G4": 392.00, "G#4": 415.30, "AB4": 415.30, "A4": 440.00, "A#4": 466.16, "BB4": 466.16, "B4": 493.88,
@@ -604,6 +739,20 @@
       osc.stop(ctx.currentTime + 1.8);
     }
 
+    // 모달용 음정 셀렉트 옵션 빌드
+    function initPitchSelectOptions() {
+      ['quickS_select', 'quickA_select', 'quickT_select', 'quickB_select'].forEach(id => {
+        const sel = document.getElementById(id);
+        sel.innerHTML = '';
+        availableNotes.forEach(n => {
+          const opt = document.createElement('option');
+          opt.value = n;
+          opt.textContent = n || '(미설정)';
+          sel.appendChild(opt);
+        });
+      });
+    }
+
     // 메트로놈 로직
     let metroBpm = 100;
     let isMetroRunning = false;
@@ -615,16 +764,12 @@
       const ctx = getAudioContext();
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-
       osc.type = 'sine';
       osc.frequency.setValueAtTime(1000, ctx.currentTime);
-
       gain.gain.setValueAtTime(0.3, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
-
       osc.connect(gain);
       gain.connect(ctx.destination);
-
       osc.start();
       osc.stop(ctx.currentTime + 0.05);
     }
@@ -770,7 +915,7 @@
 
       if (allSongs.length === 0) {
         spinner.style.display = 'none';
-        statusText.innerHTML = "등록된 마스터 악보가 없습니다.<br>상단 [+ 링크]를 통해 곡을 등록하세요.";
+        statusText.innerHTML = "등록된 마스터 악보가 없습니다.<br>상단 [+ 곡/음원 추가] 버튼을 눌러보세요.";
         songSelect.innerHTML = '<option value="">(트랙 없음)</option>';
         deleteLocalBtn.style.display = 'none';
         return;
@@ -795,10 +940,14 @@
       currentSong = song;
 
       deleteLocalBtn.style.display = song.type === 'custom' ? 'inline-flex' : 'none';
-      setupAudioPlayer(song);
 
+      // 파트 오디오 플레이어 로드
+      await loadSongAudioTracks(song);
+
+      // 🎛️ 하드웨어 캡슐 디자인 피치 버튼 렌더링
       pitchBar.innerHTML = '';
-      const partClassMap = { 'S': 'part-sop', 'A': 'part-alto', 'T': 'part-tenor', 'B': 'part-bass' };
+      const partClassMap = { 'S': 'sop', 'A': 'alto', 'T': 'tenor', 'B': 'bass' };
+      const partFullMap = { 'S': 'SOP', 'A': 'ALT', 'T': 'TEN', 'B': 'BAS' };
       const parts = ['S', 'A', 'T', 'B'];
       let hasAnyPitch = false;
 
@@ -807,8 +956,11 @@
         if (note) {
           hasAnyPitch = true;
           const btn = document.createElement('button');
-          btn.className = `part-btn ${partClassMap[p] || ''}`;
-          btn.innerHTML = `<span class="part-indicator"></span>${p} · ${note}`;
+          btn.className = `pitch-capsule ${partClassMap[p] || ''}`;
+          btn.innerHTML = `
+            <span class="pitch-badge">${partFullMap[p]}</span>
+            <span class="pitch-val">${note}</span>
+          `;
           btn.onclick = () => playNote(note);
           pitchBar.appendChild(btn);
         }
@@ -890,7 +1042,6 @@
         });
         pageIndicator.textContent = `${num} / ${currentPdfDoc.numPages}`;
 
-        // 현재 멤버의 개인 저장소에서 해당 악보 페이지 메모 로드
         loadPageDrawing(num);
       });
     }
@@ -910,7 +1061,7 @@
     zoomLevelText.ondblclick = () => setZoom(1.0);
 
     // ==========================================
-    // ✏️ 6. 개인 독립 메모 레이어 (IndexedDB 전용 격리)
+    // ✏️ 6. 개인 독립 메모 레이어
     // ==========================================
     let isDrawingMode = false;
     let currentTool = 'pen';
@@ -1028,7 +1179,6 @@
     drawCanvas.addEventListener('touchmove', (e) => { e.preventDefault(); drawingMove(e); }, { passive: false });
     drawCanvas.addEventListener('touchend', endDraw);
 
-    // 개인 기기 내부(IndexedDB)에만 독립 격리 저장
     async function savePageDrawing() {
       if (!currentSong) return;
       const key = `${currentSong.id}_p${currentPageNum}`;
@@ -1059,28 +1209,80 @@
     };
 
     // ==========================================
-    // 🎧 7. 파트 연습용 가이드 음원 플레이어
+    // 🎧 7. 파트별 멀티트랙 오디오 플레이어 엔진
     // ==========================================
     const audioBar = document.getElementById('audioBar');
     const guideAudio = document.getElementById('guideAudioElement');
     const audioPlayBtn = document.getElementById('audioPlayBtn');
     const playIconSvg = document.getElementById('playIconSvg');
-    const audioTrackName = document.getElementById('audioTrackName');
     const audioTimeText = document.getElementById('audioTimeText');
     const audioRateBtn = document.getElementById('audioRateBtn');
+    const partTabSelector = document.getElementById('partTabSelector');
 
-    function setupAudioPlayer(song) {
-      if (song.audioUrl) {
-        guideAudio.src = song.audioUrl;
-        audioTrackName.textContent = song.title;
+    let currentSongPartAudios = {}; // { ALL: url, S: url, A: url, ... }
+    let activePartTab = 'ALL';
+
+    async function loadSongAudioTracks(song) {
+      currentSongPartAudios = {};
+      const parts = ['ALL', 'S', 'A', 'T', 'B'];
+      let hasAnyAudio = false;
+
+      for (const p of parts) {
+        const item = await getStoredItem('part_audios', `${song.id}_${p}`);
+        const tabBtn = partTabSelector.querySelector(`[data-part="${p}"]`);
+        
+        if (item && item.blob) {
+          currentSongPartAudios[p] = URL.createObjectURL(item.blob);
+          hasAnyAudio = true;
+          tabBtn.classList.add('has-audio');
+        } else {
+          tabBtn.classList.remove('has-audio');
+        }
+      }
+
+      if (hasAnyAudio) {
         audioBar.classList.add('show');
+        // 첫 활성화 파트 찾기
+        const firstAvailable = parts.find(p => currentSongPartAudios[p]) || 'ALL';
+        switchPartTrack(firstAvailable, false);
       } else {
         audioBar.classList.remove('show');
         guideAudio.pause();
       }
     }
 
+    function switchPartTrack(part, autoPlay = true) {
+      activePartTab = part;
+      partTabSelector.querySelectorAll('.part-tab').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.part === part);
+      });
+
+      const audioUrl = currentSongPartAudios[part];
+      if (audioUrl) {
+        const prevTime = guideAudio.currentTime;
+        const isPlaying = !guideAudio.paused;
+        guideAudio.src = audioUrl;
+        guideAudio.currentTime = prevTime;
+        if (autoPlay || isPlaying) {
+          guideAudio.play();
+          playIconSvg.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+        }
+      }
+    }
+
+    partTabSelector.addEventListener('click', (e) => {
+      const tab = e.target.closest('.part-tab');
+      if (!tab) return;
+      const part = tab.dataset.part;
+      if (currentSongPartAudios[part]) {
+        switchPartTrack(part, true);
+      } else {
+        alert(`${part} 파트에 등록된 음원이 없습니다.\n[곡/음원 추가] 모달에서 음원을 등록해주세요.`);
+      }
+    });
+
     audioPlayBtn.onclick = () => {
+      if (!guideAudio.src) return;
       if (guideAudio.paused) {
         guideAudio.play();
         playIconSvg.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
@@ -1144,19 +1346,20 @@
     }, { passive: true });
 
     // ==========================================
-    // ⚙️ 9. 모달 제어
+    // ⚙️ 9. 모달 및 파일 업로드 처리
     // ==========================================
     const metroModal = document.getElementById('metroModal');
     document.getElementById('openMetroModalBtn').onclick = () => metroModal.classList.add('open');
     document.getElementById('closeMetroModalBtn').onclick = () => metroModal.classList.remove('open');
 
+    // 🎹 첫 음 정밀 피커 모달 열기
     const pitchModal = document.getElementById('pitchModal');
     document.getElementById('openPitchEditorBtn').onclick = () => {
       if (!currentSong) return;
-      document.getElementById('quickS').value = currentSong.notes?.S || '';
-      document.getElementById('quickA').value = currentSong.notes?.A || '';
-      document.getElementById('quickT').value = currentSong.notes?.T || '';
-      document.getElementById('quickB').value = currentSong.notes?.B || '';
+      document.getElementById('quickS_select').value = currentSong.notes?.S || '';
+      document.getElementById('quickA_select').value = currentSong.notes?.A || '';
+      document.getElementById('quickT_select').value = currentSong.notes?.T || '';
+      document.getElementById('quickB_select').value = currentSong.notes?.B || '';
       pitchModal.classList.add('open');
     };
     document.getElementById('closePitchModalBtn').onclick = () => pitchModal.classList.remove('open');
@@ -1164,10 +1367,10 @@
     document.getElementById('savePitchModalBtn').onclick = async () => {
       if (!currentSong) return;
       const newNotes = {
-        S: document.getElementById('quickS').value.trim().toUpperCase(),
-        A: document.getElementById('quickA').value.trim().toUpperCase(),
-        T: document.getElementById('quickT').value.trim().toUpperCase(),
-        B: document.getElementById('quickB').value.trim().toUpperCase()
+        S: document.getElementById('quickS_select').value,
+        A: document.getElementById('quickA_select').value,
+        T: document.getElementById('quickT_select').value,
+        B: document.getElementById('quickB_select').value
       };
       await putStored('pitch_overrides', { songId: currentSong.id, notes: newNotes });
       currentSong.notes = newNotes;
@@ -1175,15 +1378,27 @@
       loadSong(currentSong.id);
     };
 
+    // 📂 곡 등록 & 음원 임시 버퍼
+    let pendingAudioBlobs = {};
+
+    function handleAudioUpload(part, inputEl) {
+      if (inputEl.files && inputEl.files[0]) {
+        const file = inputEl.files[0];
+        pendingAudioBlobs[part] = file;
+        document.getElementById(`status_${part}`).textContent = file.name;
+        document.getElementById(`status_${part}`).style.color = '#34d399';
+      }
+    }
+
     const linkModal = document.getElementById('linkModal');
     document.getElementById('openLinkModalBtn').onclick = () => {
       document.getElementById('inputTitle').value = '';
       document.getElementById('inputUrl').value = '';
-      document.getElementById('inputAudioUrl').value = '';
-      document.getElementById('noteS').value = '';
-      document.getElementById('noteA').value = '';
-      document.getElementById('noteT').value = '';
-      document.getElementById('noteB').value = '';
+      pendingAudioBlobs = {};
+      ['ALL', 'S', 'A', 'T', 'B'].forEach(p => {
+        document.getElementById(`status_${p}`).textContent = '미등록';
+        document.getElementById(`status_${p}`).style.color = 'var(--text-secondary)';
+      });
       linkModal.classList.add('open');
     };
     document.getElementById('closeLinkModalBtn').onclick = () => linkModal.classList.remove('open');
@@ -1191,40 +1406,47 @@
     document.getElementById('saveLinkSongBtn').onclick = async () => {
       const title = document.getElementById('inputTitle').value.trim();
       const url = document.getElementById('inputUrl').value.trim();
-      const audioUrl = document.getElementById('inputAudioUrl').value.trim();
       if (!title || !url) { alert('곡 명과 악보 URL을 입력해주세요.'); return; }
 
+      const newSongId = `custom_${Date.now()}`;
       const newSong = {
-        id: `custom_${Date.now()}`,
+        id: newSongId,
         type: 'custom',
         title: title,
         url: url,
-        audioUrl: audioUrl || null,
-        notes: {
-          S: document.getElementById('noteS').value.trim().toUpperCase(),
-          A: document.getElementById('noteA').value.trim().toUpperCase(),
-          T: document.getElementById('noteT').value.trim().toUpperCase(),
-          B: document.getElementById('noteB').value.trim().toUpperCase()
-        },
+        notes: {},
         createdAt: Date.now()
       };
 
       await putStored('custom_songs', newSong);
+
+      // 업로드한 파트별 오디오 Blob 저장
+      for (const [part, blob] of Object.entries(pendingAudioBlobs)) {
+        await putStored('part_audios', {
+          id: `${newSongId}_${part}`,
+          part: part,
+          blob: blob
+        });
+      }
+
       linkModal.classList.remove('open');
       await loadAllSongList(newSong.id);
     };
 
     deleteLocalBtn.onclick = async () => {
       if (!currentSong || currentSong.type !== 'custom') return;
-      if (confirm(`'${currentSong.title}' 트랙을 삭제하시겠습니까?`)) {
+      if (confirm(`'${currentSong.title}' 트랙과 등록된 음원을 모두 삭제하시겠습니까?`)) {
         await deleteStored('custom_songs', currentSong.id);
         await deleteStored('pitch_overrides', currentSong.id);
+        for (const p of ['ALL', 'S', 'A', 'T', 'B']) {
+          await deleteStored('part_audios', `${currentSong.id}_${p}`);
+        }
         await loadAllSongList();
       }
     };
 
     // ==========================================
-    // 🎮 10. 페이지 내비게이션 & 이벤트
+    // 🎮 10. 페이지 내비게이션 & 단축키
     // ==========================================
     function nextPage() {
       if (currentPdfDoc && currentPageNum < currentPdfDoc.numPages) {
@@ -1258,6 +1480,7 @@
     async function startApp() {
       try {
         await initDB();
+        initPitchSelectOptions();
         await loadConfig();
         await loadAllSongList();
       } catch (err) {
