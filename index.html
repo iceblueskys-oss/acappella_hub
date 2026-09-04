@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Acappella Sheet Viewer</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <style>
+    :root {
+      --bg-color: #121212;
+      --panel-bg: #1e1e1e;
+      --text-color: #e0e0e0;
+      --accent: #4dabf7;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* 상단 컨트롤 바 */
+    header {
+      background: var(--panel-bg);
+      padding: 10px 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #333;
+    }
+    .control-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    select, button {
+      background: #2a2a2a;
+      color: #fff;
+      border: 1px solid #444;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    button:hover { background: #3a3a3a; }
+    button.pitch-btn {
+      background: #1971c2;
+      border-color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* 메인 뷰어 영역 */
+    main {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px;
+      user-select: none;
+    }
+    canvas {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      margin-bottom: 16px;
+      max-width: 100%;
+      height: auto;
+    }
+
+    /* 반전 모드 (무대용 다크모드) */
+    body.invert-mode canvas {
+      filter: invert(0.92) hue-rotate(180deg);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="control-group">
+      <select id="songSelect">
+        <option value="">곡 선택...</option>
+      </select>
+      <button id="toggleInvert">반전 모드</button>
+    </div>
+
+    <div class="control-group" id="pitchContainer"></div>
+
+    <div class="control-group">
+      <button id="prevPage">◀ 이전</button>
+      <span id="pageInfo">- / -</span>
+      <button id="nextPage">다음 ▶</button>
+    </div>
+  </header>
+
+  <main id="viewerContainer">
+    <canvas id="pdfCanvas"></canvas>
+  </main>
+
+  <script>
+    // PDF.js 워커 세팅
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    let songs = [];
+    let currentPdf = null;
+    let currentPageNum = 1;
+    const canvas = document.getElementById('pdfCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // 1. Web Audio API 기반 피치파이프
+    let audioCtx = null;
+    const noteFrequencies = {
+      "C3": 130.81, "C#3": 138.59, "D3": 146.83, "Eb3": 155.56, "E3": 164.81, "F3": 174.61, "F#3": 185.00, "G3": 196.00, "Ab3": 207.65, "A3": 220.00, "Bb3": 233.08, "B3": 246.94,
+      "C4": 261.63, "C#4": 277.18, "D4": 293.66, "Eb4": 311.13, "E4": 329.63, "F4": 349.23, "F#4": 369.99, "G4": 392.00, "Ab4": 415.30, "A4": 440.00, "Bb4": 466.16, "B4": 493.88,
+      "C5": 523.25
+    };
+
+    function playPitch(freq) {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+      gain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.4, audioCtx.currentTime + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.8);
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc.start();
+      osc.stop(audioCtx.currentTime + 1.8);
+    }
+
+    // 2. songs.json 불러오기 및 초기화
+    async function init() {
+      try {
+        const res = await fetch('./songs.json');
+        songs = await res.json();
+        
+        const songSelect = document.getElementById('songSelect');
+        songs.forEach((song, idx) => {
+          const opt = document.createElement('option');
+          opt.value = idx;
+          opt.textContent = song.title;
+          songSelect.appendChild(opt);
+        });
+
+        if (songs.length > 0) {
+          loadSong(0);
+        }
+      } catch (err) {
+        console.error('songs.json 로드 실패:', err);
+      }
+    }
+
+    // 3. 곡 로드 및 피치 버튼 셋업
+    function loadSong(index) {
+      const song = songs[index];
+      if (!song) return;
+
+      // 피치 버튼 렌더링
+      const pitchContainer = document.getElementById('pitchContainer');
+      pitchContainer.innerHTML = '';
+      if (song.notes) {
+        song.notes.forEach(item => {
+          const btn = document.createElement('button');
+          btn.className = 'pitch-btn';
+          btn.textContent = `${item.part}: ${item.note}`;
+          btn.onclick = () => {
+            const freq = noteFrequencies[item.note];
+            if (freq) playPitch(freq);
+          };
+          pitchContainer.appendChild(btn);
+        });
+      }
+
+      // PDF 렌더링 시작
+      pdfjsLib.getDocument(song.pdfUrl).promise.then(pdf => {
+        currentPdf = pdf;
+        currentPageNum = 1;
+        renderPage(currentPageNum);
+      }).catch(err => {
+        console.error('PDF 로드 실패:', err);
+      });
+    }
+
+    // 4. 페이지 렌더링
+    function renderPage(num) {
+      if (!currentPdf) return;
+
+      currentPdf.getPage(num).then(page => {
+        const viewport = page.getViewport({ scale: 1.5 });
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+
+        const renderContext = {
+          canvasContext: ctx,
+          viewport: viewport
+        };
+        page.render(renderContext);
+
+        document.getElementById('pageInfo').textContent = `${num} / ${currentPdf.numPages}`;
+      });
+    }
+
+    // 5. 이벤트 핸들러 (페이지 조작, 블루투스 페달/키보드 대응)
+    document.getElementById('songSelect').addEventListener('change', (e) => {
+      if (e.target.value !== '') loadSong(Number(e.target.value));
+    });
+
+    function nextPage() {
+      if (currentPdf && currentPageNum < currentPdf.numPages) {
+        currentPageNum++;
+        renderPage(currentPageNum);
+      }
+    }
+
+    function prevPage() {
+      if (currentPdf && currentPageNum > 1) {
+        currentPageNum--;
+        renderPage(currentPageNum);
+      }
+    }
+
+    document.getElementById('nextPage').onclick = nextPage;
+    document.getElementById('prevPage').onclick = prevPage;
+
+    // 블루투스 페달 / 키보드 화살표
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+        nextPage();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        prevPage();
+      }
+    });
+
+    // 화면 좌/우 클릭(터치)으로 넘기기
+    canvas.addEventListener('click', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      if (clickX > rect.width / 2) {
+        nextPage();
+      } else {
+        prevPage();
+      }
+    });
+
+    // 반전 모드 (무대용)
+    document.getElementById('toggleInvert').onclick = () => {
+      document.body.classList.toggle('invert-mode');
+    };
+
+    init();
+  </script>
+</body>
+</html>
