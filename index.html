@@ -3,124 +3,259 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Acappella Sheet Viewer</title>
+  <title>Acappella Hub - 악보 뷰어</title>
+  <!-- PDF.js CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <style>
     :root {
-      --bg-color: #121212;
-      --panel-bg: #1e1e1e;
-      --text-color: #e0e0e0;
-      --accent: #4dabf7;
+      --bg: #121212;
+      --panel: #1e1e1e;
+      --card: #282828;
+      --text: #f0f0f0;
+      --text-muted: #a0a0a0;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --danger: #ef4444;
+      --border: #383838;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-color);
+      background: var(--bg);
+      color: var(--text);
       display: flex;
       flex-direction: column;
       height: 100vh;
       overflow: hidden;
     }
 
-    /* 상단 컨트롤 바 */
+    /* 상단 네비게이션 바 */
     header {
-      background: var(--panel-bg);
+      background: var(--panel);
       padding: 10px 16px;
       display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid #333;
+      border-bottom: 1px solid var(--border);
+      gap: 12px;
+      flex-wrap: wrap;
     }
-    .control-group {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-    select, button {
+    .flex-row { display: flex; align-items: center; gap: 8px; }
+    
+    button, select, input {
       background: #2a2a2a;
-      color: #fff;
-      border: 1px solid #444;
+      color: var(--text);
+      border: 1px solid var(--border);
       padding: 6px 12px;
-      border-radius: 4px;
+      border-radius: 6px;
       font-size: 14px;
       cursor: pointer;
     }
-    button:hover { background: #3a3a3a; }
-    button.pitch-btn {
-      background: #1971c2;
-      border-color: var(--accent);
+    button:hover { background: #383838; }
+    button.btn-primary { background: var(--primary); border-color: var(--primary); font-weight: 600; }
+    button.btn-primary:hover { background: var(--primary-hover); }
+    button.btn-pitch {
+      background: #1d4ed8;
+      border-color: #3b82f6;
       font-weight: 600;
+      padding: 6px 10px;
     }
+    button.btn-danger { background: rgba(239, 68, 68, 0.2); border-color: var(--danger); color: #fca5a5; }
 
-    /* 메인 뷰어 영역 */
+    /* 메인 뷰어 컨테이너 */
     main {
       flex: 1;
-      overflow-y: auto;
+      overflow: auto;
       display: flex;
       flex-direction: column;
       align-items: center;
       padding: 16px;
-      user-select: none;
+      position: relative;
     }
+    .empty-state {
+      margin-top: 100px;
+      text-align: center;
+      color: var(--text-muted);
+    }
+    .empty-state button { margin-top: 12px; }
+
     canvas {
-      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-      margin-bottom: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.6);
       max-width: 100%;
       height: auto;
+      border-radius: 4px;
     }
 
-    /* 반전 모드 (무대용 다크모드) */
+    /* 다크 반전 모드 */
     body.invert-mode canvas {
       filter: invert(0.92) hue-rotate(180deg);
     }
+
+    /* 모달 스타일 (Praise Hub 방식) */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      z-index: 999;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: var(--panel);
+      width: 90%;
+      max-width: 480px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .modal h3 { font-size: 18px; margin-bottom: 4px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label { font-size: 13px; color: var(--text-muted); }
+    .form-group input { width: 100%; cursor: text; }
+    .pitch-inputs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+    .pitch-inputs input { text-align: center; text-transform: uppercase; }
   </style>
 </head>
 <body>
 
+  <!-- 상단 제어 헤더 -->
   <header>
-    <div class="control-group">
+    <div class="flex-row">
       <select id="songSelect">
-        <option value="">곡 선택...</option>
+        <option value="">곡 선택하기...</option>
       </select>
-      <button id="toggleInvert">반전 모드</button>
+      <button class="btn-primary" id="openAddModalBtn">+ 곡 추가</button>
+      <button class="btn-danger" id="deleteSongBtn" title="현재 곡 삭제">삭제</button>
     </div>
 
-    <div class="control-group" id="pitchContainer"></div>
+    <!-- 파트별 첫 음 재생 피치바 -->
+    <div class="flex-row" id="pitchBar"></div>
 
-    <div class="control-group">
+    <div class="flex-row">
+      <button id="toggleInvert">반전</button>
       <button id="prevPage">◀ 이전</button>
-      <span id="pageInfo">- / -</span>
+      <span id="pageIndicator" style="font-size: 13px; min-width: 45px; text-align: center;">- / -</span>
       <button id="nextPage">다음 ▶</button>
     </div>
   </header>
 
-  <main id="viewerContainer">
-    <canvas id="pdfCanvas"></canvas>
+  <!-- 악보 출력 영역 -->
+  <main id="viewerMain">
+    <div id="emptyView" class="empty-state">
+      <h2>등록된 악보가 없습니다.</h2>
+      <p>상단의 [+ 곡 추가] 버튼을 눌러 PDF 악보와 파트별 첫 음을 등록해 보세요.</p>
+    </div>
+    <canvas id="pdfCanvas" style="display: none;"></canvas>
   </main>
 
+  <!-- 곡 추가/등록 모달 -->
+  <div class="modal-backdrop" id="addModal">
+    <div class="modal">
+      <h3>새 아카펠라 곡 추가</h3>
+      <div class="form-group">
+        <label>곡 제목</label>
+        <input type="text" id="inputTitle" placeholder="예: Java Jive" required />
+      </div>
+
+      <div class="form-group">
+        <label>파트별 첫 음 (예: C4, Eb3, G#4 등)</label>
+        <div class="pitch-inputs">
+          <input type="text" id="noteS" placeholder="S (소프)" />
+          <input type="text" id="noteA" placeholder="A (알토)" />
+          <input type="text" id="noteT" placeholder="T (테너)" />
+          <input type="text" id="noteB" placeholder="B (베이스)" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>악보 PDF 파일 선택</label>
+        <input type="file" id="inputFile" accept="application/pdf" />
+      </div>
+
+      <div class="flex-row" style="justify-content: flex-end; margin-top: 10px;">
+        <button id="closeAddModalBtn">취소</button>
+        <button class="btn-primary" id="saveSongBtn">저장하기</button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    // PDF.js 워커 세팅
     pdfjsLib.GlobalWorkerOptions.workerSrc = 
       'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-    let songs = [];
-    let currentPdf = null;
-    let currentPageNum = 1;
-    const canvas = document.getElementById('pdfCanvas');
-    const ctx = canvas.getContext('2d');
+    // 1. IndexedDB 설정 (브라우저 내 영구 대용량 스토리지)
+    let db;
+    const DB_NAME = 'AcappellaHubDB';
+    const STORE_NAME = 'songs';
 
-    // 1. Web Audio API 기반 피치파이프
+    function initDB() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(DB_NAME, 1);
+        req.onupgradeneeded = (e) => {
+          const database = e.target.result;
+          if (!database.objectStoreNames.contains(STORE_NAME)) {
+            database.createObjectStore(STORE_NAME, { keyPath: 'id' });
+          }
+        };
+        req.onsuccess = () => { db = req.result; resolve(); };
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function getSongsFromDB() {
+      return new Promise((resolve) => {
+        const tx = db.transaction(STORE_NAME, 'readonly');
+        const store = tx.objectStore(STORE_NAME);
+        const req = store.getAll();
+        req.onsuccess = () => resolve(req.result || []);
+      });
+    }
+
+    async function saveSongToDB(song) {
+      return new Promise((resolve) => {
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+        store.put(song);
+        tx.oncomplete = () => resolve();
+      });
+    }
+
+    async function deleteSongFromDB(id) {
+      return new Promise((resolve) => {
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+        store.delete(id);
+        tx.oncomplete = () => resolve();
+      });
+    }
+
+    // 2. 피치파이프 사운드 엔진 (Web Audio API)
     let audioCtx = null;
     const noteFrequencies = {
-      "C3": 130.81, "C#3": 138.59, "D3": 146.83, "Eb3": 155.56, "E3": 164.81, "F3": 174.61, "F#3": 185.00, "G3": 196.00, "Ab3": 207.65, "A3": 220.00, "Bb3": 233.08, "B3": 246.94,
-      "C4": 261.63, "C#4": 277.18, "D4": 293.66, "Eb4": 311.13, "E4": 329.63, "F4": 349.23, "F#4": 369.99, "G4": 392.00, "Ab4": 415.30, "A4": 440.00, "Bb4": 466.16, "B4": 493.88,
-      "C5": 523.25
+      "C3": 130.81, "C#3": 138.59, "DB3": 138.59, "D3": 146.83, "D#3": 155.56, "EB3": 155.56, "E3": 164.81, "F3": 174.61, "F#3": 185.00, "GB3": 185.00, "G3": 196.00, "G#3": 207.65, "AB3": 207.65, "A3": 220.00, "A#3": 233.08, "BB3": 233.08, "B3": 246.94,
+      "C4": 261.63, "C#4": 277.18, "DB4": 277.18, "D4": 293.66, "D#4": 311.13, "EB4": 311.13, "E4": 329.63, "F4": 349.23, "F#4": 369.99, "GB4": 369.99, "G4": 392.00, "G#4": 415.30, "AB4": 415.30, "A4": 440.00, "A#4": 466.16, "BB4": 466.16, "B4": 493.88,
+      "C5": 523.25, "C#5": 554.37, "D5": 587.33, "EB5": 622.25, "E5": 659.25
     };
 
-    function playPitch(freq) {
+    function playNote(noteName) {
+      if (!noteName) return;
+      const clean = noteName.trim().toUpperCase();
+      const freq = noteFrequencies[clean];
+      if (!freq) {
+        alert(`주파수를 찾을 수 없는 음입니다: ${noteName}\n(예: C4, G3, Eb4 등으로 입력해주세요)`);
+        return;
+      }
+
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
@@ -128,6 +263,7 @@
       osc.type = 'sine';
       osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
 
+      // 자연스러운 어택과 서스테인-페이드아웃
       gain.gain.setValueAtTime(0.001, audioCtx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.4, audioCtx.currentTime + 0.05);
       gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.8);
@@ -139,92 +275,152 @@
       osc.stop(audioCtx.currentTime + 1.8);
     }
 
-    // 2. songs.json 불러오기 및 초기화
-    async function init() {
-      try {
-        const res = await fetch('./songs.json');
-        songs = await res.json();
-        
-        const songSelect = document.getElementById('songSelect');
-        songs.forEach((song, idx) => {
-          const opt = document.createElement('option');
-          opt.value = idx;
-          opt.textContent = song.title;
-          songSelect.appendChild(opt);
-        });
+    // 3. 상태 변수 및 뷰어 렌더링
+    let songs = [];
+    let currentSongId = null;
+    let currentPdfDoc = null;
+    let currentPageNum = 1;
 
-        if (songs.length > 0) {
-          loadSong(0);
-        }
-      } catch (err) {
-        console.error('songs.json 로드 실패:', err);
-      }
-    }
+    const canvas = document.getElementById('pdfCanvas');
+    const ctx = canvas.getContext('2d');
+    const emptyView = document.getElementById('emptyView');
+    const songSelect = document.getElementById('songSelect');
+    const pitchBar = document.getElementById('pitchBar');
+    const pageIndicator = document.getElementById('pageIndicator');
 
-    // 3. 곡 로드 및 피치 버튼 셋업
-    function loadSong(index) {
-      const song = songs[index];
-      if (!song) return;
-
-      // 피치 버튼 렌더링
-      const pitchContainer = document.getElementById('pitchContainer');
-      pitchContainer.innerHTML = '';
-      if (song.notes) {
-        song.notes.forEach(item => {
-          const btn = document.createElement('button');
-          btn.className = 'pitch-btn';
-          btn.textContent = `${item.part}: ${item.note}`;
-          btn.onclick = () => {
-            const freq = noteFrequencies[item.note];
-            if (freq) playPitch(freq);
-          };
-          pitchContainer.appendChild(btn);
-        });
-      }
-
-      // PDF 렌더링 시작
-      pdfjsLib.getDocument(song.pdfUrl).promise.then(pdf => {
-        currentPdf = pdf;
-        currentPageNum = 1;
-        renderPage(currentPageNum);
-      }).catch(err => {
-        console.error('PDF 로드 실패:', err);
+    async function refreshSongList(selectedId = null) {
+      songs = await getSongsFromDB();
+      songSelect.innerHTML = '<option value="">곡 선택하기...</option>';
+      songs.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = s.title;
+        songSelect.appendChild(opt);
       });
+
+      if (songs.length > 0) {
+        const targetId = selectedId || songs[0].id;
+        songSelect.value = targetId;
+        loadSong(targetId);
+      } else {
+        currentPdfDoc = null;
+        canvas.style.display = 'none';
+        emptyView.style.display = 'block';
+        pitchBar.innerHTML = '';
+        pageIndicator.textContent = '- / -';
+      }
     }
 
-    // 4. 페이지 렌더링
-    function renderPage(num) {
-      if (!currentPdf) return;
+    async function loadSong(id) {
+      const song = songs.find(s => s.id === id);
+      if (!song) return;
+      currentSongId = id;
 
-      currentPdf.getPage(num).then(page => {
+      // 1) 피치 버튼 생성
+      pitchBar.innerHTML = '';
+      if (song.notes) {
+        Object.entries(song.notes).forEach(([part, note]) => {
+          if (!note) return;
+          const btn = document.createElement('button');
+          btn.className = 'btn-pitch';
+          btn.textContent = `${part}: ${note}`;
+          btn.onclick = () => playNote(note);
+          pitchBar.appendChild(btn);
+        });
+      }
+
+      // 2) PDF 렌더링
+      try {
+        const loadingTask = pdfjsLib.getDocument({ data: song.pdfData });
+        currentPdfDoc = await loadingTask.promise;
+        currentPageNum = 1;
+        emptyView.style.display = 'none';
+        canvas.style.display = 'block';
+        renderPage(currentPageNum);
+      } catch (e) {
+        console.error('PDF 로드 실패:', e);
+        alert('악보 데이터를 읽는 중 에러가 발생했습니다.');
+      }
+    }
+
+    function renderPage(num) {
+      if (!currentPdfDoc) return;
+      currentPdfDoc.getPage(num).then(page => {
         const viewport = page.getViewport({ scale: 1.5 });
         canvas.height = viewport.height;
         canvas.width = viewport.width;
 
-        const renderContext = {
+        page.render({
           canvasContext: ctx,
           viewport: viewport
-        };
-        page.render(renderContext);
-
-        document.getElementById('pageInfo').textContent = `${num} / ${currentPdf.numPages}`;
+        });
+        pageIndicator.textContent = `${num} / ${currentPdfDoc.numPages}`;
       });
     }
 
-    // 5. 이벤트 핸들러 (페이지 조작, 블루투스 페달/키보드 대응)
-    document.getElementById('songSelect').addEventListener('change', (e) => {
-      if (e.target.value !== '') loadSong(Number(e.target.value));
-    });
+    // 4. 모달 및 곡 추가 동작
+    const addModal = document.getElementById('addModal');
+    document.getElementById('openAddModalBtn').onclick = () => {
+      document.getElementById('inputTitle').value = '';
+      document.getElementById('noteS').value = '';
+      document.getElementById('noteA').value = '';
+      document.getElementById('noteT').value = '';
+      document.getElementById('noteB').value = '';
+      document.getElementById('inputFile').value = '';
+      addModal.classList.add('open');
+    };
+    document.getElementById('closeAddModalBtn').onclick = () => addModal.classList.remove('open');
 
+    document.getElementById('saveSongBtn').onclick = async () => {
+      const title = document.getElementById('inputTitle').value.trim();
+      const fileInput = document.getElementById('inputFile');
+      const file = fileInput.files[0];
+
+      if (!title) { alert('곡 제목을 입력해주세요.'); return; }
+      if (!file) { alert('PDF 악보 파일을 선택해주세요.'); return; }
+
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const arrayBuffer = e.target.result;
+        const newSong = {
+          id: `song_${Date.now()}`,
+          title: title,
+          notes: {
+            S: document.getElementById('noteS').value.trim(),
+            A: document.getElementById('noteA').value.trim(),
+            T: document.getElementById('noteT').value.trim(),
+            B: document.getElementById('noteB').value.trim()
+          },
+          pdfData: arrayBuffer,
+          createdAt: Date.now()
+        };
+
+        await saveSongToDB(newSong);
+        addModal.classList.remove('open');
+        await refreshSongList(newSong.id);
+      };
+      reader.readAsArrayBuffer(file);
+    };
+
+    // 5. 곡 삭제 동작
+    document.getElementById('deleteSongBtn').onclick = async () => {
+      if (!currentSongId) return;
+      const target = songs.find(s => s.id === currentSongId);
+      if (confirm(`'${target?.title}' 곡을 목록에서 삭제하시겠습니까?`)) {
+        await deleteSongFromDB(currentSongId);
+        await refreshSongList();
+      }
+    };
+
+    // 6. 페이지 넘김 이벤트 (터치, 버튼, 키보드)
     function nextPage() {
-      if (currentPdf && currentPageNum < currentPdf.numPages) {
+      if (currentPdfDoc && currentPageNum < currentPdfDoc.numPages) {
         currentPageNum++;
         renderPage(currentPageNum);
       }
     }
-
     function prevPage() {
-      if (currentPdf && currentPageNum > 1) {
+      if (currentPdfDoc && currentPageNum > 1) {
         currentPageNum--;
         renderPage(currentPageNum);
       }
@@ -232,33 +428,29 @@
 
     document.getElementById('nextPage').onclick = nextPage;
     document.getElementById('prevPage').onclick = prevPage;
+    songSelect.onchange = (e) => { if (e.target.value) loadSong(e.target.value); };
 
-    // 블루투스 페달 / 키보드 화살표
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
-        nextPage();
-      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
-        prevPage();
-      }
-    });
-
-    // 화면 좌/우 클릭(터치)으로 넘기기
+    // 화면 터치/클릭 넘김 (좌: 이전, 우: 다음)
     canvas.addEventListener('click', (e) => {
       const rect = canvas.getBoundingClientRect();
       const clickX = e.clientX - rect.left;
-      if (clickX > rect.width / 2) {
-        nextPage();
-      } else {
-        prevPage();
-      }
+      if (clickX > rect.width / 2) nextPage();
+      else prevPage();
     });
 
-    // 반전 모드 (무대용)
+    // 키보드 방향키 / 블루투스 페달
+    window.addEventListener('keydown', (e) => {
+      if (['ArrowRight', 'PageDown', ' '].includes(e.key)) nextPage();
+      else if (['ArrowLeft', 'PageUp'].includes(e.key)) prevPage();
+    });
+
+    // 반전 모드 토글
     document.getElementById('toggleInvert').onclick = () => {
       document.body.classList.toggle('invert-mode');
     };
 
-    init();
+    // 초기화 실행
+    initDB().then(() => refreshSongList());
   </script>
 </body>
 </html>
