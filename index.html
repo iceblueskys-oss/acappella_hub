@@ -3,26 +3,29 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>Acappella Studio</title>
+  <title>Acappella Studio — Master Suite</title>
   <!-- PDF.js CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <style>
     :root {
-      /* Apple Pastel Palette */
-      --bg-gradient: linear-gradient(135deg, #f0f4fd 0%, #fdf2f8 50%, #f5f3ff 100%);
-      --surface: rgba(255, 255, 255, 0.85);
-      --surface-border: rgba(255, 255, 255, 0.9);
-      --text-main: #1f2937;
-      --text-muted: #6b7280;
+      /* Studio Dark & Metallic Gold Palette */
+      --bg-base: #0a0a0c;
+      --surface-deep: #121316;
+      --surface-elevated: #1a1b20;
+      --surface-highlight: #24262d;
       
-      /* 파스텔 파트 색상 */
-      --color-sop: #fda4af; 
-      --color-alto: #fed7aa; 
-      --color-tenor: #a7f3d0; 
-      --color-bass: #bae6fd; 
-      --color-lead: #e9d5ff; 
-
-      --accent-blue: #3b82f6;
+      --border-subtle: rgba(255, 255, 255, 0.07);
+      --border-metallic: rgba(212, 175, 55, 0.25);
+      
+      --text-primary: #f4f4f6;
+      --text-secondary: #90939e;
+      --text-gold: #d4af37;
+      
+      /* Part Studio Indicators */
+      --color-sop: #e06c75;
+      --color-alto: #e5c07b;
+      --color-tenor: #98c379;
+      --color-bass: #61afef;
     }
 
     * { 
@@ -32,11 +35,10 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* 틀 고정: 브라우저 고무줄 바운스 및 전체 스크롤 완전 차단 */
     html, body {
       width: 100%;
       height: 100%;
-      height: 100dvh; /* 모바일 동적 툴바 완벽 대응 */
+      height: 100dvh;
       overflow: hidden;
       position: fixed;
       touch-action: none;
@@ -44,93 +46,118 @@
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
-      background: var(--bg-gradient);
-      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Pretendard", "Segoe UI", sans-serif;
+      background: var(--bg-base);
+      color: var(--text-primary);
       display: flex;
       flex-direction: column;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* 상단 고정 헤더 (Safe Area 적용) */
+    /* 상단 마스터 콘솔 헤더 */
     header {
-      background: var(--surface);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--surface-border);
-      padding: calc(env(safe-area-inset-top, 0px) + 8px) 12px 8px 12px;
+      background: var(--surface-deep);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: calc(env(safe-area-inset-top, 0px) + 10px) 16px 10px 16px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 10px;
       flex-shrink: 0;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
       z-index: 100;
       touch-action: auto;
     }
 
-    .header-row {
+    .console-row {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       width: 100%;
       overflow-x: auto;
       white-space: nowrap;
       -webkit-overflow-scrolling: touch;
-      padding-bottom: 1px;
     }
-    .header-row::-webkit-scrollbar { display: none; }
+    .console-row::-webkit-scrollbar { display: none; }
 
+    /* 메탈릭 컨트롤 버튼 & 셀렉트 */
     select, button, input {
       font-family: inherit;
-      border: 1px solid rgba(0, 0, 0, 0.08);
-      background: rgba(255, 255, 255, 0.92);
-      color: var(--text-main);
-      padding: 7px 12px;
-      border-radius: 12px;
+      border: 1px solid var(--border-subtle);
+      background: var(--surface-elevated);
+      color: var(--text-primary);
+      padding: 8px 14px;
+      border-radius: 8px;
       font-size: 13px;
       font-weight: 500;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
       flex-shrink: 0;
+      letter-spacing: -0.01em;
     }
-    button:active { transform: scale(0.95); }
-    button:hover { background: #ffffff; }
+    button:active {
+      transform: scale(0.97);
+      background: var(--surface-highlight);
+    }
+    button:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+      background: var(--surface-highlight);
+    }
 
     #songSelect {
       flex: 1;
-      min-width: 140px;
+      min-width: 150px;
       font-weight: 600;
-      padding-right: 26px;
+      padding-right: 28px;
       appearance: none;
-      background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%2390939E' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
-      background-position: right 10px center;
+      background-position: right 12px center;
+      border-color: rgba(255, 255, 255, 0.1);
     }
 
+    /* 하이엔드 오디오 파트 배지 */
     .part-btn {
-      border: none;
-      padding: 5px 12px;
-      border-radius: 20px;
+      border: 1px solid var(--border-subtle);
+      background: #141519;
+      padding: 6px 14px;
+      border-radius: 6px;
       font-weight: 600;
       font-size: 12.5px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-      transition: transform 0.15s ease;
+      letter-spacing: 0.02em;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
     }
-    .part-btn:active { transform: scale(0.92); }
-    .part-sop { background: var(--color-sop); color: #881337; }
-    .part-alto { background: var(--color-alto); color: #7c2d12; }
-    .part-tenor { background: var(--color-tenor); color: #064e3b; }
-    .part-bass { background: var(--color-bass); color: #0c4a6e; }
-    .part-lead { background: var(--color-lead); color: #581c87; }
+    .part-btn:active {
+      transform: scale(0.94);
+    }
+    .part-indicator {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .part-sop .part-indicator { background: var(--color-sop); box-shadow: 0 0 8px var(--color-sop); }
+    .part-alto .part-indicator { background: var(--color-alto); box-shadow: 0 0 8px var(--color-alto); }
+    .part-tenor .part-indicator { background: var(--color-tenor); box-shadow: 0 0 8px var(--color-tenor); }
+    .part-bass .part-indicator { background: var(--color-bass); box-shadow: 0 0 8px var(--color-bass); }
 
-    .btn-icon-only { padding: 7px 9px; border-radius: 10px; }
-    .btn-pill { border-radius: 20px; font-weight: 600; }
+    .btn-gold {
+      border-color: var(--border-metallic);
+      color: var(--text-gold);
+      background: rgba(212, 175, 55, 0.06);
+    }
+    .btn-gold:hover {
+      background: rgba(212, 175, 55, 0.12);
+      border-color: rgba(212, 175, 55, 0.4);
+    }
 
-    /* 메인 악보 뷰어: 악보만 세로 스크롤 허용, 가로는 100% 꽉 채움 */
+    /* 메인 뷰어 영역 */
     main {
       flex: 1;
       overflow-y: auto;
@@ -138,22 +165,23 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 0; /* 모바일 가로 꽉 채움을 위해 0으로 설정 */
-      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
+      padding: 0;
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
       position: relative;
       touch-action: pan-y;
       overscroll-behavior-y: contain;
       -webkit-overflow-scrolling: touch;
-      background: #ffffff;
+      background: #0d0d10;
     }
 
-    .sheet-card {
+    .sheet-wrapper {
       background: #ffffff;
       width: 100%;
       max-width: 900px;
       display: flex;
       justify-content: center;
       align-items: flex-start;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
     }
 
     canvas {
@@ -163,27 +191,22 @@
       cursor: pointer;
     }
 
-    /* 반전 모드 (무대용) */
-    body.invert-mode { background: #000000; }
-    body.invert-mode main { background: #000000; }
-    body.invert-mode header { background: rgba(28, 28, 30, 0.9); border-bottom-color: #2c2c2e; }
-    body.invert-mode select, 
-    body.invert-mode button, 
-    body.invert-mode input {
-      background: #2c2c2e;
-      color: #f2f2f7;
-      border-color: #3a3a3c;
+    /* 무대용 흑백 반전 모드 */
+    body.invert-mode {
+      background: #000000;
     }
-    body.invert-mode .sheet-card { filter: invert(0.93) hue-rotate(180deg); }
+    body.invert-mode .sheet-wrapper {
+      filter: invert(0.92) hue-rotate(180deg) brightness(0.95);
+    }
 
-    /* 모달 */
+    /* 럭셔리 모달 (Glass & Obsidian) */
     .modal-backdrop {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.4);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       z-index: 999;
       align-items: center;
       justify-content: center;
@@ -191,52 +214,85 @@
     }
     .modal-backdrop.open { display: flex; }
     .modal {
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(24px);
+      background: #16171c;
+      border: 1px solid var(--border-subtle);
       width: 90%;
-      max-width: 420px;
-      border-radius: 22px;
-      border: 1px solid rgba(255, 255, 255, 0.9);
-      padding: 20px;
+      max-width: 440px;
+      border-radius: 16px;
+      padding: 24px;
       display: flex;
       flex-direction: column;
-      gap: 14px;
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.15);
+      gap: 16px;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8), 0 0 1px rgba(255, 255, 255, 0.2);
     }
 
-    .modal h3 { font-size: 16px; font-weight: 700; color: #111827; }
-    .form-group { display: flex; flex-direction: column; gap: 5px; }
-    .form-group label { font-size: 11.5px; font-weight: 600; color: var(--text-muted); }
-    .form-group input { width: 100%; border-radius: 10px; cursor: text; padding: 9px 11px; }
+    .modal h3 {
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: #ffffff;
+    }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .form-group input {
+      width: 100%;
+      border-radius: 8px;
+      cursor: text;
+      padding: 10px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: #0e0f12;
+      color: #fff;
+    }
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--text-gold);
+    }
 
+    /* 첫 음 설정 그리드 */
     .pitch-editor-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 6px;
+      gap: 8px;
     }
     .pitch-cell {
       display: flex;
       flex-direction: column;
       align-items: center;
-      background: #f8fafc;
-      padding: 8px 4px;
-      border-radius: 12px;
-      border: 1px solid #e2e8f0;
+      background: #0e0f12;
+      padding: 10px 4px;
+      border-radius: 8px;
+      border: 1px solid var(--border-subtle);
     }
-    .pitch-cell span { font-size: 10.5px; font-weight: 700; color: #64748b; margin-bottom: 5px; }
+    .pitch-cell span {
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
     .pitch-cell input {
       width: 100%;
       text-align: center;
       font-weight: 700;
-      font-size: 13.5px;
-      padding: 5px 2px;
-      border-radius: 8px;
-      background: #fff;
+      font-size: 14px;
+      padding: 6px 2px;
+      border-radius: 6px;
+      background: #18191f;
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
 
+    /* 로딩 인디케이터 */
     .spinner {
-      border: 3px solid rgba(0,0,0,0.06);
-      border-top: 3px solid var(--accent-blue);
+      border: 2px solid rgba(255, 255, 255, 0.08);
+      border-top: 2px solid var(--text-gold);
       border-radius: 50%;
       width: 26px;
       height: 26px;
@@ -249,40 +305,40 @@
 <body>
 
   <header>
-    <!-- Row 1: 악보 탐색 및 도구 -->
-    <div class="header-row">
+    <!-- Row 1: 마스터 콘트롤 -->
+    <div class="console-row">
       <select id="songSelect">
         <option value="">악보 불러오는 중...</option>
       </select>
-      <button class="btn-pill" id="openLinkModalBtn" style="background: #e0e7ff; color: #3730a3;">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      <button class="btn-gold" id="openLinkModalBtn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
         링크 추가
       </button>
-      <button class="btn-icon-only" id="deleteLocalBtn" style="display:none; color: #ef4444;" title="곡 삭제">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+      <button id="deleteLocalBtn" style="display:none; color: #ef4444;" title="곡 삭제">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
       </button>
-      <button class="btn-icon-only" id="refreshBtn" title="새로고침">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+      <button id="refreshBtn" title="새로고침">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
       </button>
-      <button class="btn-icon-only" id="toggleInvert" title="무대용 반전">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10 10 10 0 0 1-10 10V2z"/></svg>
+      <button id="toggleInvert" title="무대용 반전 모드">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10 10 10 0 0 1-10 10V2z"/></svg>
       </button>
     </div>
 
-    <!-- Row 2: 파트별 첫 음 피치바 & 페이지 넘김 -->
-    <div class="header-row" style="justify-content: space-between;">
-      <div class="header-row" id="pitchBar" style="width: auto; gap: 5px;"></div>
+    <!-- Row 2: 파트별 첫 음 모니터 & 페이지 내비게이션 -->
+    <div class="console-row" style="justify-content: space-between;">
+      <div class="console-row" id="pitchBar" style="width: auto; gap: 6px;"></div>
       
-      <div class="header-row" style="width: auto; margin-left: auto; gap: 5px;">
-        <button id="openPitchEditorBtn" class="btn-icon-only" title="첫 음 간편 설정" style="background:#f1f5f9;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <div class="console-row" style="width: auto; margin-left: auto; gap: 6px;">
+        <button id="openPitchEditorBtn" title="첫 음 간편 설정">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         </button>
-        <button id="prevPage" class="btn-icon-only">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
+        <button id="prevPage">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
         </button>
-        <span id="pageIndicator" style="font-size: 12px; font-weight: 600; min-width: 40px; text-align: center; color: var(--text-muted);">- / -</span>
-        <button id="nextPage" class="btn-icon-only">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
+        <span id="pageIndicator" style="font-size: 12px; font-weight: 600; min-width: 44px; text-align: center; color: var(--text-secondary); letter-spacing: 0.05em;">- / -</span>
+        <button id="nextPage">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
         </button>
       </div>
     </div>
@@ -290,11 +346,11 @@
 
   <!-- PDF.js Canvas 뷰어 -->
   <main id="viewerMain">
-    <div id="statusView" style="margin-top: 100px; text-align: center; color: var(--text-muted);">
+    <div id="statusView" style="margin-top: 120px; text-align: center; color: var(--text-secondary);">
       <div class="spinner" id="loadingSpinner"></div>
-      <p id="statusText" style="font-size: 13.5px; font-weight: 500;">설정을 확인하고 있습니다...</p>
+      <p id="statusText" style="font-size: 13.5px; font-weight: 500; letter-spacing: -0.01em;">시스템을 초기화하고 있습니다...</p>
     </div>
-    <div class="sheet-card" id="sheetCard" style="display: none;">
+    <div class="sheet-wrapper" id="sheetCard" style="display: none;">
       <canvas id="pdfCanvas"></canvas>
     </div>
   </main>
@@ -302,8 +358,8 @@
   <!-- 첫 음 퀵 에디터 모달 -->
   <div class="modal-backdrop" id="pitchModal">
     <div class="modal">
-      <h3>첫 음 간편 설정</h3>
-      <p style="font-size: 12px; color: var(--text-muted); margin-top: -6px;">현재 곡의 파트별 시작 음을 지정합니다.</p>
+      <h3>첫 음 보정</h3>
+      <p style="font-size: 12.5px; color: var(--text-secondary); margin-top: -6px;">현재 마스터 악보의 파트별 시작 음을 재정의합니다.</p>
       
       <div class="pitch-editor-grid">
         <div class="pitch-cell">
@@ -324,9 +380,9 @@
         </div>
       </div>
 
-      <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px;">
+      <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px;">
         <button id="closePitchModalBtn">닫기</button>
-        <button id="savePitchModalBtn" style="background: var(--accent-blue); color: #fff; border:none; font-weight:600;">저장</button>
+        <button class="btn-gold" id="savePitchModalBtn" style="font-weight:600;">저장</button>
       </div>
     </div>
   </div>
@@ -334,17 +390,17 @@
   <!-- 링크로 곡 추가 모달 -->
   <div class="modal-backdrop" id="linkModal">
     <div class="modal">
-      <h3>새 악보 링크 추가</h3>
+      <h3>악보 링크 등록</h3>
       <div class="form-group">
-        <label>곡 제목</label>
+        <label>곡 명</label>
         <input type="text" id="inputTitle" placeholder="예: Java Jive" required />
       </div>
       <div class="form-group">
-        <label>악보 URL (구글 드라이브 공유 링크 또는 웹 PDF)</label>
+        <label>악보 URL (구글 드라이브 공유 링크 또는 PDF)</label>
         <input type="text" id="inputUrl" placeholder="https://drive.google.com/file/d/..." required />
       </div>
       <div class="form-group">
-        <label>첫 음 설정 (선택사항)</label>
+        <label>시작 음 (선택)</label>
         <div class="pitch-editor-grid">
           <input type="text" id="noteS" placeholder="S (E4)" />
           <input type="text" id="noteA" placeholder="A (C4)" />
@@ -352,16 +408,16 @@
           <input type="text" id="noteB" placeholder="B (C3)" />
         </div>
       </div>
-      <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px;">
+      <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px;">
         <button id="closeLinkModalBtn">취소</button>
-        <button id="saveLinkSongBtn" style="background: var(--accent-blue); color: #fff; border:none; font-weight:600;">저장하기</button>
+        <button class="btn-gold" id="saveLinkSongBtn" style="font-weight:600;">저장</button>
       </div>
     </div>
   </div>
 
   <script>
     // ==========================================
-    // ⚙️ 1. 설정 동기화 (config.json)
+    // ⚙️ 1. 설정 동기화
     // ==========================================
     let GOOGLE_API_KEY = "";
     let DRIVE_FOLDER_ID = "";
@@ -369,13 +425,12 @@
     async function loadConfig() {
       try {
         const res = await fetch('./config.json', { cache: 'no-cache' });
-        if (!res.ok) throw new Error("config.json 응답 오류");
+        if (!res.ok) throw new Error("config.json 없음");
         const config = await res.json();
         GOOGLE_API_KEY = (config.googleApiKey || config.apiKey || config.GOOGLE_API_KEY || "").trim();
         DRIVE_FOLDER_ID = (config.driveFolderId || config.folderId || config.DRIVE_FOLDER_ID || "").trim();
-        console.log("1. config.json 로드 성공!");
       } catch (err) {
-        console.warn("config.json 로드 건너뜀 (로컬 곡 모드로 실행):", err.message);
+        console.warn("로컬 모드로 실행:", err.message);
       }
     }
 
@@ -424,7 +479,7 @@
     }
 
     // ==========================================
-    // 🎵 3. 피치 사운드 엔진
+    // 🎵 3. 스튜디오 톤 피치 엔진 (맑고 부드러운 하모닉스)
     // ==========================================
     let audioCtx = null;
     const noteFrequencies = {
@@ -481,7 +536,7 @@
     }
 
     // ==========================================
-    // 📂 5. 악보 데이터 로딩 & 꽉 찬 화면 렌더링
+    // 📂 5. 악보 데이터 로딩 & 뷰어 렌더링
     // ==========================================
     let allSongs = [];
     let currentSong = null;
@@ -503,7 +558,7 @@
       statusView.style.display = 'block';
       sheetCard.style.display = 'none';
       spinner.style.display = 'block';
-      statusText.innerHTML = "악보 목록을 불러오는 중...";
+      statusText.innerHTML = "트랙 목록을 불러오는 중...";
 
       let driveItems = [];
       if (GOOGLE_API_KEY && DRIVE_FOLDER_ID) {
@@ -517,10 +572,6 @@
               const meta = parseFileName(f.name);
               return { id: `drive_${f.id}`, driveId: f.id, type: 'drive', title: meta.title, notes: meta.notes };
             });
-            console.log("2. 드라이브 파일 조회 성공:", driveItems.length, "개");
-          } else {
-            const errJson = await res.json();
-            console.error("드라이브 API 에러:", errJson);
           }
         } catch (e) {
           console.warn("구글 드라이브 연동 예외:", e);
@@ -538,17 +589,17 @@
 
       if (allSongs.length === 0) {
         spinner.style.display = 'none';
-        statusText.innerHTML = "등록된 악보가 없습니다.<br>상단 [+ 링크 추가] 버튼을 눌러 악보를 추가해 보세요.";
-        songSelect.innerHTML = '<option value="">(곡 없음)</option>';
+        statusText.innerHTML = "등록된 마스터 악보가 없습니다.<br>상단 [+ 링크 추가]를 통해 곡을 등록하세요.";
+        songSelect.innerHTML = '<option value="">(트랙 없음)</option>';
         deleteLocalBtn.style.display = 'none';
         return;
       }
 
-      songSelect.innerHTML = '<option value="">곡을 선택하세요...</option>';
+      songSelect.innerHTML = '<option value="">트랙 선택...</option>';
       allSongs.forEach(s => {
         const opt = document.createElement('option');
         opt.value = s.id;
-        opt.textContent = (s.type === 'custom' ? '🔗 ' : '📁 ') + s.title;
+        opt.textContent = (s.type === 'custom' ? '◈ ' : '◉ ') + s.title;
         songSelect.appendChild(opt);
       });
 
@@ -564,9 +615,9 @@
 
       deleteLocalBtn.style.display = song.type === 'custom' ? 'inline-flex' : 'none';
 
-      // 파스텔 피치 버튼 렌더링
+      // 하이엔드 오디오 배지 렌더링
       pitchBar.innerHTML = '';
-      const partClassMap = { 'S': 'part-sop', 'A': 'part-alto', 'T': 'part-tenor', 'B': 'part-bass', 'L': 'part-lead' };
+      const partClassMap = { 'S': 'part-sop', 'A': 'part-alto', 'T': 'part-tenor', 'B': 'part-bass' };
       const parts = ['S', 'A', 'T', 'B'];
       let hasAnyPitch = false;
 
@@ -575,8 +626,8 @@
         if (note) {
           hasAnyPitch = true;
           const btn = document.createElement('button');
-          btn.className = `part-btn ${partClassMap[p] || 'part-lead'}`;
-          btn.textContent = `${p} ${note}`;
+          btn.className = `part-btn ${partClassMap[p] || ''}`;
+          btn.innerHTML = `<span class="part-indicator"></span>${p} · ${note}`;
           btn.onclick = () => playNote(note);
           pitchBar.appendChild(btn);
         }
@@ -584,12 +635,12 @@
 
       if (!hasAnyPitch) {
         const hint = document.createElement('span');
-        hint.style.cssText = "font-size: 12px; color: var(--text-muted); padding: 4px 6px;";
-        hint.textContent = "첫 음 미설정 (⚙️ 클릭)";
+        hint.style.cssText = "font-size: 11.5px; color: var(--text-secondary); padding: 4px 6px; letter-spacing: -0.01em;";
+        hint.textContent = "첫 음 미지정 (우측 ⚙ 아이콘)";
         pitchBar.appendChild(hint);
       }
 
-      // 악보 로딩 시작
+      // 악보 렌더링
       statusView.style.display = 'block';
       sheetCard.style.display = 'none';
       spinner.style.display = 'block';
@@ -620,17 +671,15 @@
         sheetCard.style.display = 'flex';
         renderPage(currentPageNum);
       } catch (err) {
-        console.error("PDF.js 로드 실패:", err);
+        console.error("PDF 로드 실패:", err);
         spinner.style.display = 'none';
-        statusText.innerHTML = `악보를 불러올 수 없습니다.<br><small style="color:#ef4444;">(${err.message})<br>공유 링크 접근 권한을 확인해주세요.</small>`;
+        statusText.innerHTML = `악보를 불러올 수 없습니다.<br><small style="color:#ef4444;">(${err.message})<br>공유 권한('링크가 있는 모든 사용자-뷰어')을 확인해주세요.</small>`;
       }
     }
 
-    // 모바일 가로 100% 꽉 채우기 + 고해상도 Retina 선명도 보정
     function renderPage(num) {
       if (!currentPdfDoc || !pdfCanvas || !ctx) return;
       currentPdfDoc.getPage(num).then(page => {
-        // 모바일에서는 화면 가로 전체 폭을 100% 꽉 채움 (PC/태블릿은 최대 900px 제한)
         const viewerWidth = document.getElementById('viewerMain').clientWidth;
         const targetWidth = Math.min(viewerWidth, 900);
 
@@ -650,13 +699,10 @@
           viewport: viewport
         });
         pageIndicator.textContent = `${num} / ${currentPdfDoc.numPages}`;
-        
-        // 새 페이지 렌더링 시 악보 상단으로 스크롤 복원
         document.getElementById('viewerMain').scrollTop = 0;
       });
     }
 
-    // 화면 회전이나 크기 변경 시 자동 리스케일링
     window.addEventListener('resize', () => {
       if (currentPdfDoc) renderPage(currentPageNum);
     });
@@ -705,7 +751,7 @@
     document.getElementById('saveLinkSongBtn').onclick = async () => {
       const title = document.getElementById('inputTitle').value.trim();
       const url = document.getElementById('inputUrl').value.trim();
-      if (!title || !url) { alert('곡 제목과 악보 URL을 입력해주세요.'); return; }
+      if (!title || !url) { alert('곡 명과 악보 URL을 입력해주세요.'); return; }
 
       const newSong = {
         id: `custom_${Date.now()}`,
@@ -728,7 +774,7 @@
 
     deleteLocalBtn.onclick = async () => {
       if (!currentSong || currentSong.type !== 'custom') return;
-      if (confirm(`'${currentSong.title}' 곡을 삭제하시겠습니까?`)) {
+      if (confirm(`'${currentSong.title}' 트랙을 삭제하시겠습니까?`)) {
         await deleteStored('custom_songs', currentSong.id);
         await deleteStored('pitch_overrides', currentSong.id);
         await loadAllSongList();
@@ -756,7 +802,6 @@
     document.getElementById('refreshBtn').onclick = () => loadAllSongList(currentSong?.id);
     songSelect.onchange = (e) => { if (e.target.value) loadSong(e.target.value); };
 
-    // 화면 우측 절반 터치: 다음 페이지, 좌측 절반 터치: 이전 페이지
     if (pdfCanvas) {
       pdfCanvas.addEventListener('click', (e) => {
         const rect = pdfCanvas.getBoundingClientRect();
@@ -775,14 +820,14 @@
       document.body.classList.toggle('invert-mode');
     };
 
-    // 앱 초기화 진입점
+    // 앱 초기화
     async function startApp() {
       try {
         await initDB();
         await loadConfig();
         await loadAllSongList();
       } catch (err) {
-        console.error("앱 실행 중 오류 발생:", err);
+        console.error("오류 발생:", err);
       }
     }
 
