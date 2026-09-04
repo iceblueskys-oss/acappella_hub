@@ -62,32 +62,28 @@
       -webkit-font-smoothing: antialiased;
     }
 
+    /* 초슬림 컴팩트 헤더 */
     header {
-      background: var(--surface-deep);
+      background: rgba(15, 16, 21, 0.94);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border-subtle);
-      padding: calc(env(safe-area-inset-top, 0px) + 6px) 10px 8px 10px;
+      padding: calc(env(safe-area-inset-top, 0px) + 6px) 10px 6px 10px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 5px;
       flex-shrink: 0;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
       z-index: 100;
       touch-action: auto;
     }
 
-    .console-row {
+    .header-row {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       width: 100%;
     }
-
-    .scroll-row {
-      overflow-x: auto;
-      white-space: nowrap;
-      -webkit-overflow-scrolling: touch;
-    }
-    .scroll-row::-webkit-scrollbar { display: none; }
 
     select, button, input {
       font-family: inherit;
@@ -95,19 +91,18 @@
       background: var(--surface-elevated);
       color: var(--text-primary);
       padding: 6px 10px;
-      border-radius: 7px;
+      border-radius: 8px;
       font-size: 12px;
       font-weight: 500;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 5px;
+      gap: 4px;
       transition: all 0.15s ease;
       flex-shrink: 0;
     }
     button:active { transform: scale(0.96); background: var(--surface-highlight); }
-    button:hover { border-color: rgba(255, 255, 255, 0.2); background: var(--surface-highlight); }
     button.active {
       background: var(--text-gold) !important;
       color: #060709 !important;
@@ -117,120 +112,59 @@
 
     #songSelect {
       flex: 1;
-      min-width: 120px;
+      min-width: 100px;
       font-weight: 600;
-      padding-right: 22px;
+      padding-right: 20px;
       appearance: none;
       background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23888D9E' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
-      background-position: right 8px center;
+      background-position: right 6px center;
       border-color: rgba(255, 255, 255, 0.12);
       text-overflow: ellipsis;
       white-space: nowrap;
       overflow: hidden;
     }
 
-    .btn-gold {
-      border-color: var(--border-metallic);
-      color: var(--text-gold);
-      background: rgba(212, 175, 55, 0.08);
+    /* 피치바 (가로 스크롤) */
+    .pitch-scroll-row {
+      overflow-x: auto;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+      gap: 4px;
     }
-
-    .compact-group {
-      display: inline-flex;
-      align-items: center;
-      background: var(--surface-elevated);
-      border: 1px solid var(--border-subtle);
-      border-radius: 7px;
-      padding: 1px 3px;
-      gap: 2px;
-    }
-    .compact-group button { border: none; background: transparent; padding: 4px 6px; }
-    .compact-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); min-width: 32px; text-align: center; }
+    .pitch-scroll-row::-webkit-scrollbar { display: none; }
 
     .pitch-capsule {
       display: inline-flex;
       align-items: center;
       background: #0d0e13;
       border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 7px;
-      padding: 2px 7px 2px 3px;
-      gap: 5px;
-      box-shadow: inset 0 1px 2px rgba(0,0,0,0.6);
-      transition: all 0.15s ease;
+      border-radius: 6px;
+      padding: 2px 6px 2px 3px;
+      gap: 4px;
     }
     .pitch-capsule:active {
       transform: scale(0.95);
       border-color: var(--text-gold);
-      box-shadow: 0 0 10px var(--gold-glow);
+      box-shadow: 0 0 8px var(--gold-glow);
     }
-    .pitch-badge {
-      font-size: 9px;
-      font-weight: 800;
-      padding: 2px 4px;
-      border-radius: 4px;
-    }
-    .pitch-capsule.sop .pitch-badge { background: rgba(248, 113, 113, 0.15); color: var(--sop-accent); border: 1px solid rgba(248, 113, 113, 0.3); }
-    .pitch-capsule.alto .pitch-badge { background: rgba(251, 191, 36, 0.15); color: var(--alto-accent); border: 1px solid rgba(251, 191, 36, 0.3); }
-    .pitch-capsule.tenor .pitch-badge { background: rgba(52, 211, 153, 0.15); color: var(--tenor-accent); border: 1px solid rgba(52, 211, 153, 0.3); }
-    .pitch-capsule.bass .pitch-badge { background: rgba(96, 165, 250, 0.15); color: var(--bass-accent); border: 1px solid rgba(96, 165, 250, 0.3); }
-    .pitch-val { font-size: 11.5px; font-weight: 700; color: #e5e7eb; }
+    .pitch-badge { font-size: 8.5px; font-weight: 800; padding: 1px 3px; border-radius: 3px; }
+    .pitch-capsule.sop .pitch-badge { background: rgba(248, 113, 113, 0.15); color: var(--sop-accent); }
+    .pitch-capsule.alto .pitch-badge { background: rgba(251, 191, 36, 0.15); color: var(--alto-accent); }
+    .pitch-capsule.tenor .pitch-badge { background: rgba(52, 211, 153, 0.15); color: var(--tenor-accent); }
+    .pitch-capsule.bass .pitch-badge { background: rgba(96, 165, 250, 0.15); color: var(--bass-accent); }
+    .pitch-val { font-size: 11px; font-weight: 700; color: #e5e7eb; }
 
     .metro-led {
-      width: 7px;
-      height: 7px;
+      width: 6px;
+      height: 6px;
       border-radius: 50%;
       background: #2a2c35;
       display: inline-block;
-      transition: background 0.05s ease, box-shadow 0.05s ease;
     }
-    .metro-led.flash { background: var(--text-gold); box-shadow: 0 0 8px var(--text-gold); }
+    .metro-led.flash { background: var(--text-gold); box-shadow: 0 0 6px var(--text-gold); }
 
-    /* 하단 오디오 바 */
-    #audioBar {
-      position: fixed;
-      bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(14, 15, 20, 0.94);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 14px;
-      padding: 6px 12px;
-      display: none;
-      align-items: center;
-      gap: 8px;
-      z-index: 150;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.85);
-      max-width: 95%;
-    }
-    #audioBar.show { display: flex; }
-
-    .part-track-selector {
-      display: flex;
-      background: #08090c;
-      border-radius: 8px;
-      padding: 2px;
-      border: 1px solid var(--border-subtle);
-      gap: 2px;
-    }
-    .part-tab {
-      padding: 4px 7px;
-      border-radius: 6px;
-      font-size: 11px;
-      font-weight: 700;
-      background: transparent;
-      border: none;
-      color: var(--text-secondary);
-      cursor: pointer;
-    }
-    .part-tab.has-audio { color: #d1d5db; }
-    .part-tab.active {
-      background: var(--surface-highlight);
-      color: var(--text-gold);
-    }
-
+    /* 메인 뷰어 */
     main {
       flex: 1;
       overflow-y: auto;
@@ -239,7 +173,7 @@
       flex-direction: column;
       align-items: center;
       padding: 0;
-      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 85px);
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 75px);
       position: relative;
       touch-action: pan-y pinch-zoom;
       overscroll-behavior-y: contain;
@@ -270,6 +204,69 @@
     body.invert-mode { background: #000000; }
     body.invert-mode .sheet-wrapper { filter: invert(0.92) hue-rotate(180deg) brightness(0.95); }
 
+    /* 하단 파트별 오디오 콘솔 */
+    #audioBar {
+      position: fixed;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(14, 15, 20, 0.94);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      padding: 5px 10px;
+      display: none;
+      align-items: center;
+      gap: 6px;
+      z-index: 150;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.85);
+      max-width: 96%;
+    }
+    #audioBar.show { display: flex; }
+
+    .part-track-selector {
+      display: flex;
+      background: #08090c;
+      border-radius: 7px;
+      padding: 2px;
+      border: 1px solid var(--border-subtle);
+      gap: 2px;
+    }
+    .part-tab {
+      padding: 3px 6px;
+      border-radius: 5px;
+      font-size: 10.5px;
+      font-weight: 700;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+    .part-tab.has-audio { color: #d1d5db; }
+    .part-tab.active {
+      background: var(--surface-highlight);
+      color: var(--text-gold);
+    }
+
+    /* 드로잉 모드 서브 툴바 */
+    #drawingToolbar {
+      position: fixed;
+      top: calc(env(safe-area-inset-top, 0px) + 78px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(18, 20, 26, 0.96);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      padding: 4px 8px;
+      display: none;
+      gap: 5px;
+      z-index: 110;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+    }
+
+    /* 모달 & 바텀시트 메뉴 */
     .modal-backdrop {
       display: none;
       position: fixed;
@@ -280,108 +277,89 @@
       z-index: 999;
       align-items: center;
       justify-content: center;
-      touch-action: auto;
     }
     .modal-backdrop.open { display: flex; }
     .modal {
       background: #14161d;
       border: 1px solid rgba(255, 255, 255, 0.1);
       width: 92%;
-      max-width: 460px;
+      max-width: 440px;
       border-radius: 18px;
-      padding: 18px;
+      padding: 16px;
       display: flex;
       flex-direction: column;
       gap: 12px;
       box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9);
     }
     .modal h3 { font-size: 15px; font-weight: 700; color: #ffffff; }
-    .form-group { display: flex; flex-direction: column; gap: 5px; }
-    .form-group label { font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; }
+    .form-group { display: flex; flex-direction: column; gap: 4px; }
+    .form-group label { font-size: 10.5px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; }
     .form-group input[type="text"] {
       width: 100%;
       border-radius: 7px;
-      cursor: text;
       padding: 8px 10px;
       border: 1px solid rgba(255, 255, 255, 0.1);
       background: #0b0c10;
       color: #fff;
     }
 
-    .pitch-slot-container {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 6px;
-    }
-    .pitch-edit-card {
-      background: #0c0d12;
-      border: 1px solid var(--border-subtle);
-      border-radius: 10px;
-      padding: 8px 4px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-    }
-    .pitch-edit-card span { font-size: 10px; font-weight: 800; }
-    .pitch-edit-card select {
-      width: 100%;
-      padding: 5px 2px;
-      text-align: center;
-      font-size: 12.5px;
-      font-weight: 700;
-      border-radius: 6px;
-      background: #1a1c24;
-      border-color: rgba(255, 255, 255, 0.15);
-    }
-
-    /* 드라이브 링크 + 파일 업로드 하이브리드 행 */
     .audio-upload-row {
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 4px;
       background: #0b0c10;
       border: 1px solid var(--border-subtle);
       border-radius: 8px;
-      padding: 8px 10px;
+      padding: 6px 8px;
     }
-    .audio-row-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .audio-row-header span { font-size: 11px; font-weight: 700; color: var(--text-gold); }
-    .audio-row-header .status-text { font-size: 11px; color: var(--text-secondary); }
-    
-    .audio-inputs {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
+    .audio-row-header { display: flex; align-items: center; justify-content: space-between; }
+    .audio-row-header span { font-size: 10.5px; font-weight: 700; color: var(--text-gold); }
+    .audio-inputs { display: flex; gap: 4px; }
     .audio-inputs input[type="text"] {
       flex: 1;
-      font-size: 11.5px;
-      padding: 6px 8px;
-      border-radius: 6px;
+      font-size: 11px;
+      padding: 5px 6px;
+      border-radius: 5px;
       background: #151720;
       border: 1px solid rgba(255,255,255,0.08);
       color: #fff;
     }
-    .audio-inputs input[type="file"] { display: none; }
-    .audio-inputs .upload-btn {
-      font-size: 11px;
-      padding: 6px 9px;
-      border-radius: 6px;
-      background: #1f222d;
-      white-space: nowrap;
+
+    .pitch-slot-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+    .pitch-edit-card {
+      background: #0c0d12;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 6px 3px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .pitch-edit-card span { font-size: 9.5px; font-weight: 800; }
+    .pitch-edit-card select { width: 100%; font-size: 12px; font-weight: 700; padding: 4px 1px; text-align: center; }
+
+    /* 바텀시트 더보기 메뉴 리스트 */
+    .menu-action-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .menu-action-btn {
+      width: 100%;
+      justify-content: flex-start;
+      padding: 10px 12px;
+      background: #181a22;
+      font-size: 13px;
+      border-radius: 10px;
     }
 
     .spinner {
       border: 2px solid rgba(255, 255, 255, 0.08);
       border-top: 2px solid var(--text-gold);
       border-radius: 50%;
-      width: 26px;
-      height: 26px;
+      width: 24px;
+      height: 24px;
       animation: spin 0.8s linear infinite;
       margin: 16px auto;
     }
@@ -391,110 +369,66 @@
 <body>
 
   <header>
-    <!-- Row 1: 악보 선택 + 액션 버튼 -->
-    <div class="console-row">
+    <!-- Row 1: 악보 탐색 + 주요 액션 (극단적 컴팩트) -->
+    <div class="header-row">
       <select id="songSelect">
         <option value="">악보 불러오는 중...</option>
       </select>
-      
-      <button class="btn-gold" id="openLinkModalBtn" title="악보 및 파트 음원 등록">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-        <span>곡 추가</span>
+
+      <!-- 현재 악보 음원/설정 (구분된 설정 버튼) -->
+      <button id="openCurrentSongEditBtn" title="현재 악보 음원/음정 설정">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        <span>곡 설정</span>
       </button>
 
-      <button id="drawToggleBtn" title="개인 메모 펜/숨표">
+      <!-- 개인 메모 토글 -->
+      <button id="drawToggleBtn" title="메모 레이어">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/></svg>
-        <span>메모</span>
       </button>
 
-      <button id="toggleInvert" title="무대용 반전">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10 10 10 0 0 1-10 10V2z"/></svg>
+      <!-- 메트로놈 퀵 탭 -->
+      <button id="metroToggleBtn" title="메트로놈 작동">
+        <span class="metro-led" id="metroLed"></span>
+        <span id="metroBpmLabel" style="font-size: 11px;">100</span>
       </button>
 
-      <button id="deleteLocalBtn" style="display:none; color: #ef4444;" title="곡 삭제">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+      <!-- 앱 메뉴 (더보기) -->
+      <button id="openAppMenuBtn" title="전체 메뉴">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
       </button>
     </div>
 
-    <!-- Row 2: 줌 컨트롤 + 메트로놈 + 음정 에디터 + 새로고침 -->
-    <div class="console-row" style="justify-content: space-between;">
-      <div style="display: flex; align-items: center; gap: 6px;">
-        <div class="compact-group">
-          <button id="zoomOutBtn" title="축소">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/></svg>
-          </button>
-          <span class="compact-label" id="zoomLevelText">100%</span>
-          <button id="zoomInBtn" title="확대">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-          </button>
-        </div>
-
-        <button id="metroToggleBtn" title="메트로놈 켜기/끄기">
-          <span class="metro-led" id="metroLed"></span>
-          <span id="metroBpmLabel" style="font-size: 11px;">100 BPM</span>
-        </button>
-        
-        <button id="openMetroModalBtn" title="템포 설정">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        </button>
-      </div>
-
-      <div style="display: flex; align-items: center; gap: 6px;">
-        <button id="openPitchEditorBtn" title="파트 첫 음 설정">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
-          <span>음정</span>
-        </button>
-        <button id="refreshBtn" title="새로고침">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-        </button>
-      </div>
-    </div>
-
-    <!-- Row 3: 파트별 첫 음 피치 캡슐 + 페이지 내비게이션 -->
-    <div class="console-row" id="normalToolbar" style="justify-content: space-between;">
-      <div class="console-row scroll-row" id="pitchBar" style="width: auto; gap: 5px;"></div>
+    <!-- Row 2: 파트 첫 음 + 페이지 컨트롤 -->
+    <div class="header-row" style="justify-content: space-between;">
+      <div class="header-row pitch-scroll-row" id="pitchBar" style="width: auto;"></div>
       
-      <div style="display: flex; align-items: center; margin-left: auto; gap: 4px; flex-shrink: 0;">
-        <button id="prevPage">
+      <div style="display: flex; align-items: center; margin-left: auto; gap: 3px;">
+        <button id="prevPage" style="padding: 4px 6px;">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
         </button>
-        <span id="pageIndicator" style="font-size: 11px; font-weight: 600; min-width: 38px; text-align: center; color: var(--text-secondary); letter-spacing: 0.05em;">- / -</span>
-        <button id="nextPage">
+        <span id="pageIndicator" style="font-size: 10.5px; font-weight: 600; min-width: 34px; text-align: center; color: var(--text-secondary);">- / -</span>
+        <button id="nextPage" style="padding: 4px 6px;">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
         </button>
       </div>
     </div>
-
-    <!-- 드로잉 모드 툴바 -->
-    <div class="console-row scroll-row" id="drawingToolbar" style="display: none; gap: 6px;">
-      <button class="active" id="toolPenBtn">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/></svg>
-        <span>펜</span>
-      </button>
-      <button id="toolBreathBtn">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
-        <span>숨표(V)</span>
-      </button>
-      <button id="toolHighlighterBtn">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 11-6 6v3h3l6-6"/><path d="m22 2-2.5 2.5a2.12 2.12 0 0 1-3 0l-.5-.5a2.12 2.12 0 0 1 0-3L18.5 0z"/></svg>
-        <span>형광펜</span>
-      </button>
-      <button id="toolEraserBtn">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/></svg>
-        <span>지우개</span>
-      </button>
-      <button id="clearDrawBtn" style="color: #ef4444;">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
-        <span>초기화</span>
-      </button>
-    </div>
   </header>
 
-  <!-- 메인 악보 뷰어 & 독립 메모 캔버스 -->
+  <!-- 드로잉 모드 서브 툴바 (화면 상단 플로팅) -->
+  <div id="drawingToolbar">
+    <button class="active" id="toolPenBtn">펜</button>
+    <button id="toolBreathBtn">V 숨표</button>
+    <button id="toolHighlighterBtn">형광펜</button>
+    <button id="toolEraserBtn">지우개</button>
+    <button id="clearDrawBtn" style="color: #ef4444;">지우기</button>
+    <button id="closeDrawBarBtn" style="color: #888;">✕</button>
+  </div>
+
+  <!-- 메인 악보 뷰어 -->
   <main id="viewerMain">
     <div id="statusView" style="margin-top: 120px; text-align: center; color: var(--text-secondary);">
       <div class="spinner" id="loadingSpinner"></div>
-      <p id="statusText" style="font-size: 13.5px; font-weight: 500;">시스템을 초기화하고 있습니다...</p>
+      <p id="statusText" style="font-size: 13.5px; font-weight: 500;">악보를 불러오는 중...</p>
     </div>
     <div class="sheet-wrapper" id="sheetCard" style="display: none;">
       <canvas id="pdfCanvas"></canvas>
@@ -504,8 +438,8 @@
 
   <!-- 하단 파트별 오디오 콘솔 플레이어 -->
   <div id="audioBar">
-    <button id="audioPlayBtn" style="border-radius: 50%; width: 30px; height: 30px; padding: 0; justify-content: center; background: #222530;">
-      <svg id="playIconSvg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3l14 9-14 9V3z"/></svg>
+    <button id="audioPlayBtn" style="border-radius: 50%; width: 28px; height: 28px; padding: 0; justify-content: center; background: #222530;">
+      <svg id="playIconSvg" width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3l14 9-14 9V3z"/></svg>
     </button>
     
     <div class="part-track-selector" id="partTabSelector">
@@ -516,16 +450,142 @@
       <button class="part-tab" data-part="B">B</button>
     </div>
 
-    <span id="audioTimeText" style="font-size: 10px; color: var(--text-secondary); min-width: 26px; text-align: center;">0:00</span>
-    <button id="audioRateBtn" style="font-size: 10px; padding: 2px 5px;">1.0x</button>
-    
-    <button id="closeAudioBtn" style="border: none; background: transparent; padding: 4px; color: var(--text-secondary);">
-      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
-    </button>
+    <span id="audioTimeText" style="font-size: 10px; color: var(--text-secondary); min-width: 24px; text-align: center;">0:00</span>
+    <button id="audioRateBtn" style="font-size: 9.5px; padding: 2px 4px;">1.0x</button>
+    <button id="closeAudioBtn" style="border: none; background: transparent; padding: 2px; color: var(--text-secondary);">✕</button>
     <audio id="guideAudioElement" preload="none"></audio>
   </div>
 
-  <!-- 메트로놈 설정 모달 -->
+  <!-- 📱 모바일 앱 더보기 메뉴 (바텀시트) -->
+  <div class="modal-backdrop" id="appMenuModal">
+    <div class="modal">
+      <h3>도구 및 설정</h3>
+      <div class="menu-action-list">
+        <!-- 신규 악보 추가 -->
+        <button class="menu-action-btn" id="menuAddNewSongBtn" style="background: rgba(212, 175, 55, 0.12); color: var(--text-gold); border-color: var(--border-metallic);">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+          <span>새로운 악보 추가 등록</span>
+        </button>
+        
+        <!-- 줌 배율 조절 -->
+        <div style="display:flex; align-items:center; justify-content:space-between; background:#181a22; padding:8px 12px; border-radius:10px;">
+          <span style="font-size:12.5px; font-weight:600;">화면 줌 크기</span>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <button id="zoomOutBtn" style="padding:4px 8px;">－</button>
+            <span id="zoomLevelText" style="font-size:11.5px; min-width:34px; text-align:center;">100%</span>
+            <button id="zoomInBtn" style="padding:4px 8px;">＋</button>
+          </div>
+        </div>
+
+        <!-- 메트로놈 세부 설정 -->
+        <button class="menu-action-btn" id="menuOpenMetroBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span>메트로놈 템포 (BPM/소리) 설정</span>
+        </button>
+
+        <!-- 무대용 흑백 반전 -->
+        <button class="menu-action-btn" id="menuToggleInvertBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10 10 10 0 0 1-10 10V2z"/></svg>
+          <span>무대용 반전 모드 (Dark/Light)</span>
+        </button>
+
+        <!-- 새로고침 -->
+        <button class="menu-action-btn" id="menuRefreshBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+          <span>목록 및 악보 새로고침</span>
+        </button>
+
+        <!-- 곡 삭제 (로컬 등록 곡일 때만) -->
+        <button class="menu-action-btn" id="deleteLocalBtn" style="display:none; color: #ef4444;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+          <span>현재 악보 삭제</span>
+        </button>
+      </div>
+      <div style="display:flex; justify-content:flex-end; margin-top:4px;">
+        <button id="closeAppMenuBtn">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1. [현재 악보 음원/설정] 모달 (이미 열려있는 곡에 음원 링크 추가/수정) -->
+  <div class="modal-backdrop" id="currentSongEditModal">
+    <div class="modal" style="max-height: 88vh; overflow-y: auto;">
+      <h3 id="currentSongModalTitle">현재 곡 음원 & 첫 음 설정</h3>
+      
+      <!-- 파트별 음원 등록 -->
+      <div class="form-group" style="gap: 6px;">
+        <label>파트별 구글 드라이브 음원 링크</label>
+        
+        <div class="audio-upload-row">
+          <div class="audio-row-header"><span>ALL (전체/MR)</span></div>
+          <div class="audio-inputs">
+            <input type="text" id="curAudioUrl_ALL" placeholder="구글 드라이브 링크 붙여넣기" />
+          </div>
+        </div>
+        <div class="audio-upload-row">
+          <div class="audio-row-header"><span style="color: var(--sop-accent);">SOP (소프라노)</span></div>
+          <div class="audio-inputs">
+            <input type="text" id="curAudioUrl_S" placeholder="소프라노 드라이브 링크" />
+          </div>
+        </div>
+        <div class="audio-upload-row">
+          <div class="audio-row-header"><span style="color: var(--alto-accent);">ALT (알토)</span></div>
+          <div class="audio-inputs">
+            <input type="text" id="curAudioUrl_A" placeholder="알토 드라이브 링크" />
+          </div>
+        </div>
+        <div class="audio-upload-row">
+          <div class="audio-row-header"><span style="color: var(--tenor-accent);">TEN (테너)</span></div>
+          <div class="audio-inputs">
+            <input type="text" id="curAudioUrl_T" placeholder="테너 드라이브 링크" />
+          </div>
+        </div>
+        <div class="audio-upload-row">
+          <div class="audio-row-header"><span style="color: var(--bass-accent);">BAS (베이스)</span></div>
+          <div class="audio-inputs">
+            <input type="text" id="curAudioUrl_B" placeholder="베이스 드라이브 링크" />
+          </div>
+        </div>
+      </div>
+
+      <!-- 첫 음 지정 -->
+      <div class="form-group">
+        <label>파트별 첫 음 지정</label>
+        <div class="pitch-slot-container">
+          <div class="pitch-edit-card"><span style="color: var(--sop-accent);">SOP</span><select id="curQuickS"></select></div>
+          <div class="pitch-edit-card"><span style="color: var(--alto-accent);">ALT</span><select id="curQuickA"></select></div>
+          <div class="pitch-edit-card"><span style="color: var(--tenor-accent);">TEN</span><select id="curQuickT"></select></div>
+          <div class="pitch-edit-card"><span style="color: var(--bass-accent);">BAS</span><select id="curQuickB"></select></div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 6px;">
+        <button id="closeCurrentSongEditBtn">취소</button>
+        <button class="btn-gold" id="saveCurrentSongEditBtn" style="font-weight:600;">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. [새로운 악보 추가] 모달 (완전히 새로운 곡을 등록) -->
+  <div class="modal-backdrop" id="newSongModal">
+    <div class="modal">
+      <h3>새로운 악보 등록</h3>
+      <div class="form-group">
+        <label>곡 명</label>
+        <input type="text" id="newSongTitle" placeholder="예: Java Jive" required />
+      </div>
+      <div class="form-group">
+        <label>악보 PDF URL (구글 드라이브 공유 링크)</label>
+        <input type="text" id="newSongPdfUrl" placeholder="https://drive.google.com/file/d/..." required />
+      </div>
+      <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px;">
+        <button id="closeNewSongModalBtn">취소</button>
+        <button class="btn-gold" id="saveNewSongBtn" style="font-weight:600;">등록하기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 메트로놈 모달 -->
   <div class="modal-backdrop" id="metroModal">
     <div class="modal">
       <h3>메트로놈 설정</h3>
@@ -543,128 +603,7 @@
     </div>
   </div>
 
-  <!-- 파트별 첫 음 지정 모달 -->
-  <div class="modal-backdrop" id="pitchModal">
-    <div class="modal">
-      <h3>파트별 첫 음 지정</h3>
-      <div class="pitch-slot-container">
-        <div class="pitch-edit-card">
-          <span style="color: var(--sop-accent);">SOP</span>
-          <select id="quickS_select"></select>
-        </div>
-        <div class="pitch-edit-card">
-          <span style="color: var(--alto-accent);">ALT</span>
-          <select id="quickA_select"></select>
-        </div>
-        <div class="pitch-edit-card">
-          <span style="color: var(--tenor-accent);">TEN</span>
-          <select id="quickT_select"></select>
-        </div>
-        <div class="pitch-edit-card">
-          <span style="color: var(--bass-accent);">BAS</span>
-          <select id="quickB_select"></select>
-        </div>
-      </div>
-      <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px;">
-        <button id="closePitchModalBtn">닫기</button>
-        <button class="btn-gold" id="savePitchModalBtn" style="font-weight:600;">저장</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 악보 및 파트별 음원 등록 모달 (구글 드라이브 링크 지원) -->
-  <div class="modal-backdrop" id="linkModal">
-    <div class="modal" style="max-height: 88vh; overflow-y: auto;">
-      <h3>악보 및 파트 음원 등록 (공용 스트리밍)</h3>
-      <div class="form-group">
-        <label>곡 명</label>
-        <input type="text" id="inputTitle" placeholder="예: Java Jive" required />
-      </div>
-      <div class="form-group">
-        <label>악보 PDF URL (구글 드라이브 공유 링크)</label>
-        <input type="text" id="inputUrl" placeholder="https://drive.google.com/file/d/..." required />
-      </div>
-
-      <div class="form-group" style="gap: 8px; margin-top: 4px;">
-        <label>파트별 음원 등록 (구글 드라이브 링크 붙여넣기 또는 파일 선택)</label>
-        
-        <!-- ALL -->
-        <div class="audio-upload-row">
-          <div class="audio-row-header">
-            <span>ALL (전체/MR)</span>
-            <span class="status-text" id="status_ALL">미등록</span>
-          </div>
-          <div class="audio-inputs">
-            <input type="text" id="audioUrl_ALL" placeholder="구글 드라이브 음원 링크 붙여넣기" />
-            <button class="upload-btn" onclick="document.getElementById('audioFile_ALL').click()">내 파일</button>
-            <input type="file" id="audioFile_ALL" accept="audio/*" onchange="handleAudioUpload('ALL', this)" />
-          </div>
-        </div>
-
-        <!-- S -->
-        <div class="audio-upload-row">
-          <div class="audio-row-header">
-            <span style="color: var(--sop-accent);">SOP (소프라노)</span>
-            <span class="status-text" id="status_S">미등록</span>
-          </div>
-          <div class="audio-inputs">
-            <input type="text" id="audioUrl_S" placeholder="소프라노 드라이브 음원 링크" />
-            <button class="upload-btn" onclick="document.getElementById('audioFile_S').click()">내 파일</button>
-            <input type="file" id="audioFile_S" accept="audio/*" onchange="handleAudioUpload('S', this)" />
-          </div>
-        </div>
-
-        <!-- A -->
-        <div class="audio-upload-row">
-          <div class="audio-row-header">
-            <span style="color: var(--alto-accent);">ALT (알토)</span>
-            <span class="status-text" id="status_A">미등록</span>
-          </div>
-          <div class="audio-inputs">
-            <input type="text" id="audioUrl_A" placeholder="알토 드라이브 음원 링크" />
-            <button class="upload-btn" onclick="document.getElementById('audioFile_A').click()">내 파일</button>
-            <input type="file" id="audioFile_A" accept="audio/*" onchange="handleAudioUpload('A', this)" />
-          </div>
-        </div>
-
-        <!-- T -->
-        <div class="audio-upload-row">
-          <div class="audio-row-header">
-            <span style="color: var(--tenor-accent);">TEN (테너)</span>
-            <span class="status-text" id="status_T">미등록</span>
-          </div>
-          <div class="audio-inputs">
-            <input type="text" id="audioUrl_T" placeholder="테너 드라이브 음원 링크" />
-            <button class="upload-btn" onclick="document.getElementById('audioFile_T').click()">내 파일</button>
-            <input type="file" id="audioFile_T" accept="audio/*" onchange="handleAudioUpload('T', this)" />
-          </div>
-        </div>
-
-        <!-- B -->
-        <div class="audio-upload-row">
-          <div class="audio-row-header">
-            <span style="color: var(--bass-accent);">BAS (베이스)</span>
-            <span class="status-text" id="status_B">미등록</span>
-          </div>
-          <div class="audio-inputs">
-            <input type="text" id="audioUrl_B" placeholder="베이스 드라이브 음원 링크" />
-            <button class="upload-btn" onclick="document.getElementById('audioFile_B').click()">내 파일</button>
-            <input type="file" id="audioFile_B" accept="audio/*" onchange="handleAudioUpload('B', this)" />
-          </div>
-        </div>
-      </div>
-
-      <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px;">
-        <button id="closeLinkModalBtn">취소</button>
-        <button class="btn-gold" id="saveLinkSongBtn" style="font-weight:600;">저장</button>
-      </div>
-    </div>
-  </div>
-
   <script>
-    // ==========================================
-    // ⚙️ 1. 설정 및 초기화
-    // ==========================================
     let GOOGLE_API_KEY = "";
     let DRIVE_FOLDER_ID = "";
 
@@ -683,19 +622,16 @@
     pdfjsLib.GlobalWorkerOptions.workerSrc = 
       'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-    // ==========================================
-    // 🗄️ 2. IndexedDB
-    // ==========================================
     let db;
     function initDB() {
       return new Promise((resolve, reject) => {
-        const req = indexedDB.open('AcappellaStudioDB_V6', 1);
+        const req = indexedDB.open('AcappellaStudioDB_V7', 1);
         req.onupgradeneeded = (e) => {
           const d = e.target.result;
           if (!d.objectStoreNames.contains('custom_songs')) d.createObjectStore('custom_songs', { keyPath: 'id' });
           if (!d.objectStoreNames.contains('pitch_overrides')) d.createObjectStore('pitch_overrides', { keyPath: 'songId' });
+          if (!d.objectStoreNames.contains('audio_overrides')) d.createObjectStore('audio_overrides', { keyPath: 'songId' });
           if (!d.objectStoreNames.contains('personal_drawings')) d.createObjectStore('personal_drawings', { keyPath: 'id' });
-          if (!d.objectStoreNames.contains('part_audios')) d.createObjectStore('part_audios', { keyPath: 'id' });
         };
         req.onsuccess = () => { db = req.result; resolve(); };
         req.onerror = () => reject(req.error);
@@ -734,9 +670,7 @@
       });
     }
 
-    // ==========================================
-    // 🎵 3. 오디오 & 피치 엔진
-    // ==========================================
+    // 오디오 컨텍스트
     let audioCtx = null;
     function getAudioContext() {
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -796,13 +730,13 @@
     }
 
     function initPitchSelectOptions() {
-      ['quickS_select', 'quickA_select', 'quickT_select', 'quickB_select'].forEach(id => {
+      ['curQuickS', 'curQuickA', 'curQuickT', 'curQuickB'].forEach(id => {
         const sel = document.getElementById(id);
         sel.innerHTML = '';
         availableNotes.forEach(n => {
           const opt = document.createElement('option');
           opt.value = n;
-          opt.textContent = n || '(미설정)';
+          opt.textContent = n || '(없음)';
           sel.appendChild(opt);
         });
       });
@@ -839,7 +773,6 @@
     function startMetro() {
       const ctx = getAudioContext();
       if (ctx.state === 'suspended') ctx.resume();
-
       isMetroRunning = true;
       document.getElementById('metroToggleBtn').classList.add('active');
       const interval = (60 / metroBpm) * 1000;
@@ -873,7 +806,7 @@
           metroBpm = calcBpm;
           document.getElementById('bpmSlider').value = calcBpm;
           document.getElementById('modalBpmDisplay').textContent = `${calcBpm} BPM`;
-          document.getElementById('metroBpmLabel').textContent = `${calcBpm} BPM`;
+          document.getElementById('metroBpmLabel').textContent = calcBpm;
           if (isMetroRunning) { stopMetro(); startMetro(); }
         }
       }
@@ -882,7 +815,7 @@
     document.getElementById('bpmSlider').oninput = (e) => {
       metroBpm = Number(e.target.value);
       document.getElementById('modalBpmDisplay').textContent = `${metroBpm} BPM`;
-      document.getElementById('metroBpmLabel').textContent = `${metroBpm} BPM`;
+      document.getElementById('metroBpmLabel').textContent = metroBpm;
       if (isMetroRunning) { stopMetro(); startMetro(); }
     };
 
@@ -891,16 +824,12 @@
       e.target.textContent = `오디오: ${isMetroSoundOn ? '켜짐' : '무음'}`;
     };
 
-    // ==========================================
-    // 🔍 4. 파싱 유틸 & 구글 드라이브 스트리밍 URL 생성
-    // ==========================================
     function extractDriveFileId(url) {
       if (!url) return null;
       const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
       return match ? match[1] : null;
     }
 
-    // 구글 드라이브 링크를 직접 재생 가능한 스트리밍 주소로 변환
     function resolveAudioStreamUrl(inputUrl) {
       if (!inputUrl) return null;
       const driveId = extractDriveFileId(inputUrl);
@@ -924,9 +853,7 @@
       return { title, notes };
     }
 
-    // ==========================================
-    // 📂 5. 악보 데이터 로딩 & 렌더링
-    // ==========================================
+    // 악보 및 데이터
     let allSongs = [];
     let currentSong = null;
     let currentPdfDoc = null;
@@ -973,17 +900,21 @@
       }
 
       const customItems = await getStored('custom_songs');
-      const overrides = await getStored('pitch_overrides');
-      const overrideMap = new Map(overrides.map(o => [o.songId, o.notes]));
+      const pitchOverrides = await getStored('pitch_overrides');
+      const audioOverrides = await getStored('audio_overrides');
+      
+      const pitchMap = new Map(pitchOverrides.map(o => [o.songId, o.notes]));
+      const audioMap = new Map(audioOverrides.map(o => [o.songId, o.partAudioUrls]));
 
       allSongs = [...customItems, ...driveItems].map(s => ({
         ...s,
-        notes: overrideMap.get(s.id) || s.notes || {}
+        notes: pitchMap.get(s.id) || s.notes || {},
+        partAudioUrls: audioMap.get(s.id) || s.partAudioUrls || {}
       }));
 
       if (allSongs.length === 0) {
         spinner.style.display = 'none';
-        statusText.innerHTML = "등록된 마스터 악보가 없습니다.<br>상단 [+ 곡 추가] 버튼을 눌러보세요.";
+        statusText.innerHTML = "등록된 마스터 악보가 없습니다.<br>우측 메뉴(⋯)에서 [새로운 악보 추가]를 진행하세요.";
         songSelect.innerHTML = '<option value="">(트랙 없음)</option>';
         deleteLocalBtn.style.display = 'none';
         return;
@@ -1007,8 +938,8 @@
       if (!song) return;
       currentSong = song;
 
-      deleteLocalBtn.style.display = song.type === 'custom' ? 'inline-flex' : 'none';
-      await loadSongAudioTracks(song);
+      deleteLocalBtn.style.display = song.type === 'custom' ? 'flex' : 'none';
+      loadSongAudioTracks(song);
 
       pitchBar.innerHTML = '';
       const partClassMap = { 'S': 'sop', 'A': 'alto', 'T': 'tenor', 'B': 'bass' };
@@ -1033,8 +964,8 @@
 
       if (!hasAnyPitch) {
         const hint = document.createElement('span');
-        hint.style.cssText = "font-size: 11px; color: var(--text-secondary); padding: 4px 6px;";
-        hint.textContent = "첫 음 미지정 (음정 버튼)";
+        hint.style.cssText = "font-size: 10px; color: var(--text-secondary); padding: 2px 4px;";
+        hint.textContent = "첫 음 없음 (곡 설정)";
         pitchBar.appendChild(hint);
       }
 
@@ -1123,10 +1054,9 @@
 
     document.getElementById('zoomInBtn').onclick = () => setZoom(zoomScale + 0.15);
     document.getElementById('zoomOutBtn').onclick = () => setZoom(zoomScale - 0.15);
-    zoomLevelText.ondblclick = () => setZoom(1.0);
 
     // ==========================================
-    // ✏️ 6. 개인 독립 메모 레이어
+    // ✏️ 개인 메모 레이어
     // ==========================================
     let isDrawingMode = false;
     let currentTool = 'pen';
@@ -1135,8 +1065,8 @@
     const drawToggleBtn = document.getElementById('drawToggleBtn');
     const drawingToolbar = document.getElementById('drawingToolbar');
 
-    drawToggleBtn.onclick = () => {
-      isDrawingMode = !isDrawingMode;
+    function toggleDrawingMode(forcedState = null) {
+      isDrawingMode = forcedState !== null ? forcedState : !isDrawingMode;
       if (isDrawingMode) {
         drawToggleBtn.classList.add('active');
         drawingToolbar.style.display = 'flex';
@@ -1146,7 +1076,10 @@
         drawingToolbar.style.display = 'none';
         drawCanvas.classList.remove('active');
       }
-    };
+    }
+
+    drawToggleBtn.onclick = () => toggleDrawingMode();
+    document.getElementById('closeDrawBarBtn').onclick = () => toggleDrawingMode(false);
 
     function setDrawTool(tool) {
       currentTool = tool;
@@ -1274,7 +1207,7 @@
     };
 
     // ==========================================
-    // 🎧 7. 파트별 멀티트랙 구글 드라이브 스트리밍 플레이어
+    // 🎧 파트별 음원 플레이어
     // ==========================================
     const audioBar = document.getElementById('audioBar');
     const guideAudio = document.getElementById('guideAudioElement');
@@ -1284,18 +1217,16 @@
     const audioRateBtn = document.getElementById('audioRateBtn');
     const partTabSelector = document.getElementById('partTabSelector');
 
-    let currentSongPartAudios = {}; // { ALL: url, S: url, A: url, ... }
+    let currentSongPartAudios = {};
     let activePartTab = 'ALL';
 
-    async function loadSongAudioTracks(song) {
+    function loadSongAudioTracks(song) {
       currentSongPartAudios = {};
       const parts = ['ALL', 'S', 'A', 'T', 'B'];
       let hasAnyAudio = false;
 
       for (const p of parts) {
         const tabBtn = partTabSelector.querySelector(`[data-part="${p}"]`);
-        
-        // 1) 곡 등록 시 저장된 공용 구글 드라이브/웹 링크 우선
         if (song.partAudioUrls && song.partAudioUrls[p]) {
           const resolvedStream = resolveAudioStreamUrl(song.partAudioUrls[p]);
           if (resolvedStream) {
@@ -1305,16 +1236,7 @@
             continue;
           }
         }
-
-        // 2) 개인 기기에 직접 업로드한 로컬 Blob 파일 확인
-        const item = await getStoredItem('part_audios', `${song.id}_${p}`);
-        if (item && item.blob) {
-          currentSongPartAudios[p] = URL.createObjectURL(item.blob);
-          hasAnyAudio = true;
-          tabBtn.classList.add('has-audio');
-        } else {
-          tabBtn.classList.remove('has-audio');
-        }
+        tabBtn.classList.remove('has-audio');
       }
 
       if (hasAnyAudio) {
@@ -1353,7 +1275,7 @@
       if (currentSongPartAudios[part]) {
         switchPartTrack(part, true);
       } else {
-        alert(`${part} 파트에 등록된 구글 드라이브 음원이 없습니다.\n상단 [+ 곡 추가] 모달에서 링크를 등록해주세요.`);
+        alert(`${part} 파트에 등록된 구글 드라이브 음원이 없습니다.\n상단 [곡 설정]을 눌러 링크를 등록해주세요.`);
       }
     });
 
@@ -1393,9 +1315,7 @@
       audioBar.classList.remove('show');
     };
 
-    // ==========================================
-    // 👆 8. 터치 제스처 (스와이프)
-    // ==========================================
+    // 스와이프
     const viewerMain = document.getElementById('viewerMain');
     let touchStartX = 0;
     let touchStartY = 0;
@@ -1422,72 +1342,68 @@
     }, { passive: true });
 
     // ==========================================
-    // ⚙️ 9. 모달 및 구글 드라이브 음원 링크 저장
+    // ⚙️ 모달 제어 (분리된 신규 추가 & 현재 곡 설정)
     // ==========================================
-    const metroModal = document.getElementById('metroModal');
-    document.getElementById('openMetroModalBtn').onclick = () => metroModal.classList.add('open');
-    document.getElementById('closeMetroModalBtn').onclick = () => metroModal.classList.remove('open');
-
-    const pitchModal = document.getElementById('pitchModal');
-    document.getElementById('openPitchEditorBtn').onclick = () => {
+    
+    // 1) 현재 악보 음원/설정 모달
+    const currentSongEditModal = document.getElementById('currentSongEditModal');
+    document.getElementById('openCurrentSongEditBtn').onclick = () => {
       if (!currentSong) return;
-      document.getElementById('quickS_select').value = currentSong.notes?.S || '';
-      document.getElementById('quickA_select').value = currentSong.notes?.A || '';
-      document.getElementById('quickT_select').value = currentSong.notes?.T || '';
-      document.getElementById('quickB_select').value = currentSong.notes?.B || '';
-      pitchModal.classList.add('open');
+      document.getElementById('currentSongModalTitle').textContent = `[${currentSong.title}] 음원 및 첫 음 설정`;
+      
+      ['ALL', 'S', 'A', 'T', 'B'].forEach(p => {
+        document.getElementById(`curAudioUrl_${p}`).value = currentSong.partAudioUrls?.[p] || '';
+      });
+
+      document.getElementById('curQuickS').value = currentSong.notes?.S || '';
+      document.getElementById('curQuickA').value = currentSong.notes?.A || '';
+      document.getElementById('curQuickT').value = currentSong.notes?.T || '';
+      document.getElementById('curQuickB').value = currentSong.notes?.B || '';
+
+      currentSongEditModal.classList.add('open');
     };
-    document.getElementById('closePitchModalBtn').onclick = () => pitchModal.classList.remove('open');
+    document.getElementById('closeCurrentSongEditBtn').onclick = () => currentSongEditModal.classList.remove('open');
 
-    document.getElementById('savePitchModalBtn').onclick = async () => {
+    document.getElementById('saveCurrentSongEditBtn').onclick = async () => {
       if (!currentSong) return;
+      
+      const partAudioUrls = {};
+      ['ALL', 'S', 'A', 'T', 'B'].forEach(p => {
+        const val = document.getElementById(`curAudioUrl_${p}`).value.trim();
+        if (val) partAudioUrls[p] = val;
+      });
+
       const newNotes = {
-        S: document.getElementById('quickS_select').value,
-        A: document.getElementById('quickA_select').value,
-        T: document.getElementById('quickT_select').value,
-        B: document.getElementById('quickB_select').value
+        S: document.getElementById('curQuickS').value,
+        A: document.getElementById('curQuickA').value,
+        T: document.getElementById('curQuickT').value,
+        B: document.getElementById('curQuickB').value
       };
+
+      await putStored('audio_overrides', { songId: currentSong.id, partAudioUrls: partAudioUrls });
       await putStored('pitch_overrides', { songId: currentSong.id, notes: newNotes });
+
+      currentSong.partAudioUrls = partAudioUrls;
       currentSong.notes = newNotes;
-      pitchModal.classList.remove('open');
+
+      currentSongEditModal.classList.remove('open');
       loadSong(currentSong.id);
     };
 
-    let pendingAudioBlobs = {};
-    function handleAudioUpload(part, inputEl) {
-      if (inputEl.files && inputEl.files[0]) {
-        const file = inputEl.files[0];
-        pendingAudioBlobs[part] = file;
-        document.getElementById(`status_${part}`).textContent = file.name;
-        document.getElementById(`status_${part}`).style.color = '#34d399';
-      }
-    }
-
-    const linkModal = document.getElementById('linkModal');
-    document.getElementById('openLinkModalBtn').onclick = () => {
-      document.getElementById('inputTitle').value = '';
-      document.getElementById('inputUrl').value = '';
-      pendingAudioBlobs = {};
-      ['ALL', 'S', 'A', 'T', 'B'].forEach(p => {
-        document.getElementById(`audioUrl_${p}`).value = '';
-        document.getElementById(`status_${p}`).textContent = '미등록';
-        document.getElementById(`status_${p}`).style.color = 'var(--text-secondary)';
-      });
-      linkModal.classList.add('open');
+    // 2) 새로운 악보 추가 모달
+    const newSongModal = document.getElementById('newSongModal');
+    document.getElementById('menuAddNewSongBtn').onclick = () => {
+      appMenuModal.classList.remove('open');
+      document.getElementById('newSongTitle').value = '';
+      document.getElementById('newSongPdfUrl').value = '';
+      newSongModal.classList.add('open');
     };
-    document.getElementById('closeLinkModalBtn').onclick = () => linkModal.classList.remove('open');
+    document.getElementById('closeNewSongModalBtn').onclick = () => newSongModal.classList.remove('open');
 
-    document.getElementById('saveLinkSongBtn').onclick = async () => {
-      const title = document.getElementById('inputTitle').value.trim();
-      const url = document.getElementById('inputUrl').value.trim();
-      if (!title || !url) { alert('곡 명과 악보 URL을 입력해주세요.'); return; }
-
-      // 각 파트별 구글 드라이브 음원 링크 수집
-      const partAudioUrls = {};
-      ['ALL', 'S', 'A', 'T', 'B'].forEach(p => {
-        const val = document.getElementById(`audioUrl_${p}`).value.trim();
-        if (val) partAudioUrls[p] = val;
-      });
+    document.getElementById('saveNewSongBtn').onclick = async () => {
+      const title = document.getElementById('newSongTitle').value.trim();
+      const url = document.getElementById('newSongPdfUrl').value.trim();
+      if (!title || !url) { alert('곡 명과 악보 PDF URL을 입력해주세요.'); return; }
 
       const newSongId = `custom_${Date.now()}`;
       const newSong = {
@@ -1495,41 +1411,51 @@
         type: 'custom',
         title: title,
         url: url,
-        partAudioUrls: partAudioUrls,
+        partAudioUrls: {},
         notes: {},
         createdAt: Date.now()
       };
 
       await putStored('custom_songs', newSong);
-
-      // 로컬 파일 업로드 병행 저장
-      for (const [part, blob] of Object.entries(pendingAudioBlobs)) {
-        await putStored('part_audios', {
-          id: `${newSongId}_${part}`,
-          part: part,
-          blob: blob
-        });
-      }
-
-      linkModal.classList.remove('open');
+      newSongModal.classList.remove('open');
       await loadAllSongList(newSong.id);
+    };
+
+    // 3) 앱 더보기 바텀시트 메뉴
+    const appMenuModal = document.getElementById('appMenuModal');
+    document.getElementById('openAppMenuBtn').onclick = () => appMenuModal.classList.add('open');
+    document.getElementById('closeAppMenuBtn').onclick = () => appMenuModal.classList.remove('open');
+
+    // 메트로놈 세부 설정 모달
+    const metroModal = document.getElementById('metroModal');
+    document.getElementById('menuOpenMetroBtn').onclick = () => {
+      appMenuModal.classList.remove('open');
+      metroModal.classList.add('open');
+    };
+    document.getElementById('closeMetroModalBtn').onclick = () => metroModal.classList.remove('open');
+
+    document.getElementById('menuToggleInvertBtn').onclick = () => {
+      document.body.classList.toggle('invert-mode');
+      appMenuModal.classList.remove('open');
+    };
+
+    document.getElementById('menuRefreshBtn').onclick = () => {
+      appMenuModal.classList.remove('open');
+      loadAllSongList(currentSong?.id);
     };
 
     deleteLocalBtn.onclick = async () => {
       if (!currentSong || currentSong.type !== 'custom') return;
-      if (confirm(`'${currentSong.title}' 트랙과 등록된 음원을 모두 삭제하시겠습니까?`)) {
+      if (confirm(`'${currentSong.title}' 트랙을 삭제하시겠습니까?`)) {
         await deleteStored('custom_songs', currentSong.id);
         await deleteStored('pitch_overrides', currentSong.id);
-        for (const p of ['ALL', 'S', 'A', 'T', 'B']) {
-          await deleteStored('part_audios', `${currentSong.id}_${p}`);
-        }
+        await deleteStored('audio_overrides', currentSong.id);
+        appMenuModal.classList.remove('open');
         await loadAllSongList();
       }
     };
 
-    // ==========================================
-    // 🎮 10. 내비게이션 & 이벤트
-    // ==========================================
+    // 페이지 내비게이션
     function nextPage() {
       if (currentPdfDoc && currentPageNum < currentPdfDoc.numPages) {
         currentPageNum++;
@@ -1547,17 +1473,12 @@
 
     document.getElementById('nextPage').onclick = nextPage;
     document.getElementById('prevPage').onclick = prevPage;
-    document.getElementById('refreshBtn').onclick = () => loadAllSongList(currentSong?.id);
     songSelect.onchange = (e) => { if (e.target.value) loadSong(e.target.value); };
 
     window.addEventListener('keydown', (e) => {
       if (['ArrowRight', 'PageDown', ' '].includes(e.key)) nextPage();
       else if (['ArrowLeft', 'PageUp'].includes(e.key)) prevPage();
     });
-
-    document.getElementById('toggleInvert').onclick = () => {
-      document.body.classList.toggle('invert-mode');
-    };
 
     async function startApp() {
       try {
