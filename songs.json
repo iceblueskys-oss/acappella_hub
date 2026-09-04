@@ -1,0 +1,9 @@
+[
+  {
+    "id": "song-01",
+    "title": "Java Jive",
+    "bpm": 112,
+    "pdfUrl": "./sheets/java-jive.pdf",
+    "startingNotes": { "S": "E4", "A": "C4", "T": "G3", "B": "C3" }
+  }
+]
