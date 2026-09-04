@@ -3,7 +3,21 @@
     "id": "song-01",
     "title": "Java Jive",
     "bpm": 112,
-    "pdfUrl": "./sheets/java-jive.pdf",
-    "startingNotes": { "S": "E4", "A": "C4", "T": "G3", "B": "C3" }
+    "pdfUrl": "./sheets/sample1.pdf",
+    "notes": [
+      { "part": "S", "note": "E4" },
+      { "part": "A", "note": "C4" },
+      { "part": "T", "note": "G3" },
+      { "part": "B", "note": "C3" }
+    ]
+  },
+  {
+    "id": "song-02",
+    "title": "White Christmas",
+    "bpm": 80,
+    "pdfUrl": "./sheets/sample2.pdf",
+    "notes": [
+      { "part": "All", "note": "A3" }
+    ]
   }
 ]
