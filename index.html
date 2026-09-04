@@ -62,7 +62,6 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* 상단 콘솔 헤더 (모바일 컴팩트 패딩 적용) */
     header {
       background: var(--surface-deep);
       border-bottom: 1px solid var(--border-subtle);
@@ -149,7 +148,6 @@
     .compact-group button { border: none; background: transparent; padding: 4px 6px; }
     .compact-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); min-width: 32px; text-align: center; }
 
-    /* 피치 캡슐 버튼 */
     .pitch-capsule {
       display: inline-flex;
       align-items: center;
@@ -233,7 +231,6 @@
       color: var(--text-gold);
     }
 
-    /* 메인 뷰어 */
     main {
       flex: 1;
       overflow-y: auto;
@@ -273,7 +270,6 @@
     body.invert-mode { background: #000000; }
     body.invert-mode .sheet-wrapper { filter: invert(0.92) hue-rotate(180deg) brightness(0.95); }
 
-    /* 모달 */
     .modal-backdrop {
       display: none;
       position: fixed;
@@ -291,7 +287,7 @@
       background: #14161d;
       border: 1px solid rgba(255, 255, 255, 0.1);
       width: 92%;
-      max-width: 440px;
+      max-width: 460px;
       border-radius: 18px;
       padding: 18px;
       display: flex;
@@ -339,24 +335,44 @@
       border-color: rgba(255, 255, 255, 0.15);
     }
 
+    /* 드라이브 링크 + 파일 업로드 하이브리드 행 */
     .audio-upload-row {
       display: flex;
-      align-items: center;
-      gap: 8px;
+      flex-direction: column;
+      gap: 5px;
       background: #0b0c10;
       border: 1px solid var(--border-subtle);
       border-radius: 8px;
-      padding: 6px 10px;
+      padding: 8px 10px;
     }
-    .audio-upload-row span { font-size: 11px; font-weight: 700; width: 34px; color: var(--text-gold); }
-    .audio-upload-row input[type="file"] { display: none; }
-    .audio-upload-row .upload-btn { font-size: 11px; padding: 4px 8px; border-radius: 5px; background: #1b1d26; }
-    .audio-upload-row .status-text {
-      font-size: 11px;
-      color: var(--text-secondary);
+    .audio-row-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .audio-row-header span { font-size: 11px; font-weight: 700; color: var(--text-gold); }
+    .audio-row-header .status-text { font-size: 11px; color: var(--text-secondary); }
+    
+    .audio-inputs {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .audio-inputs input[type="text"] {
       flex: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      font-size: 11.5px;
+      padding: 6px 8px;
+      border-radius: 6px;
+      background: #151720;
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #fff;
+    }
+    .audio-inputs input[type="file"] { display: none; }
+    .audio-inputs .upload-btn {
+      font-size: 11px;
+      padding: 6px 9px;
+      border-radius: 6px;
+      background: #1f222d;
       white-space: nowrap;
     }
 
@@ -375,7 +391,7 @@
 <body>
 
   <header>
-    <!-- Row 1: 악보 선택 + 핵심 액션 버튼 (모바일에서도 항상 보이는 메인 열) -->
+    <!-- Row 1: 악보 선택 + 액션 버튼 -->
     <div class="console-row">
       <select id="songSelect">
         <option value="">악보 불러오는 중...</option>
@@ -556,59 +572,89 @@
     </div>
   </div>
 
-  <!-- 악보 및 파트별 음원 등록 모달 -->
+  <!-- 악보 및 파트별 음원 등록 모달 (구글 드라이브 링크 지원) -->
   <div class="modal-backdrop" id="linkModal">
-    <div class="modal" style="max-height: 85vh; overflow-y: auto;">
-      <h3>악보 및 파트별 음원 등록</h3>
+    <div class="modal" style="max-height: 88vh; overflow-y: auto;">
+      <h3>악보 및 파트 음원 등록 (공용 스트리밍)</h3>
       <div class="form-group">
         <label>곡 명</label>
         <input type="text" id="inputTitle" placeholder="예: Java Jive" required />
       </div>
       <div class="form-group">
-        <label>악보 PDF URL (구글 드라이브 링크)</label>
+        <label>악보 PDF URL (구글 드라이브 공유 링크)</label>
         <input type="text" id="inputUrl" placeholder="https://drive.google.com/file/d/..." required />
       </div>
 
-      <div class="form-group" style="gap: 6px;">
-        <label>파트별 음원 등록 (카톡에서 저장한 MP3 파일 선택)</label>
+      <div class="form-group" style="gap: 8px; margin-top: 4px;">
+        <label>파트별 음원 등록 (구글 드라이브 링크 붙여넣기 또는 파일 선택)</label>
         
+        <!-- ALL -->
         <div class="audio-upload-row">
-          <span>ALL</span>
-          <button class="upload-btn" onclick="document.getElementById('audioFile_ALL').click()">파일 선택</button>
-          <input type="file" id="audioFile_ALL" accept="audio/*" onchange="handleAudioUpload('ALL', this)" />
-          <span class="status-text" id="status_ALL">미등록</span>
+          <div class="audio-row-header">
+            <span>ALL (전체/MR)</span>
+            <span class="status-text" id="status_ALL">미등록</span>
+          </div>
+          <div class="audio-inputs">
+            <input type="text" id="audioUrl_ALL" placeholder="구글 드라이브 음원 링크 붙여넣기" />
+            <button class="upload-btn" onclick="document.getElementById('audioFile_ALL').click()">내 파일</button>
+            <input type="file" id="audioFile_ALL" accept="audio/*" onchange="handleAudioUpload('ALL', this)" />
+          </div>
         </div>
 
+        <!-- S -->
         <div class="audio-upload-row">
-          <span style="color: var(--sop-accent);">SOP</span>
-          <button class="upload-btn" onclick="document.getElementById('audioFile_S').click()">파일 선택</button>
-          <input type="file" id="audioFile_S" accept="audio/*" onchange="handleAudioUpload('S', this)" />
-          <span class="status-text" id="status_S">미등록</span>
+          <div class="audio-row-header">
+            <span style="color: var(--sop-accent);">SOP (소프라노)</span>
+            <span class="status-text" id="status_S">미등록</span>
+          </div>
+          <div class="audio-inputs">
+            <input type="text" id="audioUrl_S" placeholder="소프라노 드라이브 음원 링크" />
+            <button class="upload-btn" onclick="document.getElementById('audioFile_S').click()">내 파일</button>
+            <input type="file" id="audioFile_S" accept="audio/*" onchange="handleAudioUpload('S', this)" />
+          </div>
         </div>
 
+        <!-- A -->
         <div class="audio-upload-row">
-          <span style="color: var(--alto-accent);">ALT</span>
-          <button class="upload-btn" onclick="document.getElementById('audioFile_A').click()">파일 선택</button>
-          <input type="file" id="audioFile_A" accept="audio/*" onchange="handleAudioUpload('A', this)" />
-          <span class="status-text" id="status_A">미등록</span>
+          <div class="audio-row-header">
+            <span style="color: var(--alto-accent);">ALT (알토)</span>
+            <span class="status-text" id="status_A">미등록</span>
+          </div>
+          <div class="audio-inputs">
+            <input type="text" id="audioUrl_A" placeholder="알토 드라이브 음원 링크" />
+            <button class="upload-btn" onclick="document.getElementById('audioFile_A').click()">내 파일</button>
+            <input type="file" id="audioFile_A" accept="audio/*" onchange="handleAudioUpload('A', this)" />
+          </div>
         </div>
 
+        <!-- T -->
         <div class="audio-upload-row">
-          <span style="color: var(--tenor-accent);">TEN</span>
-          <button class="upload-btn" onclick="document.getElementById('audioFile_T').click()">파일 선택</button>
-          <input type="file" id="audioFile_T" accept="audio/*" onchange="handleAudioUpload('T', this)" />
-          <span class="status-text" id="status_T">미등록</span>
+          <div class="audio-row-header">
+            <span style="color: var(--tenor-accent);">TEN (테너)</span>
+            <span class="status-text" id="status_T">미등록</span>
+          </div>
+          <div class="audio-inputs">
+            <input type="text" id="audioUrl_T" placeholder="테너 드라이브 음원 링크" />
+            <button class="upload-btn" onclick="document.getElementById('audioFile_T').click()">내 파일</button>
+            <input type="file" id="audioFile_T" accept="audio/*" onchange="handleAudioUpload('T', this)" />
+          </div>
         </div>
 
+        <!-- B -->
         <div class="audio-upload-row">
-          <span style="color: var(--bass-accent);">BAS</span>
-          <button class="upload-btn" onclick="document.getElementById('audioFile_B').click()">파일 선택</button>
-          <input type="file" id="audioFile_B" accept="audio/*" onchange="handleAudioUpload('B', this)" />
-          <span class="status-text" id="status_B">미등록</span>
+          <div class="audio-row-header">
+            <span style="color: var(--bass-accent);">BAS (베이스)</span>
+            <span class="status-text" id="status_B">미등록</span>
+          </div>
+          <div class="audio-inputs">
+            <input type="text" id="audioUrl_B" placeholder="베이스 드라이브 음원 링크" />
+            <button class="upload-btn" onclick="document.getElementById('audioFile_B').click()">내 파일</button>
+            <input type="file" id="audioFile_B" accept="audio/*" onchange="handleAudioUpload('B', this)" />
+          </div>
         </div>
       </div>
 
-      <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px;">
+      <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px;">
         <button id="closeLinkModalBtn">취소</button>
         <button class="btn-gold" id="saveLinkSongBtn" style="font-weight:600;">저장</button>
       </div>
@@ -643,7 +689,7 @@
     let db;
     function initDB() {
       return new Promise((resolve, reject) => {
-        const req = indexedDB.open('AcappellaStudioDB_V5', 1);
+        const req = indexedDB.open('AcappellaStudioDB_V6', 1);
         req.onupgradeneeded = (e) => {
           const d = e.target.result;
           if (!d.objectStoreNames.contains('custom_songs')) d.createObjectStore('custom_songs', { keyPath: 'id' });
@@ -689,7 +735,7 @@
     }
 
     // ==========================================
-    // 🎵 3. 오디오 & 피치 엔진 (아이폰 사파리 락 해제 포함)
+    // 🎵 3. 오디오 & 피치 엔진
     // ==========================================
     let audioCtx = null;
     function getAudioContext() {
@@ -846,12 +892,22 @@
     };
 
     // ==========================================
-    // 🔍 4. 파싱 유틸
+    // 🔍 4. 파싱 유틸 & 구글 드라이브 스트리밍 URL 생성
     // ==========================================
     function extractDriveFileId(url) {
       if (!url) return null;
       const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
       return match ? match[1] : null;
+    }
+
+    // 구글 드라이브 링크를 직접 재생 가능한 스트리밍 주소로 변환
+    function resolveAudioStreamUrl(inputUrl) {
+      if (!inputUrl) return null;
+      const driveId = extractDriveFileId(inputUrl);
+      if (driveId && GOOGLE_API_KEY) {
+        return `https://www.googleapis.com/drive/v3/files/${driveId}?alt=media&key=${GOOGLE_API_KEY}`;
+      }
+      return inputUrl;
     }
 
     function parseFileName(fileName) {
@@ -1218,7 +1274,7 @@
     };
 
     // ==========================================
-    // 🎧 7. 파트별 멀티트랙 오디오 플레이어
+    // 🎧 7. 파트별 멀티트랙 구글 드라이브 스트리밍 플레이어
     // ==========================================
     const audioBar = document.getElementById('audioBar');
     const guideAudio = document.getElementById('guideAudioElement');
@@ -1228,7 +1284,7 @@
     const audioRateBtn = document.getElementById('audioRateBtn');
     const partTabSelector = document.getElementById('partTabSelector');
 
-    let currentSongPartAudios = {};
+    let currentSongPartAudios = {}; // { ALL: url, S: url, A: url, ... }
     let activePartTab = 'ALL';
 
     async function loadSongAudioTracks(song) {
@@ -1237,9 +1293,21 @@
       let hasAnyAudio = false;
 
       for (const p of parts) {
-        const item = await getStoredItem('part_audios', `${song.id}_${p}`);
         const tabBtn = partTabSelector.querySelector(`[data-part="${p}"]`);
         
+        // 1) 곡 등록 시 저장된 공용 구글 드라이브/웹 링크 우선
+        if (song.partAudioUrls && song.partAudioUrls[p]) {
+          const resolvedStream = resolveAudioStreamUrl(song.partAudioUrls[p]);
+          if (resolvedStream) {
+            currentSongPartAudios[p] = resolvedStream;
+            hasAnyAudio = true;
+            tabBtn.classList.add('has-audio');
+            continue;
+          }
+        }
+
+        // 2) 개인 기기에 직접 업로드한 로컬 Blob 파일 확인
+        const item = await getStoredItem('part_audios', `${song.id}_${p}`);
         if (item && item.blob) {
           currentSongPartAudios[p] = URL.createObjectURL(item.blob);
           hasAnyAudio = true;
@@ -1285,7 +1353,7 @@
       if (currentSongPartAudios[part]) {
         switchPartTrack(part, true);
       } else {
-        alert(`${part} 파트에 등록된 음원이 없습니다.\n[곡 추가] 모달에서 음원을 등록해주세요.`);
+        alert(`${part} 파트에 등록된 구글 드라이브 음원이 없습니다.\n상단 [+ 곡 추가] 모달에서 링크를 등록해주세요.`);
       }
     });
 
@@ -1354,7 +1422,7 @@
     }, { passive: true });
 
     // ==========================================
-    // ⚙️ 9. 모달 및 파일 업로드
+    // ⚙️ 9. 모달 및 구글 드라이브 음원 링크 저장
     // ==========================================
     const metroModal = document.getElementById('metroModal');
     document.getElementById('openMetroModalBtn').onclick = () => metroModal.classList.add('open');
@@ -1401,6 +1469,7 @@
       document.getElementById('inputUrl').value = '';
       pendingAudioBlobs = {};
       ['ALL', 'S', 'A', 'T', 'B'].forEach(p => {
+        document.getElementById(`audioUrl_${p}`).value = '';
         document.getElementById(`status_${p}`).textContent = '미등록';
         document.getElementById(`status_${p}`).style.color = 'var(--text-secondary)';
       });
@@ -1413,18 +1482,27 @@
       const url = document.getElementById('inputUrl').value.trim();
       if (!title || !url) { alert('곡 명과 악보 URL을 입력해주세요.'); return; }
 
+      // 각 파트별 구글 드라이브 음원 링크 수집
+      const partAudioUrls = {};
+      ['ALL', 'S', 'A', 'T', 'B'].forEach(p => {
+        const val = document.getElementById(`audioUrl_${p}`).value.trim();
+        if (val) partAudioUrls[p] = val;
+      });
+
       const newSongId = `custom_${Date.now()}`;
       const newSong = {
         id: newSongId,
         type: 'custom',
         title: title,
         url: url,
+        partAudioUrls: partAudioUrls,
         notes: {},
         createdAt: Date.now()
       };
 
       await putStored('custom_songs', newSong);
 
+      // 로컬 파일 업로드 병행 저장
       for (const [part, blob] of Object.entries(pendingAudioBlobs)) {
         await putStored('part_audios', {
           id: `${newSongId}_${part}`,
