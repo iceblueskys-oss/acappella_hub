@@ -62,7 +62,7 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* 초슬림 컴팩트 헤더 */
+    /* 초슬림 헤더 */
     header {
       background: rgba(15, 16, 21, 0.94);
       backdrop-filter: blur(16px);
@@ -163,7 +163,7 @@
     }
     .metro-led.flash { background: var(--text-gold); box-shadow: 0 0 6px var(--text-gold); }
 
-    /* 메인 악보 뷰어 (하단 패딩 넉넉하게 확보) */
+    /* 메인 뷰어 */
     main {
       flex: 1;
       overflow-y: auto;
@@ -203,7 +203,7 @@
     body.invert-mode { background: #000000; }
     body.invert-mode .sheet-wrapper { filter: invert(0.92) hue-rotate(180deg) brightness(0.95); }
 
-    /* 🎛️ 하단 파트별 오디오 콘솔 (대형화 & 하이엔드 랙 스타일) */
+    /* 하단 파트 오디오 플레이어 */
     #audioBar {
       position: fixed;
       bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
@@ -219,12 +219,11 @@
       align-items: center;
       gap: 10px;
       z-index: 150;
-      box-shadow: 0 16px 40px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.08);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.85);
       max-width: 96%;
     }
     #audioBar.show { display: flex; }
 
-    /* 42px 대형 재생/일시정지 버튼 */
     #audioPlayBtn {
       border-radius: 50%;
       width: 42px;
@@ -234,12 +233,10 @@
       justify-content: center;
       background: #242836;
       border: 1px solid rgba(255, 255, 255, 0.15);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
       color: #fff;
     }
-    #audioPlayBtn:active { transform: scale(0.92); background: #2f3447; }
+    #audioPlayBtn:active { transform: scale(0.92); }
 
-    /* 🎚️ 대형화된 파트 탭 셀렉터 */
     .part-track-selector {
       display: flex;
       background: #08090d;
@@ -258,32 +255,26 @@
       border: none;
       color: #64748b;
       cursor: pointer;
-      letter-spacing: 0.02em;
-      transition: all 0.15s ease;
       display: flex;
       align-items: center;
       justify-content: center;
     }
-    .part-tab.has-audio {
-      color: #cbd5e1;
-    }
+    .part-tab.has-audio { color: #cbd5e1; }
     .part-tab.active {
       background: #1e212b;
       color: var(--text-gold);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
     }
     .part-tab.active[data-part="S"] { color: var(--sop-accent); }
     .part-tab.active[data-part="A"] { color: var(--alto-accent); }
     .part-tab.active[data-part="T"] { color: var(--tenor-accent); }
     .part-tab.active[data-part="B"] { color: var(--bass-accent); }
-    .part-tab:active { transform: scale(0.94); }
 
     .audio-side-tools {
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 3px;
-      margin-left: 2px;
     }
     #audioTimeText {
       font-size: 11px;
@@ -301,7 +292,6 @@
       background: #1c1e27;
     }
 
-    /* 드로잉 모드 서브 툴바 */
     #drawingToolbar {
       position: fixed;
       top: calc(env(safe-area-inset-top, 0px) + 78px);
@@ -318,7 +308,6 @@
       box-shadow: 0 8px 24px rgba(0,0,0,0.6);
     }
 
-    /* 모달 & 바텀시트 메뉴 */
     .modal-backdrop {
       display: none;
       position: fixed;
@@ -391,11 +380,7 @@
     .pitch-edit-card span { font-size: 9.5px; font-weight: 800; }
     .pitch-edit-card select { width: 100%; font-size: 12px; font-weight: 700; padding: 4px 1px; text-align: center; }
 
-    .menu-action-list {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
+    .menu-action-list { display: flex; flex-direction: column; gap: 6px; }
     .menu-action-btn {
       width: 100%;
       justify-content: flex-start;
@@ -420,7 +405,6 @@
 <body>
 
   <header>
-    <!-- Row 1: 악보 탐색 + 주요 액션 -->
     <div class="header-row">
       <select id="songSelect">
         <option value="">악보 불러오는 중...</option>
@@ -445,7 +429,6 @@
       </button>
     </div>
 
-    <!-- Row 2: 파트 첫 음 + 페이지 컨트롤 -->
     <div class="header-row" style="justify-content: space-between;">
       <div class="header-row pitch-scroll-row" id="pitchBar" style="width: auto;"></div>
       
@@ -483,7 +466,7 @@
     </div>
   </main>
 
-  <!-- 🎛️ 하단 파트별 오디오 콘솔 (확대된 하드웨어 탭) -->
+  <!-- 하단 오디오 콘솔 -->
   <div id="audioBar">
     <button id="audioPlayBtn" title="재생/일시정지">
       <svg id="playIconSvg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3l14 9-14 9V3z"/></svg>
@@ -506,7 +489,7 @@
     <audio id="guideAudioElement" preload="none"></audio>
   </div>
 
-  <!-- 모바일 앱 더보기 메뉴 -->
+  <!-- 모바일 더보기 메뉴 -->
   <div class="modal-backdrop" id="appMenuModal">
     <div class="modal">
       <h3>도구 및 설정</h3>
@@ -526,7 +509,7 @@
         </div>
 
         <button class="menu-action-btn" id="menuOpenMetroBtn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83 2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           <span>메트로놈 템포 (BPM/소리) 설정</span>
         </button>
 
@@ -537,7 +520,7 @@
 
         <button class="menu-action-btn" id="menuRefreshBtn">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-          <span>목록 및 악보 새로고침 (Hard Reload)</span>
+          <span>악보 새로고침 및 캐시 동기화</span>
         </button>
 
         <button class="menu-action-btn" id="deleteLocalBtn" style="display:none; color: #ef4444;">
@@ -561,33 +544,23 @@
         
         <div class="audio-upload-row">
           <div class="audio-row-header"><span>ALL (전체/MR)</span></div>
-          <div class="audio-inputs">
-            <input type="text" id="curAudioUrl_ALL" placeholder="구글 드라이브 링크 붙여넣기" />
-          </div>
+          <div class="audio-inputs"><input type="text" id="curAudioUrl_ALL" placeholder="구글 드라이브 링크 붙여넣기" /></div>
         </div>
         <div class="audio-upload-row">
           <div class="audio-row-header"><span style="color: var(--sop-accent);">SOP (소프라노)</span></div>
-          <div class="audio-inputs">
-            <input type="text" id="curAudioUrl_S" placeholder="소프라노 드라이브 링크" />
-          </div>
+          <div class="audio-inputs"><input type="text" id="curAudioUrl_S" placeholder="소프라노 드라이브 링크" /></div>
         </div>
         <div class="audio-upload-row">
           <div class="audio-row-header"><span style="color: var(--alto-accent);">ALT (알토)</span></div>
-          <div class="audio-inputs">
-            <input type="text" id="curAudioUrl_A" placeholder="알토 드라이브 링크" />
-          </div>
+          <div class="audio-inputs"><input type="text" id="curAudioUrl_A" placeholder="알토 드라이브 링크" /></div>
         </div>
         <div class="audio-upload-row">
           <div class="audio-row-header"><span style="color: var(--tenor-accent);">TEN (테너)</span></div>
-          <div class="audio-inputs">
-            <input type="text" id="curAudioUrl_T" placeholder="테너 드라이브 링크" />
-          </div>
+          <div class="audio-inputs"><input type="text" id="curAudioUrl_T" placeholder="테너 드라이브 링크" /></div>
         </div>
         <div class="audio-upload-row">
           <div class="audio-row-header"><span style="color: var(--bass-accent);">BAS (베이스)</span></div>
-          <div class="audio-inputs">
-            <input type="text" id="curAudioUrl_B" placeholder="베이스 드라이브 링크" />
-          </div>
+          <div class="audio-inputs"><input type="text" id="curAudioUrl_B" placeholder="베이스 드라이브 링크" /></div>
         </div>
       </div>
 
@@ -664,16 +637,18 @@
     pdfjsLib.GlobalWorkerOptions.workerSrc = 
       'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
+    // IndexedDB: PDF 데이터까지 캐싱하도록 확장
     let db;
     function initDB() {
       return new Promise((resolve, reject) => {
-        const req = indexedDB.open('AcappellaStudioDB_V7', 1);
+        const req = indexedDB.open('AcappellaStudioDB_FastV8', 1);
         req.onupgradeneeded = (e) => {
           const d = e.target.result;
           if (!d.objectStoreNames.contains('custom_songs')) d.createObjectStore('custom_songs', { keyPath: 'id' });
           if (!d.objectStoreNames.contains('pitch_overrides')) d.createObjectStore('pitch_overrides', { keyPath: 'songId' });
           if (!d.objectStoreNames.contains('audio_overrides')) d.createObjectStore('audio_overrides', { keyPath: 'songId' });
           if (!d.objectStoreNames.contains('personal_drawings')) d.createObjectStore('personal_drawings', { keyPath: 'id' });
+          if (!d.objectStoreNames.contains('pdf_cache')) d.createObjectStore('pdf_cache', { keyPath: 'id' }); // 초고속 로컬 PDF 캐시
         };
         req.onsuccess = () => { db = req.result; resolve(); };
         req.onerror = () => reject(req.error);
@@ -895,12 +870,15 @@
       return { title, notes };
     }
 
-    // 악보 및 데이터 렌더링
+    // ==========================================
+    // 📂 초고속 PDF 로더 & 캔버스 렌더링 최적화
+    // ==========================================
     let allSongs = [];
     let currentSong = null;
     let currentPdfDoc = null;
     let currentPageNum = 1;
     let zoomScale = 1.0;
+    let currentRenderTask = null; // 중복 렌더링 방지 캔슬용
 
     const pdfCanvas = document.getElementById('pdfCanvas');
     const pdfCtx = pdfCanvas ? pdfCanvas.getContext('2d') : null;
@@ -916,6 +894,41 @@
     const sheetCard = document.getElementById('sheetCard');
     const deleteLocalBtn = document.getElementById('deleteLocalBtn');
     const zoomLevelText = document.getElementById('zoomLevelText');
+
+    // 최적화된 PDF 데이터 가져오기 (캐시 ➔ 다이렉트 프록시 병렬 시도)
+    async function fetchPdfDataFast(song) {
+      const cacheKey = `pdf_${song.id}`;
+      // 1. IndexedDB 캐시 확인 (0.05초 만에 열림)
+      const cached = await getStoredItem('pdf_cache', cacheKey);
+      if (cached && cached.data) {
+        return cached.data;
+      }
+
+      // 2. 캐시가 없을 때만 네트워크 로드
+      const driveId = song.type === 'drive' ? song.driveId : extractDriveFileId(song.url);
+      let targetUrl = '';
+      if (driveId) {
+        // 속도가 빠른 Cloudflare 기반 프록시 파이프라인
+        const direct = `https://drive.google.com/uc?id=${driveId}&export=download`;
+        targetUrl = `https://corsproxy.io/?${encodeURIComponent(direct)}`;
+      } else {
+        targetUrl = song.url;
+      }
+
+      let res = await fetch(targetUrl);
+      if (!res.ok && driveId) {
+        // 2차 백업 프록시
+        const direct = `https://drive.google.com/uc?id=${driveId}&export=download`;
+        res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(direct)}`);
+      }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const arrayBuffer = await res.arrayBuffer();
+
+      // IndexedDB에 영구 캐시 (다음 접속부터는 0초 로딩)
+      await putStored('pdf_cache', { id: cacheKey, data: arrayBuffer });
+      return arrayBuffer;
+    }
 
     async function loadAllSongList(preferredSelectId = null) {
       statusView.style.display = 'block';
@@ -1016,21 +1029,8 @@
       spinner.style.display = 'block';
       statusText.innerHTML = `'${song.title}' 렌더링 중...`;
 
-      let targetUrl = '';
-      const driveId = song.type === 'drive' ? song.driveId : extractDriveFileId(song.url);
-
-      if (driveId) {
-        // 구글 다운로드 URL을 CORS 프록시로 감싸서 브라우저 차단 완벽 우회
-        const directDownload = `https://drive.google.com/uc?id=${driveId}&export=download`;
-        targetUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(directDownload)}`;
-      } else {
-        targetUrl = song.url;
-      }
       try {
-        const res = await fetch(targetUrl);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const arrayBuffer = await res.arrayBuffer();
-
+        const arrayBuffer = await fetchPdfDataFast(song);
         const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
         currentPdfDoc = await loadingTask.promise;
 
@@ -1047,8 +1047,16 @@
       }
     }
 
+    // 렌더링 태스크 캔슬 + 해상도 상한선(DPR 2.0) 최적화
     function renderPage(num) {
       if (!currentPdfDoc || !pdfCanvas || !pdfCtx) return;
+
+      // 이전 진행 중이던 렌더링이 있으면 즉시 취소하여 부하 제거
+      if (currentRenderTask) {
+        currentRenderTask.cancel();
+        currentRenderTask = null;
+      }
+
       currentPdfDoc.getPage(num).then(page => {
         const viewerWidth = document.getElementById('viewerMain').clientWidth;
         const baseWidth = Math.min(viewerWidth, 900);
@@ -1057,7 +1065,8 @@
         const unscaledViewport = page.getViewport({ scale: 1.0 });
         const scale = targetWidth / unscaledViewport.width;
         
-        const dpr = window.devicePixelRatio || 1;
+        // 아이폰 초고밀도 해상도로 인한 병목 방지 (최대 2.0으로 캡)
+        const dpr = Math.min(window.devicePixelRatio || 1, 2.0);
         const viewport = page.getViewport({ scale: scale * dpr });
 
         pdfCanvas.width = viewport.width;
@@ -1072,12 +1081,21 @@
 
         sheetCard.style.width = `${targetWidth}px`;
 
-        page.render({
+        const renderContext = {
           canvasContext: pdfCtx,
           viewport: viewport
-        });
-        pageIndicator.textContent = `${num} / ${currentPdfDoc.numPages}`;
+        };
 
+        currentRenderTask = page.render(renderContext);
+        currentRenderTask.promise.then(() => {
+          currentRenderTask = null;
+        }).catch(err => {
+          if (err.name !== 'RenderingCancelledException') {
+            console.error(err);
+          }
+        });
+
+        pageIndicator.textContent = `${num} / ${currentPdfDoc.numPages}`;
         loadPageDrawing(num);
       });
     }
@@ -1355,7 +1373,7 @@
       audioBar.classList.remove('show');
     };
 
-    // 스와이프
+    // 스와이프 제스처
     const viewerMain = document.getElementById('viewerMain');
     let touchStartX = 0;
     let touchStartY = 0;
@@ -1382,10 +1400,8 @@
     }, { passive: true });
 
     // ==========================================
-    // ⚙️ 모달 제어 (곡 설정 & 신규 추가 & 앱 메뉴)
+    // ⚙️ 모달 제어
     // ==========================================
-    
-    // 1) 현재 곡 설정 모달
     const currentSongEditModal = document.getElementById('currentSongEditModal');
     document.getElementById('openCurrentSongEditBtn').onclick = () => {
       if (!currentSong) return;
@@ -1430,7 +1446,6 @@
       loadSong(currentSong.id);
     };
 
-    // 2) 신규 악보 추가 모달
     const newSongModal = document.getElementById('newSongModal');
     document.getElementById('menuAddNewSongBtn').onclick = () => {
       appMenuModal.classList.remove('open');
@@ -1461,12 +1476,10 @@
       await loadAllSongList(newSong.id);
     };
 
-    // 3) 앱 더보기 바텀시트 메뉴
     const appMenuModal = document.getElementById('appMenuModal');
     document.getElementById('openAppMenuBtn').onclick = () => appMenuModal.classList.add('open');
     document.getElementById('closeAppMenuBtn').onclick = () => appMenuModal.classList.remove('open');
 
-    // 메트로놈 모달
     const metroModal = document.getElementById('metroModal');
     document.getElementById('menuOpenMetroBtn').onclick = () => {
       appMenuModal.classList.remove('open');
@@ -1479,15 +1492,17 @@
       appMenuModal.classList.remove('open');
     };
 
-    // [PWA 새로고침 보강] 강제 하드 리로드 실행
-    document.getElementById('menuRefreshBtn').onclick = () => {
+    // 캐시 동기화 버튼 (캐시 삭제 후 강제 갱신)
+    document.getElementById('menuRefreshBtn').onclick = async () => {
       appMenuModal.classList.remove('open');
+      if (currentSong) {
+        await deleteStored('pdf_cache', `pdf_${currentSong.id}`);
+      }
       const url = new URL(window.location.href);
       url.searchParams.set('t', Date.now());
       window.location.href = url.toString();
     };
 
-    // [PWA 앱 복귀 시 자동 동기화]
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
         loadAllSongList(currentSong?.id);
@@ -1500,12 +1515,12 @@
         await deleteStored('custom_songs', currentSong.id);
         await deleteStored('pitch_overrides', currentSong.id);
         await deleteStored('audio_overrides', currentSong.id);
+        await deleteStored('pdf_cache', `pdf_${currentSong.id}`);
         appMenuModal.classList.remove('open');
         await loadAllSongList();
       }
     };
 
-    // 페이지 내비게이션
     function nextPage() {
       if (currentPdfDoc && currentPageNum < currentPdfDoc.numPages) {
         currentPageNum++;
