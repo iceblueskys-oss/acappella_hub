@@ -73,9 +73,7 @@
     }
     .view-screen.active { display: flex; }
 
-    /* ==========================================
-       🏛️ 1. 스튜디오 라이브러리 화면
-       ========================================== */
+    /* 🏛️ 1. 스튜디오 라이브러리 화면 */
     #libraryView {
       background: #090a0e;
       overflow-y: auto;
@@ -231,9 +229,7 @@
       color: #000;
     }
 
-    /* ==========================================
-       🎼 2. 악보 뷰어 화면
-       ========================================== */
+    /* 🎼 2. 악보 뷰어 화면 */
     header {
       background: rgba(15, 16, 21, 0.94);
       backdrop-filter: blur(16px);
@@ -376,7 +372,7 @@
     body.invert-mode { background: #000000; }
     body.invert-mode .sheet-wrapper { filter: invert(0.92) hue-rotate(180deg) brightness(0.95); }
 
-    /* 대형 하단 플레이어 (슬림 & 노스크롤 패키징) */
+    /* 대형 하단 플레이어 */
     #audioBar {
       position: fixed;
       bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
@@ -411,7 +407,6 @@
     }
     #audioPlayBtn:active { transform: scale(0.92); }
 
-    /* 동적 파트 탭 컨테이너 (음원 있는 파트만 나열) */
     .part-track-selector {
       display: flex;
       background: #08090d;
@@ -657,13 +652,12 @@
       </div>
     </main>
 
-    <!-- 하단 오디오 콘솔 (존재하는 음원 파트만 자동 렌더링) -->
+    <!-- 하단 오디오 콘솔 -->
     <div id="audioBar">
       <button id="audioPlayBtn" title="재생/일시정지">
         <svg id="playIconSvg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3l14 9-14 9V3z"/></svg>
       </button>
       
-      <!-- JavaScript로 음원 있는 파트만 동적 주입 -->
       <div class="part-track-selector" id="partTabSelector"></div>
 
       <div class="audio-side-tools">
@@ -691,7 +685,7 @@
         </div>
 
         <button class="menu-action-btn" id="menuOpenMetroBtn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           <span>메트로놈 템포 (BPM/소리) 설정</span>
         </button>
 
@@ -798,7 +792,7 @@
     let db;
     function initDB() {
       return new Promise((resolve, reject) => {
-        const req = indexedDB.open('AcappellaStudioDB_V17_SLIM', 1);
+        const req = indexedDB.open('AcappellaStudioDB_V18_LH3', 1);
         req.onupgradeneeded = (e) => {
           const d = e.target.result;
           if (!d.objectStoreNames.contains('custom_songs')) d.createObjectStore('custom_songs', { keyPath: 'id' });
@@ -843,9 +837,7 @@
       });
     }
 
-    // ==========================================
-    // 🎵 오디오 & 피치 엔진
-    // ==========================================
+    // 오디오 엔진
     let audioCtx = null;
     function getAudioContext() {
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -1008,7 +1000,6 @@
       return match ? match[1] : null;
     }
 
-    // 파일/폴더명 파싱 (BAR 포함)
     function parseFileName(name) {
       const cleanName = name.replace(/\.(pdf|png|jpe?g|webp)$/i, '').trim();
       const match = cleanName.match(/^(.*?)\s*\[(.*?)\]$/);
@@ -1027,7 +1018,6 @@
       return { title, notes };
     }
 
-    // 음원 파일 파트 파싱
     function parsePartFromAudioName(name) {
       const cleanName = name.replace(/\.(mp3|wav|m4a|aac|ogg|flac)$/i, '').trim().toUpperCase();
       const lastSep = Math.max(cleanName.lastIndexOf('_'), cleanName.lastIndexOf('-'));
@@ -1088,22 +1078,41 @@
     const deleteLocalBtn = document.getElementById('deleteLocalBtn');
     const zoomLevelText = document.getElementById('zoomLevelText');
 
+    // 🚀 CORS/403 우회 수정된 fetchFileBuffer 함수
     async function fetchFileBuffer(fileId, fallbackUrl) {
       const cacheKey = `file_${fileId || fallbackUrl}`;
       const cached = await getStoredItem('pdf_cache', cacheKey);
       if (cached && cached.data) return cached.data;
 
-      let fetchUrl = '';
-      if (fileId && GOOGLE_API_KEY) {
-        fetchUrl = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${GOOGLE_API_KEY}`;
-      } else {
-        fetchUrl = fallbackUrl;
+      const candidateUrls = [];
+      if (fileId) {
+        // 1순위: 브라우저 CORS를 허용하는 Google 공식 서빙 호스트
+        candidateUrls.push(`https://lh3.googleusercontent.com/d/${fileId}`);
+        // 2순위: Google Drive 뷰어 엔드포인트
+        candidateUrls.push(`https://drive.google.com/uc?export=view&id=${fileId}`);
+      } else if (fallbackUrl) {
+        candidateUrls.push(fallbackUrl);
       }
 
-      const res = await fetch(fetchUrl);
-      if (!res.ok) throw new Error(`HTTP ${res.status} (${res.statusText})`);
+      let arrayBuffer = null;
+      let lastError = null;
 
-      const arrayBuffer = await res.arrayBuffer();
+      for (const url of candidateUrls) {
+        try {
+          const res = await fetch(url, { mode: 'cors' });
+          if (res.ok) {
+            arrayBuffer = await res.arrayBuffer();
+            if (arrayBuffer && arrayBuffer.byteLength > 0) break;
+          }
+        } catch (err) {
+          lastError = err;
+        }
+      }
+
+      if (!arrayBuffer) {
+        throw new Error(lastError ? lastError.message : "파일을 불러오지 못했습니다. 드라이브 공유 권한을 확인해주세요.");
+      }
+
       await putStored('pdf_cache', { id: cacheKey, data: arrayBuffer });
       return arrayBuffer;
     }
@@ -1170,7 +1179,8 @@
                   if (isAudio) {
                     const part = parsePartFromAudioName(f.name);
                     if (part) {
-                      partAudios[part] = `https://www.googleapis.com/drive/v3/files/${f.id}?alt=media&key=${GOOGLE_API_KEY}`;
+                      // 오디오 스트리밍 엔드포인트
+                      partAudios[part] = `https://lh3.googleusercontent.com/d/${f.id}`;
                     }
                   }
                 });
@@ -1242,7 +1252,6 @@
       renderSongCardList();
     }
 
-    // 트랙 카드 렌더링
     function renderSongCardList(searchTerm = "") {
       const container = document.getElementById('songCardList');
       container.innerHTML = "";
@@ -1315,7 +1324,7 @@
 
       loadSongAudioTracks(song);
 
-      // 상단 피치 캡슐 (바리톤 포함)
+      // 상단 피치 캡슐
       pitchBar.innerHTML = '';
       const partClassMap = { 'S': 'sop', 'A': 'alto', 'T': 'tenor', 'BAR': 'bari', 'B': 'bass' };
       const partFullMap = { 'S': 'SOP', 'A': 'ALT', 'T': 'TEN', 'BAR': 'BAR', 'B': 'BAS' };
@@ -1400,7 +1409,7 @@
       } catch (err) {
         console.error("악보 로드 실패:", err);
         spinner.style.display = 'none';
-        statusText.innerHTML = `악보를 불러올 수 없습니다.<br><small style="color:#ef4444;">(${err.message})<br>Google Drive API 사용 설정 및 폴더 공유 권한을 확인해주세요.</small>`;
+        statusText.innerHTML = `악보를 불러올 수 없습니다.<br><small style="color:#ef4444;">(${err.message})<br>Google Drive 파일 및 폴더 공유 권한(링크가 있는 모든 사용자 - 뷰어)을 확인해주세요.</small>`;
       }
     }
 
@@ -1659,7 +1668,7 @@
     };
 
     // ==========================================
-    // 🎧 파트별 음원 플레이어 로직 (음원 있는 파트만 동적 생성)
+    // 🎧 파트별 음원 플레이어 로직
     // ==========================================
     const audioBar = document.getElementById('audioBar');
     const guideAudio = document.getElementById('guideAudioElement');
@@ -1674,14 +1683,13 @@
 
     function loadSongAudioTracks(song) {
       currentSongPartAudios = {};
-      partTabSelector.innerHTML = ''; // 탭 컨테이너 초기화
+      partTabSelector.innerHTML = '';
 
       const availableParts = song.partAudioUrls || {};
       const partsOrder = ['ALL', 'S', 'A', 'T', 'BAR', 'B'];
       const activeParts = partsOrder.filter(p => !!availableParts[p]);
 
       if (activeParts.length > 0) {
-        // 음원이 있는 파트만 탭 버튼 생성
         activeParts.forEach(p => {
           currentSongPartAudios[p] = availableParts[p];
           const btn = document.createElement('button');
@@ -1693,7 +1701,6 @@
         });
 
         audioBar.classList.add('show');
-        // ALL이 있으면 ALL 우선, 없으면 첫 번째 파트 자동 활성화
         const defaultPart = activeParts.includes('ALL') ? 'ALL' : activeParts[0];
         switchPartTrack(defaultPart, false);
       } else {
