@@ -1256,7 +1256,7 @@
       renderSongCardList(e.target.value);
     };
 
-    // [수정된 악보 열기 로직]
+    // [수정된 악보 열기 로직 - CORS/403 해결]
     async function openSongInViewer(songId) {
       const song = allSongs.find(s => s.id === songId);
       if (!song) return;
@@ -1303,24 +1303,35 @@
       statusText.innerHTML = `'${song.title}' 렌더링 중...`;
 
       try {
-        const driveId = song.type === 'drive' ? song.driveId : extractDriveFileId(song.url);
-        let pdfSource;
+        const cacheKey = `pdf_${song.id}`;
+        let arrayBuffer = null;
 
-        if (driveId) {
-          // 구글 드라이브 파일의 공식 다이렉트 뷰어/임베드 스트림
-          pdfSource = {
-            url: `https://drive.google.com/uc?export=download&id=${driveId}`,
-            withCredentials: false
-          };
+        // 1. IndexedDB 캐시 확인 (캐시가 있으면 네트워크 없이 즉시 오픈)
+        const cached = await getStoredItem('pdf_cache', cacheKey);
+        if (cached && cached.data) {
+          arrayBuffer = cached.data;
         } else {
-          pdfSource = {
-            url: song.url,
-            withCredentials: false
-          };
+          // 2. Google Drive API 바이너리 다이렉트 호출 (403 및 CORS 우회)
+          const driveId = song.type === 'drive' ? song.driveId : extractDriveFileId(song.url);
+          let fetchUrl = '';
+
+          if (driveId && GOOGLE_API_KEY) {
+            fetchUrl = `https://www.googleapis.com/drive/v3/files/${driveId}?alt=media&key=${GOOGLE_API_KEY}`;
+          } else {
+            fetchUrl = song.url;
+          }
+
+          const res = await fetch(fetchUrl);
+          if (!res.ok) throw new Error(`HTTP ${res.status} (${res.statusText})`);
+
+          arrayBuffer = await res.arrayBuffer();
+
+          // IndexedDB에 영구 보관
+          await putStored('pdf_cache', { id: cacheKey, data: arrayBuffer });
         }
-        
-    // PDF.js 자체 스트리밍 로더 실행 (fetch CORS 우회)
-        const loadingTask = pdfjsLib.getDocument(pdfSource);
+
+        // PDF.js에 ArrayBuffer 직접 전달
+        const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
         currentPdfDoc = await loadingTask.promise;
 
         currentPageNum = 1;
