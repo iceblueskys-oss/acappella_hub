@@ -1017,15 +1017,15 @@
       statusText.innerHTML = `'${song.title}' 렌더링 중...`;
 
       let targetUrl = '';
-      let driveId = song.type === 'drive' ? song.driveId : extractDriveFileId(song.url);
+      const driveId = song.type === 'drive' ? song.driveId : extractDriveFileId(song.url);
 
       if (driveId) {
-        // 구글 API의 alt=media CORS 차단을 우회하는 공식 다운로드/임베드 엔드포인트
-        targetUrl = `https://drive.google.com/uc?id=${driveId}&export=download`;
+        // 구글 다운로드 URL을 CORS 프록시로 감싸서 브라우저 차단 완벽 우회
+        const directDownload = `https://drive.google.com/uc?id=${driveId}&export=download`;
+        targetUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(directDownload)}`;
       } else {
         targetUrl = song.url;
       }
-
       try {
         const res = await fetch(targetUrl);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
