@@ -676,7 +676,7 @@
         </div>
 
         <button class="menu-action-btn" id="menuOpenMetroBtn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l-.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           <span>메트로놈 템포 (BPM/소리) 설정</span>
         </button>
 
@@ -782,7 +782,7 @@
     let db;
     function initDB() {
       return new Promise((resolve, reject) => {
-        const req = indexedDB.open('AcappellaStudioDB_V60_PURGE', 1);
+        const req = indexedDB.open('AcappellaStudioDB_V70_API', 1);
         req.onupgradeneeded = (e) => {
           const d = e.target.result;
           if (!d.objectStoreNames.contains('custom_songs')) d.createObjectStore('custom_songs', { keyPath: 'id' });
@@ -1063,62 +1063,7 @@
     const deleteLocalBtn = document.getElementById('deleteLocalBtn');
     const zoomLevelText = document.getElementById('zoomLevelText');
 
-    function base64ToArrayBuffer(base64) {
-      const cleanB64 = base64.replace(/[\r\n\s]/g, '');
-      const binaryString = window.atob(cleanB64);
-      const len = binaryString.length;
-      const bytes = new Uint8Array(len);
-      for (let i = 0; i < len; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-      }
-      return bytes.buffer;
-    }
-
-    // JSONP 비동기 호출 엔진
-    function fetchFileViaJSONP(gasUrl, driveId) {
-      return new Promise((resolve, reject) => {
-        const callbackName = 'gas_cb_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
-        const script = document.createElement('script');
-        
-        const timeout = setTimeout(() => {
-          cleanup();
-          reject(new Error("GAS 요청 시간 초과 (15초)"));
-        }, 15000);
-
-        function cleanup() {
-          if (timeout) clearTimeout(timeout);
-          if (window[callbackName]) delete window[callbackName];
-          if (script.parentNode) script.parentNode.removeChild(script);
-        }
-
-        window[callbackName] = function(response) {
-          cleanup();
-          if (response && response.data) {
-            try {
-              const buffer = base64ToArrayBuffer(response.data);
-              resolve(buffer);
-            } catch (err) {
-              reject(new Error("Base64 디코딩 실패: " + err.message));
-            }
-          } else if (response && response.error) {
-            reject(new Error(response.error));
-          } else {
-            reject(new Error("알 수 없는 Apps Script 응답"));
-          }
-        };
-
-        script.onerror = function() {
-          cleanup();
-          reject(new Error("Google Apps Script 연결 실패"));
-        };
-
-        const delimiter = gasUrl.includes('?') ? '&' : '?';
-        script.src = `${gasUrl}${delimiter}id=${encodeURIComponent(driveId)}&callback=${callbackName}`;
-        document.body.appendChild(script);
-      });
-    }
-
-    // 🚀 [최종 안정형 드라이브 다이렉트 다운로더]
+    // 🚀 [최종 안정형] 구글 드라이브 공식 API 바이너리 다운로더
     async function fetchFileBuffer(fileId, fallbackUrl) {
       const cacheKey = `file_${fileId || fallbackUrl}`;
       const cached = await getStoredItem('pdf_cache', cacheKey);
@@ -1129,24 +1074,22 @@
         throw new Error("파일 ID나 URL을 찾을 수 없습니다.");
       }
 
-      // 구글 드라이브 파일 고유의 다운로드 엔드포인트 조합
-      const targetUrl = driveId 
-        ? `https://drive.google.com/uc?export=download&id=${driveId}` 
+      const apiUrl = driveId 
+        ? `https://www.googleapis.com/drive/v3/files/${driveId}?alt=media&key=${GOOGLE_API_KEY}` 
         : fallbackUrl;
 
       let arrayBuffer = null;
       try {
-        const res = await fetch(targetUrl);
+        const res = await fetch(apiUrl);
         if (!res.ok) throw new Error(`HTTP 에러 상태 코드: ${res.status}`);
         
         const buf = await res.arrayBuffer();
         if (!buf || buf.byteLength < 50) throw new Error("파일 데이터가 비어 있습니다.");
 
-        // HTML 로그인/경고 페이지가 딸려 들어왔는지 검사
         const firstBytes = new Uint8Array(buf.slice(0, 15));
         const header = String.fromCharCode(...firstBytes);
         if (header.includes('<') || header.toLowerCase().includes('html')) {
-          throw new Error("구글 드라이브 파일의 공유 권한이 '링크가 있는 모든 사용자 (뷰어)'로 설정되어 있는지 확인해주세요.");
+          throw new Error("구글 드라이브 파일 권한 또는 API 키를 확인해주세요.");
         }
 
         arrayBuffer = buf;
@@ -1155,8 +1098,6 @@
       }
 
       await putStored('pdf_cache', { id: cacheKey, data: arrayBuffer });
-      return arrayBuffer;
-    }ored('pdf_cache', { id: cacheKey, data: arrayBuffer });
       return arrayBuffer;
     }
 
@@ -1219,7 +1160,7 @@
                   if (isAudio) {
                     const part = parsePartFromAudioName(f.name);
                     if (part) {
-                      partAudios[part] = `https://drive.google.com/uc?export=download&id=${f.id}`;
+                      partAudios[part] = `https://www.googleapis.com/drive/v3/files/${f.id}?alt=media&key=${GOOGLE_API_KEY}`;
                     }
                   }
                 });
@@ -1447,7 +1388,7 @@
       } catch (err) {
         console.error("악보 로드 실패:", err);
         spinner.style.display = 'none';
-        statusText.innerHTML = `악보를 불러올 수 없습니다.<br><small style="color:#ef4444;">(${err.message})<br>Google Apps Script의 최신 버전 배포 상태를 확인해주세요.</small>`;
+        statusText.innerHTML = `악보를 불러올 수 없습니다.<br><small style="color:#ef4444;">(${err.message})</small>`;
       }
     }
 
