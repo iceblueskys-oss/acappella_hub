@@ -1017,15 +1017,13 @@
       statusText.innerHTML = `'${song.title}' 렌더링 중...`;
 
       let targetUrl = '';
-      if (song.type === 'drive') {
-        targetUrl = `https://www.googleapis.com/drive/v3/files/${song.driveId}?alt=media&key=${GOOGLE_API_KEY}`;
+      let driveId = song.type === 'drive' ? song.driveId : extractDriveFileId(song.url);
+
+      if (driveId) {
+        // 구글 API의 alt=media CORS 차단을 우회하는 공식 다운로드/임베드 엔드포인트
+        targetUrl = `https://drive.google.com/uc?id=${driveId}&export=download`;
       } else {
-        const driveId = extractDriveFileId(song.url);
-        if (driveId && GOOGLE_API_KEY) {
-          targetUrl = `https://www.googleapis.com/drive/v3/files/${driveId}?alt=media&key=${GOOGLE_API_KEY}`;
-        } else {
-          targetUrl = song.url;
-        }
+        targetUrl = song.url;
       }
 
       try {
