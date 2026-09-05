@@ -1078,7 +1078,7 @@
     const deleteLocalBtn = document.getElementById('deleteLocalBtn');
     const zoomLevelText = document.getElementById('zoomLevelText');
 
-    // 🚀 [HTML 반환 및 CORS 원천 차단] 순수 바이너리 스트림 검증 로더
+    // 🚀 [구글 경고 HTML 우회 및 순수 바이너리 보장] 초고속 다운로더
     async function fetchFileBuffer(fileId, fallbackUrl) {
       const cacheKey = `file_${fileId || fallbackUrl}`;
       const cached = await getStoredItem('pdf_cache', cacheKey);
@@ -1088,17 +1088,19 @@
       let arrayBuffer = null;
       let lastError = null;
 
-      // 1순위: 브라우저 CORS를 우회해 구글 다운로드 스트림을 직접 중계하는 원시 프록시
-      // 2순위: Google Drive API (API 키 허용 시)
-      // 3순위: Google 다이렉트 호스트
       const candidateUrls = [];
       if (driveId) {
-        const directDownload = `https://drive.google.com/uc?export=download&id=${driveId}`;
-        candidateUrls.push(`https://api.allorigins.win/raw?url=${encodeURIComponent(directDownload)}`);
+        // 구글 바이러스 검사 경고 HTML을 건너뛰는 공식 파라미터 (confirm=t)
+        const gDriveDownload = `https://drive.google.com/uc?export=download&id=${driveId}&confirm=t`;
+        
+        // 1. Cloudflare 기반 무제한 대역폭 CORS 프록시
+        candidateUrls.push(`https://corsproxy.io/?url=${encodeURIComponent(gDriveDownload)}`);
+        // 2. 대체 CORS 바이너리 프록시
+        candidateUrls.push(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(gDriveDownload)}`);
+        // 3. Google API 키 직접 시도
         if (GOOGLE_API_KEY) {
           candidateUrls.push(`https://www.googleapis.com/drive/v3/files/${driveId}?alt=media&key=${GOOGLE_API_KEY}`);
         }
-        candidateUrls.push(`https://lh3.googleusercontent.com/d/${driveId}`);
       } else if (fallbackUrl) {
         candidateUrls.push(fallbackUrl);
       }
@@ -1111,11 +1113,11 @@
           const buf = await res.arrayBuffer();
           if (!buf || buf.byteLength < 50) continue;
 
-          // 헤더 시그니처 체크 (HTML 에러창인지 확인)
+          // 헤더 시그니처 체크: HTML 문서가 아닌지 엄격 검증
           const firstBytes = new Uint8Array(buf.slice(0, 10));
           const header = String.fromCharCode(...firstBytes);
 
-          // HTML이 반환된 경우 (%PDF 또는 이미지 바이너리가 아님) 건너뛰기
+          // HTML 태그가 포함되어 있으면 경고 페이지이므로 제외
           if (header.includes('<') || header.toLowerCase().includes('html')) {
             continue;
           }
@@ -1128,7 +1130,7 @@
       }
 
       if (!arrayBuffer) {
-        throw new Error(lastError ? lastError.message : "악보 바이너리를 수신하지 못했습니다. 구글 드라이브 파일 공유 권한('링크가 있는 모든 사용자 - 뷰어')을 확인해주세요.");
+        throw new Error(lastError ? lastError.message : "악보 파일을 받아오지 못했습니다. 드라이브 공유 권한('링크가 있는 모든 사용자 - 뷰어')을 확인해주세요.");
       }
 
       await putStored('pdf_cache', { id: cacheKey, data: arrayBuffer });
