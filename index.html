@@ -1256,7 +1256,7 @@
       renderSongCardList(e.target.value);
     };
 
-    // 악보 열기
+    // [수정된 악보 열기 로직]
     async function openSongInViewer(songId) {
       const song = allSongs.find(s => s.id === songId);
       if (!song) return;
@@ -1268,7 +1268,7 @@
 
       loadSongAudioTracks(song);
 
-      // 상단 피치 캡슐
+      // 상단 피치 캡슐 렌더링
       pitchBar.innerHTML = '';
       const partClassMap = { 'S': 'sop', 'A': 'alto', 'T': 'tenor', 'B': 'bass' };
       const partFullMap = { 'S': 'SOP', 'A': 'ALT', 'T': 'TEN', 'B': 'BAS' };
@@ -1303,8 +1303,24 @@
       statusText.innerHTML = `'${song.title}' 렌더링 중...`;
 
       try {
-        const arrayBuffer = await fetchPdfDataSafe(song);
-        const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+        const driveId = song.type === 'drive' ? song.driveId : extractDriveFileId(song.url);
+        let pdfSource;
+
+        if (driveId) {
+          // 구글 드라이브 파일의 공식 다이렉트 뷰어/임베드 스트림
+          pdfSource = {
+            url: `https://drive.google.com/uc?export=download&id=${driveId}`,
+            withCredentials: false
+          };
+        } else {
+          pdfSource = {
+            url: song.url,
+            withCredentials: false
+          };
+        }
+        
+    // PDF.js 자체 스트리밍 로더 실행 (fetch CORS 우회)
+        const loadingTask = pdfjsLib.getDocument(pdfSource);
         currentPdfDoc = await loadingTask.promise;
 
         currentPageNum = 1;
@@ -1316,10 +1332,10 @@
       } catch (err) {
         console.error("PDF 로드 실패:", err);
         spinner.style.display = 'none';
-        statusText.innerHTML = `악보를 불러올 수 없습니다.<br><small style="color:#ef4444;">(${err.message})<br>구글 드라이브 공유 권한이 '링크가 있는 모든 사용자'인지 확인해주세요.</small>`;
+        statusText.innerHTML = `악보를 불러올 수 없습니다.<br><small style="color:#ef4444;">(${err.message})<br>구글 드라이브 파일의 공유 권한이 '링크가 있는 모든 사용자(뷰어)'인지 확인해주세요.</small>`;
       }
     }
-
+    
     function renderPage(num) {
       if (!currentPdfDoc || !pdfCanvas || !pdfCtx) return;
 
