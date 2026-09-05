@@ -1118,46 +1118,45 @@
       });
     }
 
-    // 🚀 [표준 fetch 프록시 다운로더]
+    // 🚀 [최종 안정형 드라이브 다이렉트 다운로더]
     async function fetchFileBuffer(fileId, fallbackUrl) {
       const cacheKey = `file_${fileId || fallbackUrl}`;
       const cached = await getStoredItem('pdf_cache', cacheKey);
       if (cached && cached.data) return cached.data;
 
       const driveId = fileId || extractDriveFileId(fallbackUrl);
-      let arrayBuffer = null;
-      let lastError = null;
-
-      // 1순위: Google Apps Script 표준 fetch 프록시
-      if (GAS_URL && driveId) {
-        try {
-          const res = await fetch(`${GAS_URL}?id=${driveId}`);
-          if (res.ok) {
-            const json = await res.json();
-            if (json && json.data) {
-              const cleanB64 = json.data.replace(/[\r\n\s]/g, '');
-              const binaryString = window.atob(cleanB64);
-              const len = binaryString.length;
-              const bytes = new Uint8Array(len);
-              for (let i = 0; i < len; i++) {
-                bytes[i] = binaryString.charCodeAt(i);
-              }
-              arrayBuffer = bytes.buffer;
-            } else if (json && json.error) {
-              throw new Error(json.error);
-            }
-          }
-        } catch (e) {
-          console.warn("GAS Fetch 실패:", e.message);
-          lastError = e;
-        }
+      if (!driveId && !fallbackUrl) {
+        throw new Error("파일 ID나 URL을 찾을 수 없습니다.");
       }
 
-      if (!arrayBuffer) {
-        throw new Error(lastError ? lastError.message : "악보 파일을 받아올 수 없습니다. GAS 배포 URL과 권한을 확인해주세요.");
+      // 구글 드라이브 파일 고유의 다운로드 엔드포인트 조합
+      const targetUrl = driveId 
+        ? `https://drive.google.com/uc?export=download&id=${driveId}` 
+        : fallbackUrl;
+
+      let arrayBuffer = null;
+      try {
+        const res = await fetch(targetUrl);
+        if (!res.ok) throw new Error(`HTTP 에러 상태 코드: ${res.status}`);
+        
+        const buf = await res.arrayBuffer();
+        if (!buf || buf.byteLength < 50) throw new Error("파일 데이터가 비어 있습니다.");
+
+        // HTML 로그인/경고 페이지가 딸려 들어왔는지 검사
+        const firstBytes = new Uint8Array(buf.slice(0, 15));
+        const header = String.fromCharCode(...firstBytes);
+        if (header.includes('<') || header.toLowerCase().includes('html')) {
+          throw new Error("구글 드라이브 파일의 공유 권한이 '링크가 있는 모든 사용자 (뷰어)'로 설정되어 있는지 확인해주세요.");
+        }
+
+        arrayBuffer = buf;
+      } catch (err) {
+        throw new Error("다운로드 실패: " + err.message);
       }
 
       await putStored('pdf_cache', { id: cacheKey, data: arrayBuffer });
+      return arrayBuffer;
+    }ored('pdf_cache', { id: cacheKey, data: arrayBuffer });
       return arrayBuffer;
     }
 
