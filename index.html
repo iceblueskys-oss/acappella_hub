@@ -33,6 +33,7 @@
       --sop-accent: #f87171;
       --alto-accent: #fbbf24;
       --tenor-accent: #34d399;
+      --bari-accent: #c084fc;
       --bass-accent: #60a5fa;
     }
 
@@ -136,7 +137,6 @@
       pointer-events: none;
     }
 
-    /* 트랙 카드 리스트 */
     .song-card-list {
       display: flex;
       flex-direction: column;
@@ -188,6 +188,13 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .folder-tag-icon {
+      color: var(--text-gold);
+      flex-shrink: 0;
     }
     .song-meta-row {
       display: flex;
@@ -317,6 +324,7 @@
     .pitch-capsule.sop .pitch-badge { background: rgba(248, 113, 113, 0.15); color: var(--sop-accent); }
     .pitch-capsule.alto .pitch-badge { background: rgba(251, 191, 36, 0.15); color: var(--alto-accent); }
     .pitch-capsule.tenor .pitch-badge { background: rgba(52, 211, 153, 0.15); color: var(--tenor-accent); }
+    .pitch-capsule.bari .pitch-badge { background: rgba(192, 132, 252, 0.15); color: var(--bari-accent); }
     .pitch-capsule.bass .pitch-badge { background: rgba(96, 165, 250, 0.15); color: var(--bass-accent); }
     .pitch-val { font-size: 11px; font-weight: 700; color: #e5e7eb; }
 
@@ -409,12 +417,16 @@
       padding: 3px;
       border: 1px solid rgba(255, 255, 255, 0.08);
       gap: 3px;
+      overflow-x: auto;
+      white-space: nowrap;
     }
+    .part-track-selector::-webkit-scrollbar { display: none; }
+
     .part-tab {
-      padding: 7px 12px;
-      min-width: 44px;
+      padding: 7px 10px;
+      min-width: 40px;
       border-radius: 7px;
-      font-size: 13px;
+      font-size: 12.5px;
       font-weight: 800;
       background: transparent;
       border: none;
@@ -433,6 +445,7 @@
     .part-tab.active[data-part="S"] { color: var(--sop-accent); }
     .part-tab.active[data-part="A"] { color: var(--alto-accent); }
     .part-tab.active[data-part="T"] { color: var(--tenor-accent); }
+    .part-tab.active[data-part="BAR"] { color: var(--bari-accent); }
     .part-tab.active[data-part="B"] { color: var(--bass-accent); }
 
     .audio-side-tools {
@@ -489,7 +502,7 @@
       background: #14161d;
       border: 1px solid rgba(255, 255, 255, 0.1);
       width: 92%;
-      max-width: 440px;
+      max-width: 460px;
       border-radius: 18px;
       padding: 16px;
       display: flex;
@@ -509,19 +522,19 @@
       color: #fff;
     }
 
-    .pitch-slot-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+    .pitch-slot-container { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
     .pitch-edit-card {
       background: #0c0d12;
       border: 1px solid var(--border-subtle);
       border-radius: 8px;
-      padding: 6px 3px;
+      padding: 6px 2px;
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 4px;
     }
-    .pitch-edit-card span { font-size: 9.5px; font-weight: 800; }
-    .pitch-edit-card select { width: 100%; font-size: 12px; font-weight: 700; padding: 4px 1px; text-align: center; }
+    .pitch-edit-card span { font-size: 9px; font-weight: 800; }
+    .pitch-edit-card select { width: 100%; font-size: 11.5px; font-weight: 700; padding: 4px 0; text-align: center; }
 
     .menu-action-list { display: flex; flex-direction: column; gap: 6px; }
     .menu-action-btn {
@@ -547,9 +560,7 @@
 </head>
 <body>
 
-  <!-- ==========================================
-       🏛️ SCREEN 1: 라이브러리 (곡 목록)
-       ========================================== -->
+  <!-- SCREEN 1: 라이브러리 (곡 목록) -->
   <div class="view-screen active" id="libraryView">
     <div class="lib-header">
       <div class="lib-title-box">
@@ -557,7 +568,7 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="color:var(--text-gold);"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
           <span>Acappella Studio</span>
         </div>
-        <span class="lib-subtitle">구글 드라이브 자동 연동 보관함</span>
+        <span class="lib-subtitle">구글 드라이브 폴더형 보관함 (BAR 지원)</span>
       </div>
       <div class="lib-tools">
         <button id="libAddNewBtn" class="btn-gold">
@@ -580,9 +591,7 @@
     </div>
   </div>
 
-  <!-- ==========================================
-       🎼 SCREEN 2: 악보 뷰어
-       ========================================== -->
+  <!-- SCREEN 2: 악보 뷰어 -->
   <div class="view-screen" id="viewerView">
     <header>
       <div class="header-row">
@@ -627,7 +636,7 @@
       </div>
     </header>
 
-    <!-- 드로잉 모드 서브 툴바 -->
+    <!-- 드로잉 서브 툴바 -->
     <div id="drawingToolbar">
       <button class="active" id="toolPenBtn">펜</button>
       <button id="toolBreathBtn">V 숨표</button>
@@ -649,7 +658,7 @@
       </div>
     </main>
 
-    <!-- 하단 오디오 콘솔 -->
+    <!-- 하단 오디오 콘솔 (바리톤 탭 포함) -->
     <div id="audioBar">
       <button id="audioPlayBtn" title="재생/일시정지">
         <svg id="playIconSvg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3l14 9-14 9V3z"/></svg>
@@ -660,6 +669,7 @@
         <button class="part-tab" data-part="S">S</button>
         <button class="part-tab" data-part="A">A</button>
         <button class="part-tab" data-part="T">T</button>
+        <button class="part-tab" data-part="BAR">BAR</button>
         <button class="part-tab" data-part="B">B</button>
       </div>
 
@@ -713,7 +723,7 @@
     </div>
   </div>
 
-  <!-- [현재 악보 첫 음 설정] 모달 -->
+  <!-- [현재 악보 첫 음 설정] 모달 (바리톤 포함 5개 파트) -->
   <div class="modal-backdrop" id="currentSongEditModal">
     <div class="modal">
       <h3 id="currentSongModalTitle">파트별 첫 음 지정</h3>
@@ -724,6 +734,7 @@
           <div class="pitch-edit-card"><span style="color: var(--sop-accent);">SOP</span><select id="curQuickS"></select></div>
           <div class="pitch-edit-card"><span style="color: var(--alto-accent);">ALT</span><select id="curQuickA"></select></div>
           <div class="pitch-edit-card"><span style="color: var(--tenor-accent);">TEN</span><select id="curQuickT"></select></div>
+          <div class="pitch-edit-card"><span style="color: var(--bari-accent);">BAR</span><select id="curQuickBAR"></select></div>
           <div class="pitch-edit-card"><span style="color: var(--bass-accent);">BAS</span><select id="curQuickB"></select></div>
         </div>
       </div>
@@ -744,7 +755,7 @@
         <input type="text" id="newSongTitle" placeholder="예: Java Jive" required />
       </div>
       <div class="form-group">
-        <label>악보 PDF URL (구글 드라이브 공유 링크)</label>
+        <label>악보 PDF 또는 이미지 URL</label>
         <input type="text" id="newSongPdfUrl" placeholder="https://drive.google.com/file/d/..." required />
       </div>
       <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px;">
@@ -794,7 +805,7 @@
     let db;
     function initDB() {
       return new Promise((resolve, reject) => {
-        const req = indexedDB.open('AcappellaStudioDB_V12', 1);
+        const req = indexedDB.open('AcappellaStudioDB_V16_BAR', 1);
         req.onupgradeneeded = (e) => {
           const d = e.target.result;
           if (!d.objectStoreNames.contains('custom_songs')) d.createObjectStore('custom_songs', { keyPath: 'id' });
@@ -839,9 +850,7 @@
       });
     }
 
-    // ==========================================
-    // 🎵 오디오 & 피치 엔진
-    // ==========================================
+    // 오디오 엔진
     let audioCtx = null;
     function getAudioContext() {
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -865,12 +874,14 @@
     window.addEventListener('click', unlockIOSAudio, { passive: true });
 
     const availableNotes = [
-      "", "C3", "C#3", "D3", "Eb3", "E3", "F3", "F#3", "G3", "Ab3", "A3", "Bb3", "B3",
+      "", "C2", "C#2", "D2", "Eb2", "E2", "F2", "F#2", "G2", "Ab2", "A2", "Bb2", "B2",
+      "C3", "C#3", "D3", "Eb3", "E3", "F3", "F#3", "G3", "Ab3", "A3", "Bb3", "B3",
       "C4", "C#4", "D4", "Eb4", "E4", "F4", "F#4", "G4", "Ab4", "A4", "Bb4", "B4",
       "C5", "C#5", "D5", "Eb5", "E5"
     ];
 
     const noteFrequencies = {
+      "C2": 65.41, "C#2": 69.30, "DB2": 69.30, "D2": 73.42, "D#2": 77.78, "EB2": 77.78, "E2": 82.41, "F2": 87.31, "F#2": 92.50, "GB2": 92.50, "G2": 98.00, "G#2": 103.83, "AB2": 103.83, "A2": 110.00, "A#2": 116.54, "BB2": 116.54, "B2": 123.47,
       "C3": 130.81, "C#3": 138.59, "DB3": 138.59, "D3": 146.83, "D#3": 155.56, "EB3": 155.56, "E3": 164.81, "F3": 174.61, "F#3": 185.00, "GB3": 185.00, "G3": 196.00, "G#3": 207.65, "AB3": 207.65, "A3": 220.00, "A#3": 233.08, "BB3": 233.08, "B3": 246.94,
       "C4": 261.63, "C#4": 277.18, "DB4": 277.18, "D4": 293.66, "D#4": 311.13, "EB4": 311.13, "E4": 329.63, "F4": 349.23, "F#4": 369.99, "GB4": 369.99, "G4": 392.00, "G#4": 415.30, "AB4": 415.30, "A4": 440.00, "A#4": 466.16, "BB4": 466.16, "B4": 493.88,
       "C5": 523.25, "C#5": 554.37, "D5": 587.33, "EB5": 622.25, "E5": 659.25
@@ -901,8 +912,9 @@
     }
 
     function initPitchSelectOptions() {
-      ['curQuickS', 'curQuickA', 'curQuickT', 'curQuickB'].forEach(id => {
+      ['curQuickS', 'curQuickA', 'curQuickT', 'curQuickBAR', 'curQuickB'].forEach(id => {
         const sel = document.getElementById(id);
+        if (!sel) return;
         sel.innerHTML = '';
         availableNotes.forEach(n => {
           const opt = document.createElement('option');
@@ -1001,19 +1013,9 @@
       return match ? match[1] : null;
     }
 
-    // ==========================================
-    // 🔍 대소문자 & 구분자 정규화 매칭 엔진
-    // ==========================================
-    function normalizeKey(str) {
-      return (str || '')
-        .toLowerCase()
-        .replace(/[\s\-_]/g, '') // 공백, 언더바, 대시를 완전히 제거하여 대조
-        .trim();
-    }
-
-    // 악보 PDF 파일명 파싱
-    function parseFileName(fileName) {
-      const cleanName = fileName.replace(/\.pdf$/i, '').trim();
+    // 파일/폴더명 파싱 (BAR 태그 지원)
+    function parseFileName(name) {
+      const cleanName = name.replace(/\.(pdf|png|jpe?g|webp)$/i, '').trim();
       const match = cleanName.match(/^(.*?)\s*\[(.*?)\]$/);
       if (!match) return { title: cleanName, notes: {} };
 
@@ -1021,41 +1023,58 @@
       const notes = {};
       match[2].split(',').forEach(item => {
         const [p, n] = item.split(':');
-        if (p && n) notes[p.trim().toUpperCase()] = n.trim().toUpperCase();
+        if (p && n) {
+          let partKey = p.trim().toUpperCase();
+          if (['BAR', 'BARI', 'BARITONE', 'BR'].includes(partKey)) partKey = 'BAR';
+          notes[partKey] = n.trim().toUpperCase();
+        }
       });
       return { title, notes };
     }
 
-    // 음원 파일명 파싱 (대소문자/구분기호 완전 무시)
-    function parseAudioFileName(fileName) {
-      const cleanName = fileName.replace(/\.(mp3|wav|m4a|aac|ogg|flac)$/i, '').trim();
+    // 음원 파일 파트 파싱 (바리톤 BAR 완벽 지원)
+    function parsePartFromAudioName(name) {
+      const cleanName = name.replace(/\.(mp3|wav|m4a|aac|ogg|flac)$/i, '').trim().toUpperCase();
       const lastSep = Math.max(cleanName.lastIndexOf('_'), cleanName.lastIndexOf('-'));
-      if (lastSep === -1) return null;
-
-      const songTitle = cleanName.substring(0, lastSep).trim();
-      const partRaw = cleanName.substring(lastSep + 1).trim().toUpperCase();
+      const token = (lastSep !== -1) ? cleanName.substring(lastSep + 1).trim() : cleanName;
 
       const partMap = {
         'ALL': 'ALL', 'MR': 'ALL', 'FULL': 'ALL', 'GUIDE': 'ALL',
         'S': 'S', 'SOP': 'S', 'SOPRANO': 'S',
         'A': 'A', 'ALT': 'A', 'ALTO': 'A',
         'T': 'T', 'TEN': 'T', 'TENOR': 'T',
+        'BAR': 'BAR', 'BARI': 'BAR', 'BARITONE': 'BAR', 'BR': 'BAR',
         'B': 'B', 'BAS': 'B', 'BASS': 'B'
       };
 
-      const part = partMap[partRaw];
-      if (!part) return null;
+      return partMap[token] || null;
+    }
 
-      return { songTitle, part };
+    function isScoreFile(file) {
+      const name = file.name || '';
+      const mime = file.mimeType || '';
+      return (
+        mime === 'application/pdf' ||
+        mime.startsWith('image/') ||
+        /\.(pdf|png|jpe?g|webp)$/i.test(name)
+      );
+    }
+
+    function isImageScore(file) {
+      const name = file.name || '';
+      const mime = file.mimeType || '';
+      return mime.startsWith('image/') || /\.(png|jpe?g|webp)$/i.test(name);
     }
 
     // ==========================================
-    // 📂 고신뢰 PDF 다운로드 파이프라인
+    // 📂 고신뢰 악보 뷰어 엔진
     // ==========================================
     let allSongs = [];
     let currentSong = null;
     let currentPdfDoc = null;
+    let currentImagePages = [];
     let currentPageNum = 1;
+    let totalPageCount = 1;
     let zoomScale = 1.0;
     let currentRenderTask = null;
 
@@ -1074,18 +1093,16 @@
     const deleteLocalBtn = document.getElementById('deleteLocalBtn');
     const zoomLevelText = document.getElementById('zoomLevelText');
 
-    async function fetchPdfDataSafe(song) {
-      const cacheKey = `pdf_${song.id}`;
+    async function fetchFileBuffer(fileId, fallbackUrl) {
+      const cacheKey = `file_${fileId || fallbackUrl}`;
       const cached = await getStoredItem('pdf_cache', cacheKey);
       if (cached && cached.data) return cached.data;
 
-      const driveId = song.type === 'drive' ? song.driveId : extractDriveFileId(song.url);
       let fetchUrl = '';
-
-      if (driveId && GOOGLE_API_KEY) {
-        fetchUrl = `https://www.googleapis.com/drive/v3/files/${driveId}?alt=media&key=${GOOGLE_API_KEY}`;
+      if (fileId && GOOGLE_API_KEY) {
+        fetchUrl = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${GOOGLE_API_KEY}`;
       } else {
-        fetchUrl = song.url;
+        fetchUrl = fallbackUrl;
       }
 
       const res = await fetch(fetchUrl);
@@ -1116,53 +1133,104 @@
 
     document.getElementById('backToLibBtn').onclick = showLibraryScreen;
 
-    // 대소문자 무시 구글 드라이브 자동 매칭 로더
     async function loadAllSongList() {
       let driveItems = [];
-      const driveAudioMap = {}; // { [normKey]: { S: url, A: url, ... } }
 
       if (GOOGLE_API_KEY && DRIVE_FOLDER_ID) {
         try {
           const q = `'${DRIVE_FOLDER_ID}' in parents and trashed = false`;
           const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name,mimeType)&orderBy=name&key=${GOOGLE_API_KEY}`;
           const res = await fetch(url);
+
           if (res.ok) {
             const data = await res.json();
-            const files = data.files || [];
+            const rootItems = data.files || [];
 
-            // 1) 오디오 파일 수집 및 정규화 키 매핑
-            files.forEach(f => {
-              const isAudio = (f.mimeType && f.mimeType.startsWith('audio/')) ||
-                              /\.(mp3|wav|m4a|aac|ogg|flac)$/i.test(f.name);
-              if (isAudio) {
-                const parsed = parseAudioFileName(f.name);
-                if (parsed) {
-                  const normKey = normalizeKey(parsed.songTitle);
-                  if (!driveAudioMap[normKey]) driveAudioMap[normKey] = {};
-                  driveAudioMap[normKey][parsed.part] = `https://www.googleapis.com/drive/v3/files/${f.id}?alt=media&key=${GOOGLE_API_KEY}`;
+            const subFolders = rootItems.filter(f => f.mimeType === 'application/vnd.google-apps.folder');
+            const rootScoreFiles = rootItems.filter(f => isScoreFile(f));
+
+            const folderPromises = subFolders.map(async (folder) => {
+              try {
+                const subQ = `'${folder.id}' in parents and trashed = false`;
+                const subUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(subQ)}&fields=files(id,name,mimeType)&key=${GOOGLE_API_KEY}`;
+                const subRes = await fetch(subUrl);
+                if (!subRes.ok) return null;
+
+                const subData = await subRes.json();
+                const subFiles = subData.files || [];
+
+                const pdfFile = subFiles.find(f => f.mimeType === 'application/pdf' || /\.pdf$/i.test(f.name));
+                const imageFiles = subFiles
+                  .filter(f => isImageScore(f))
+                  .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
+
+                if (!pdfFile && imageFiles.length === 0) return null;
+
+                const meta = parseFileName(folder.name);
+                const partAudios = {};
+
+                subFiles.forEach(f => {
+                  const isAudio = (f.mimeType && f.mimeType.startsWith('audio/')) ||
+                                  /\.(mp3|wav|m4a|aac|ogg|flac)$/i.test(f.name);
+                  if (isAudio) {
+                    const part = parsePartFromAudioName(f.name);
+                    if (part) {
+                      partAudios[part] = `https://www.googleapis.com/drive/v3/files/${f.id}?alt=media&key=${GOOGLE_API_KEY}`;
+                    }
+                  }
+                });
+
+                if (pdfFile) {
+                  const pdfMeta = parseFileName(pdfFile.name);
+                  return {
+                    id: `drive_${pdfFile.id}`,
+                    driveId: pdfFile.id,
+                    type: 'drive',
+                    fileType: 'pdf',
+                    isFolder: true,
+                    title: meta.title,
+                    notes: Object.keys(meta.notes).length > 0 ? meta.notes : pdfMeta.notes,
+                    partAudioUrls: partAudios
+                  };
+                } else {
+                  return {
+                    id: `drive_img_${folder.id}`,
+                    type: 'drive',
+                    fileType: 'image',
+                    isFolder: true,
+                    title: meta.title,
+                    notes: meta.notes,
+                    partAudioUrls: partAudios,
+                    imagePages: imageFiles
+                  };
                 }
+              } catch (err) {
+                console.warn(`폴더 [${folder.name}] 스캔 실패:`, err);
+                return null;
               }
             });
 
-            // 2) PDF 악보 파일 매칭
-            files.forEach(f => {
-              if (f.mimeType === 'application/pdf' || /\.pdf$/i.test(f.name)) {
-                const meta = parseFileName(f.name);
-                const normKey = normalizeKey(meta.title);
-                const matchedAudios = driveAudioMap[normKey] || {};
-                driveItems.push({
-                  id: `drive_${f.id}`,
-                  driveId: f.id,
-                  type: 'drive',
-                  title: meta.title,
-                  notes: meta.notes,
-                  partAudioUrls: matchedAudios
-                });
-              }
+            const parsedFolderSongs = (await Promise.all(folderPromises)).filter(Boolean);
+            driveItems.push(...parsedFolderSongs);
+
+            rootScoreFiles.forEach(f => {
+              const meta = parseFileName(f.name);
+              const isImg = isImageScore(f);
+              driveItems.push({
+                id: `drive_${f.id}`,
+                driveId: f.id,
+                type: 'drive',
+                fileType: isImg ? 'image' : 'pdf',
+                isFolder: false,
+                title: meta.title,
+                notes: meta.notes,
+                partAudioUrls: {},
+                imagePages: isImg ? [f] : null
+              });
             });
           }
         } catch (e) {
-          console.warn("구글 드라이브 자동 스캔 예외:", e);
+          console.warn("구글 드라이브 스캔 예외:", e);
         }
       }
 
@@ -1179,7 +1247,7 @@
       renderSongCardList();
     }
 
-    // 트랙 리스트 카드 렌더링
+    // 트랙 카드 렌더링
     function renderSongCardList(searchTerm = "") {
       const container = document.getElementById('songCardList');
       container.innerHTML = "";
@@ -1191,7 +1259,7 @@
       if (filtered.length === 0) {
         container.innerHTML = `
           <div style="text-align:center; padding:50px 10px; color:var(--text-secondary); font-size:13px;">
-            검색 결과가 없거나 등록된 악보가 없습니다.<br>구글 드라이브 폴더를 확인하거나 <b>[+ 새 악보]</b>를 등록해보세요.
+            등록된 악보가 없습니다.<br>구글 드라이브 폴더를 확인하거나 <b>[+ 새 악보]</b>를 등록해보세요.
           </div>
         `;
         return;
@@ -1202,18 +1270,26 @@
         card.className = 'song-card';
 
         const notes = song.notes || {};
-        const pitchText = ['S', 'A', 'T', 'B']
+        const partsOrder = ['S', 'A', 'T', 'BAR', 'B'];
+        const pitchText = partsOrder
           .filter(p => notes[p])
           .map(p => `${p}:${notes[p]}`)
           .join(' · ') || '첫 음 미지정';
 
         const audioParts = Object.keys(song.partAudioUrls || {});
         const hasAudio = audioParts.length > 0;
+        const formatLabel = song.fileType === 'image' ? 'IMAGE' : 'PDF';
 
         card.innerHTML = `
           <div class="song-main-info">
-            <span class="song-title-text">${song.title}</span>
+            <div class="song-title-text">
+              ${song.isFolder ? `
+                <svg class="folder-tag-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+              ` : ''}
+              <span>${song.title}</span>
+            </div>
             <div class="song-meta-row">
+              <span class="meta-chip">${formatLabel}</span>
               <span class="meta-chip">${pitchText}</span>
               ${hasAudio ? `<span class="meta-chip audio-chip">PART AUDIO (${audioParts.join(',')})</span>` : ''}
             </div>
@@ -1244,11 +1320,11 @@
 
       loadSongAudioTracks(song);
 
-      // 상단 피치 캡슐
+      // 상단 피치 캡슐 (바리톤 포함)
       pitchBar.innerHTML = '';
-      const partClassMap = { 'S': 'sop', 'A': 'alto', 'T': 'tenor', 'B': 'bass' };
-      const partFullMap = { 'S': 'SOP', 'A': 'ALT', 'T': 'TEN', 'B': 'BAS' };
-      const parts = ['S', 'A', 'T', 'B'];
+      const partClassMap = { 'S': 'sop', 'A': 'alto', 'T': 'tenor', 'BAR': 'bari', 'B': 'bass' };
+      const partFullMap = { 'S': 'SOP', 'A': 'ALT', 'T': 'TEN', 'BAR': 'BAR', 'B': 'BAS' };
+      const parts = ['S', 'A', 'T', 'BAR', 'B'];
       let hasAnyPitch = false;
 
       parts.forEach(p => {
@@ -1279,24 +1355,61 @@
       statusText.innerHTML = `'${song.title}' 악보 로딩 중...`;
 
       try {
-        const arrayBuffer = await fetchPdfDataSafe(song);
-        const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-        currentPdfDoc = await loadingTask.promise;
-
         currentPageNum = 1;
         zoomScale = 1.0;
         updateZoomDisplay();
-        statusView.style.display = 'none';
-        sheetCard.style.display = 'flex';
-        renderPage(currentPageNum);
+
+        if (song.fileType === 'image') {
+          if (currentImagePages && currentImagePages.length > 0) {
+            currentImagePages.forEach(img => {
+              if (img._blobUrl) URL.revokeObjectURL(img._blobUrl);
+            });
+          }
+
+          currentPdfDoc = null;
+          currentImagePages = [];
+
+          const imgFiles = song.imagePages || [{ id: song.driveId, name: song.title }];
+          totalPageCount = imgFiles.length;
+
+          const loadPromises = imgFiles.map(async (f) => {
+            const buffer = await fetchFileBuffer(f.id, song.url);
+            const blob = new Blob([buffer]);
+            const blobUrl = URL.createObjectURL(blob);
+            const img = new Image();
+            img._blobUrl = blobUrl;
+
+            return new Promise((resolve, reject) => {
+              img.onload = () => resolve(img);
+              img.onerror = reject;
+              img.src = blobUrl;
+            });
+          });
+
+          currentImagePages = await Promise.all(loadPromises);
+
+          statusView.style.display = 'none';
+          sheetCard.style.display = 'flex';
+          renderImagePage(currentPageNum);
+        } else {
+          currentImagePages = [];
+          const buffer = await fetchFileBuffer(song.driveId, song.url);
+          const loadingTask = pdfjsLib.getDocument({ data: buffer });
+          currentPdfDoc = await loadingTask.promise;
+          totalPageCount = currentPdfDoc.numPages;
+
+          statusView.style.display = 'none';
+          sheetCard.style.display = 'flex';
+          renderPdfPage(currentPageNum);
+        }
       } catch (err) {
-        console.error("PDF 로드 실패:", err);
+        console.error("악보 로드 실패:", err);
         spinner.style.display = 'none';
         statusText.innerHTML = `악보를 불러올 수 없습니다.<br><small style="color:#ef4444;">(${err.message})<br>Google Drive API 사용 설정 및 폴더 공유 권한을 확인해주세요.</small>`;
       }
     }
 
-    function renderPage(num) {
+    function renderPdfPage(num) {
       if (!currentPdfDoc || !pdfCanvas || !pdfCtx) return;
 
       if (currentRenderTask) {
@@ -1339,9 +1452,51 @@
           if (err.name !== 'RenderingCancelledException') console.error(err);
         });
 
-        pageIndicator.textContent = `${num} / ${currentPdfDoc.numPages}`;
+        pageIndicator.textContent = `${num} / ${totalPageCount}`;
         loadPageDrawing(num);
       });
+    }
+
+    function renderImagePage(num) {
+      if (!currentImagePages || currentImagePages.length === 0 || !pdfCanvas || !pdfCtx) return;
+
+      const img = currentImagePages[num - 1];
+      if (!img) return;
+
+      const viewerWidth = document.getElementById('viewerMain').clientWidth;
+      const baseWidth = Math.min(viewerWidth, 900);
+      const targetWidth = baseWidth * zoomScale;
+
+      const scale = targetWidth / img.width;
+      const targetHeight = img.height * scale;
+
+      const dpr = Math.min(window.devicePixelRatio || 1, 2.0);
+
+      pdfCanvas.width = targetWidth * dpr;
+      pdfCanvas.height = targetHeight * dpr;
+      pdfCanvas.style.width = `${targetWidth}px`;
+      pdfCanvas.style.height = `${targetHeight}px`;
+
+      drawCanvas.width = targetWidth * dpr;
+      drawCanvas.height = targetHeight * dpr;
+      drawCanvas.style.width = `${targetWidth}px`;
+      drawCanvas.style.height = `${targetHeight}px`;
+
+      sheetCard.style.width = `${targetWidth}px`;
+
+      pdfCtx.clearRect(0, 0, pdfCanvas.width, pdfCanvas.height);
+      pdfCtx.drawImage(img, 0, 0, pdfCanvas.width, pdfCanvas.height);
+
+      pageIndicator.textContent = `${num} / ${totalPageCount}`;
+      loadPageDrawing(num);
+    }
+
+    function renderCurrentPage(num) {
+      if (currentPdfDoc) {
+        renderPdfPage(num);
+      } else if (currentImagePages && currentImagePages.length > 0) {
+        renderImagePage(num);
+      }
     }
 
     function updateZoomDisplay() {
@@ -1351,7 +1506,7 @@
     function setZoom(newScale) {
       zoomScale = Math.min(Math.max(newScale, 0.6), 2.5);
       updateZoomDisplay();
-      if (currentPdfDoc) renderPage(currentPageNum);
+      renderCurrentPage(currentPageNum);
     }
 
     document.getElementById('zoomInBtn').onclick = () => setZoom(zoomScale + 0.15);
@@ -1509,7 +1664,7 @@
     };
 
     // ==========================================
-    // 🎧 파트별 음원 플레이어 로직
+    // 🎧 파트별 음원 플레이어 로직 (BAR 추가)
     // ==========================================
     const audioBar = document.getElementById('audioBar');
     const guideAudio = document.getElementById('guideAudioElement');
@@ -1524,7 +1679,7 @@
 
     function loadSongAudioTracks(song) {
       currentSongPartAudios = {};
-      const parts = ['ALL', 'S', 'A', 'T', 'B'];
+      const parts = ['ALL', 'S', 'A', 'T', 'BAR', 'B'];
       let hasAnyAudio = false;
 
       for (const p of parts) {
@@ -1532,9 +1687,9 @@
         if (song.partAudioUrls && song.partAudioUrls[p]) {
           currentSongPartAudios[p] = song.partAudioUrls[p];
           hasAnyAudio = true;
-          tabBtn.classList.add('has-audio');
+          if (tabBtn) tabBtn.classList.add('has-audio');
         } else {
-          tabBtn.classList.remove('has-audio');
+          if (tabBtn) tabBtn.classList.remove('has-audio');
         }
       }
 
@@ -1574,7 +1729,7 @@
       if (currentSongPartAudios[part]) {
         switchPartTrack(part, true);
       } else {
-        alert(`${part} 파트에 등록된 구글 드라이브 음원이 없습니다.\n드라이브 폴더에 [곡명_${part}.mp3] 파일을 업로드해주세요.`);
+        alert(`${part} 파트 음원이 없습니다.\n해당 곡 폴더에 [${part}.mp3] 파일을 넣어주세요.`);
       }
     });
 
@@ -1651,6 +1806,7 @@
       document.getElementById('curQuickS').value = currentSong.notes?.S || '';
       document.getElementById('curQuickA').value = currentSong.notes?.A || '';
       document.getElementById('curQuickT').value = currentSong.notes?.T || '';
+      document.getElementById('curQuickBAR').value = currentSong.notes?.BAR || '';
       document.getElementById('curQuickB').value = currentSong.notes?.B || '';
 
       currentSongEditModal.classList.add('open');
@@ -1664,6 +1820,7 @@
         S: document.getElementById('curQuickS').value,
         A: document.getElementById('curQuickA').value,
         T: document.getElementById('curQuickT').value,
+        BAR: document.getElementById('curQuickBAR').value,
         B: document.getElementById('curQuickB').value
       };
 
@@ -1686,12 +1843,14 @@
     document.getElementById('saveNewSongBtn').onclick = async () => {
       const title = document.getElementById('newSongTitle').value.trim();
       const url = document.getElementById('newSongPdfUrl').value.trim();
-      if (!title || !url) { alert('곡 명과 악보 PDF URL을 입력해주세요.'); return; }
+      if (!title || !url) { alert('곡 명과 악보 URL을 입력해주세요.'); return; }
 
+      const isImg = /\.(png|jpe?g|webp)$/i.test(url);
       const newSongId = `custom_${Date.now()}`;
       const newSong = {
         id: newSongId,
         type: 'custom',
+        fileType: isImg ? 'image' : 'pdf',
         title: title,
         url: url,
         partAudioUrls: {},
@@ -1724,7 +1883,7 @@
     document.getElementById('menuRefreshBtn').onclick = async () => {
       appMenuModal.classList.remove('open');
       if (currentSong) {
-        await deleteStored('pdf_cache', `pdf_${currentSong.id}`);
+        await deleteStored('pdf_cache', `file_${currentSong.driveId || currentSong.url}`);
       }
       const url = new URL(window.location.href);
       url.searchParams.set('t', Date.now());
@@ -1738,7 +1897,7 @@
       if (confirm(`'${currentSong.title}' 트랙을 삭제하시겠습니까?`)) {
         await deleteStored('custom_songs', currentSong.id);
         await deleteStored('pitch_overrides', currentSong.id);
-        await deleteStored('pdf_cache', `pdf_${currentSong.id}`);
+        await deleteStored('pdf_cache', `file_${currentSong.driveId || currentSong.url}`);
         appMenuModal.classList.remove('open');
         await loadAllSongList();
         showLibraryScreen();
@@ -1746,16 +1905,16 @@
     };
 
     function nextPage() {
-      if (currentPdfDoc && currentPageNum < currentPdfDoc.numPages) {
+      if (currentPageNum < totalPageCount) {
         currentPageNum++;
-        renderPage(currentPageNum);
+        renderCurrentPage(currentPageNum);
         document.getElementById('viewerMain').scrollTop = 0;
       }
     }
     function prevPage() {
-      if (currentPdfDoc && currentPageNum > 1) {
+      if (currentPageNum > 1) {
         currentPageNum--;
-        renderPage(currentPageNum);
+        renderCurrentPage(currentPageNum);
         document.getElementById('viewerMain').scrollTop = 0;
       }
     }
