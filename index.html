@@ -1118,7 +1118,7 @@
       });
     }
 
-    // 🚀 [최종 다이렉트 바이너리 다운로더 - PDF.js 최적화]
+    // 🚀 [표준 fetch 프록시 다운로더]
     async function fetchFileBuffer(fileId, fallbackUrl) {
       const cacheKey = `file_${fileId || fallbackUrl}`;
       const cached = await getStoredItem('pdf_cache', cacheKey);
@@ -1128,50 +1128,33 @@
       let arrayBuffer = null;
       let lastError = null;
 
-      // 1순위: Google Apps Script JSONP
+      // 1순위: Google Apps Script 표준 fetch 프록시
       if (GAS_URL && driveId) {
         try {
-          arrayBuffer = await fetchFileViaJSONP(GAS_URL, driveId);
-        } catch (e) {
-          console.warn("GAS JSONP 실패, 백업 시도:", e.message);
-          lastError = e;
-        }
-      }
-
-      // 2순위: PDF.js 내장 로더가 직접 스트리밍할 수 있도록 URL 자체를 반환하거나 다이렉트 패치
-      // 만약 GAS가 실패했을 때 구글 드라이브 URL을 직접 쓰면 CORS가 나므로,
-      // 우회용 퍼블릭 바이너리 캐시 게이트웨이 또는 대안 제공
-      if (!arrayBuffer && driveId) {
-        const directUrl = `https://drive.usercontent.google.com/download?id=${driveId}&export=download&authuser=0&confirm=t`;
-        try {
-          const res = await fetch(directUrl);
+          const res = await fetch(`${GAS_URL}?id=${driveId}`);
           if (res.ok) {
-            const buf = await res.arrayBuffer();
-            if (buf && buf.byteLength > 100) arrayBuffer = buf;
+            const json = await res.json();
+            if (json && json.data) {
+              const cleanB64 = json.data.replace(/[\r\n\s]/g, '');
+              const binaryString = window.atob(cleanB64);
+              const len = binaryString.length;
+              const bytes = new Uint8Array(len);
+              for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+              }
+              arrayBuffer = bytes.buffer;
+            } else if (json && json.error) {
+              throw new Error(json.error);
+            }
           }
-        } catch (err) {
-          lastError = err;
-        }
-      }
-
-      if (!arrayBuffer && fallbackUrl) {
-        try {
-          const res = await fetch(fallbackUrl);
-          if (res.ok) arrayBuffer = await res.arrayBuffer();
         } catch (e) {
+          console.warn("GAS Fetch 실패:", e.message);
           lastError = e;
         }
       }
 
       if (!arrayBuffer) {
-        throw new Error(lastError ? lastError.message : "악보 파일을 받아올 수 없습니다.");
-      }
-
-      // 데이터 검증: HTML 에러 페이지인지 확인
-      const testBytes = new Uint8Array(arrayBuffer.slice(0, 15));
-      const testHeader = String.fromCharCode(...testBytes);
-      if (testHeader.includes('<') || testHeader.toLowerCase().includes('html')) {
-        throw new Error("구글 드라이브 권한 에러 또는 GAS 배포 URL 오류가 발생했습니다. Apps Script '모든 사용자' 배포 및 새 버전 업데이트를 확인해주세요.");
+        throw new Error(lastError ? lastError.message : "악보 파일을 받아올 수 없습니다. GAS 배포 URL과 권한을 확인해주세요.");
       }
 
       await putStored('pdf_cache', { id: cacheKey, data: arrayBuffer });
