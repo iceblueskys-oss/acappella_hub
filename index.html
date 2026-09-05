@@ -62,7 +62,112 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* 초슬림 헤더 */
+    /* 뷰 컨테이너 */
+    .view-screen {
+      width: 100%;
+      height: 100%;
+      display: none;
+      flex-direction: column;
+      position: absolute;
+      inset: 0;
+    }
+    .view-screen.active { display: flex; }
+
+    /* ==========================================
+       🏛️ 1. 라이브러리 (곡 선택 목록) 화면
+       ========================================== */
+    #libraryView {
+      background: var(--bg-base);
+      overflow-y: auto;
+      touch-action: pan-y;
+      -webkit-overflow-scrolling: touch;
+      padding: calc(env(safe-area-inset-top, 0px) + 16px) 16px 40px 16px;
+    }
+    .lib-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .lib-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .lib-tools {
+      display: flex;
+      gap: 6px;
+    }
+    .search-input {
+      width: 100%;
+      background: var(--surface-deep);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 10px 14px;
+      color: #fff;
+      font-size: 13.5px;
+      margin-bottom: 16px;
+      outline: none;
+    }
+    .search-input:focus { border-color: var(--border-metallic); }
+
+    .song-card-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .song-card {
+      background: var(--surface-deep);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .song-card:active {
+      transform: scale(0.98);
+      background: var(--surface-highlight);
+      border-color: var(--border-metallic);
+    }
+    .song-card-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .song-card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #f3f4f6;
+    }
+    .song-badges {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .card-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 5px;
+      border-radius: 4px;
+      background: #1e2029;
+      color: var(--text-secondary);
+    }
+    .card-badge.has-audio {
+      background: rgba(212, 175, 55, 0.15);
+      color: var(--text-gold);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+    }
+
+    /* ==========================================
+       🎼 2. 악보 뷰어 화면
+       ========================================== */
     header {
       background: rgba(15, 16, 21, 0.94);
       backdrop-filter: blur(16px);
@@ -77,7 +182,6 @@
       z-index: 100;
       touch-action: auto;
     }
-
     .header-row {
       display: flex;
       align-items: center;
@@ -110,19 +214,22 @@
       font-weight: 700;
     }
 
-    #songSelect {
+    .btn-back {
+      font-weight: 700;
+      color: var(--text-gold);
+      border-color: var(--border-metallic);
+      background: rgba(212, 175, 55, 0.08);
+    }
+
+    .viewer-song-name {
       flex: 1;
-      min-width: 100px;
-      font-weight: 600;
-      padding-right: 20px;
-      appearance: none;
-      background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23888D9E' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 6px center;
-      border-color: rgba(255, 255, 255, 0.12);
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #fff;
+      overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      overflow: hidden;
+      padding: 0 4px;
     }
 
     .pitch-scroll-row {
@@ -163,7 +270,6 @@
     }
     .metro-led.flash { background: var(--text-gold); box-shadow: 0 0 6px var(--text-gold); }
 
-    /* 메인 뷰어 */
     main {
       flex: 1;
       overflow-y: auto;
@@ -203,7 +309,7 @@
     body.invert-mode { background: #000000; }
     body.invert-mode .sheet-wrapper { filter: invert(0.92) hue-rotate(180deg) brightness(0.95); }
 
-    /* 하단 파트 오디오 플레이어 */
+    /* 대형 하단 플레이어 */
     #audioBar {
       position: fixed;
       bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
@@ -308,6 +414,7 @@
       box-shadow: 0 8px 24px rgba(0,0,0,0.6);
     }
 
+    /* 모달 */
     .modal-backdrop {
       display: none;
       position: fixed;
@@ -404,89 +511,124 @@
 </head>
 <body>
 
-  <header>
-    <div class="header-row">
-      <select id="songSelect">
-        <option value="">악보 불러오는 중...</option>
-      </select>
-
-      <button id="openCurrentSongEditBtn" title="현재 악보 음원/음정 설정">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-        <span>곡 설정</span>
-      </button>
-
-      <button id="drawToggleBtn" title="메모 레이어">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/></svg>
-      </button>
-
-      <button id="metroToggleBtn" title="메트로놈 작동">
-        <span class="metro-led" id="metroLed"></span>
-        <span id="metroBpmLabel" style="font-size: 11px;">100</span>
-      </button>
-
-      <button id="openAppMenuBtn" title="전체 메뉴">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
-      </button>
-    </div>
-
-    <div class="header-row" style="justify-content: space-between;">
-      <div class="header-row pitch-scroll-row" id="pitchBar" style="width: auto;"></div>
-      
-      <div style="display: flex; align-items: center; margin-left: auto; gap: 3px;">
-        <button id="prevPage" style="padding: 4px 6px;">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
+  <!-- ==========================================
+       🏛️ SCREEN 1: 곡 선택 라이브러리 화면
+       ========================================== -->
+  <div class="view-screen active" id="libraryView">
+    <div class="lib-header">
+      <div class="lib-title">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="color:var(--text-gold);"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        <span>악보 보관함</span>
+      </div>
+      <div class="lib-tools">
+        <button id="libAddNewBtn" class="btn-back">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+          <span>새 악보</span>
         </button>
-        <span id="pageIndicator" style="font-size: 10.5px; font-weight: 600; min-width: 34px; text-align: center; color: var(--text-secondary);">- / -</span>
-        <button id="nextPage" style="padding: 4px 6px;">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
+        <button id="libRefreshBtn" title="새로고침">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
         </button>
       </div>
     </div>
-  </header>
 
-  <!-- 드로잉 모드 서브 툴바 -->
-  <div id="drawingToolbar">
-    <button class="active" id="toolPenBtn">펜</button>
-    <button id="toolBreathBtn">V 숨표</button>
-    <button id="toolHighlighterBtn">형광펜</button>
-    <button id="toolEraserBtn">지우개</button>
-    <button id="clearDrawBtn" style="color: #ef4444;">지우기</button>
-    <button id="closeDrawBarBtn" style="color: #888;">✕</button>
+    <input type="text" class="search-input" id="libSearchInput" placeholder="곡 제목 검색..." />
+
+    <div class="song-card-list" id="songCardList">
+      <div class="spinner"></div>
+    </div>
   </div>
 
-  <!-- 메인 악보 뷰어 -->
-  <main id="viewerMain">
-    <div id="statusView" style="margin-top: 120px; text-align: center; color: var(--text-secondary);">
-      <div class="spinner" id="loadingSpinner"></div>
-      <p id="statusText" style="font-size: 13.5px; font-weight: 500;">악보를 불러오는 중...</p>
-    </div>
-    <div class="sheet-wrapper" id="sheetCard" style="display: none;">
-      <canvas id="pdfCanvas"></canvas>
-      <canvas id="drawCanvas"></canvas>
-    </div>
-  </main>
+  <!-- ==========================================
+       🎼 SCREEN 2: 악보 뷰어 화면
+       ========================================== -->
+  <div class="view-screen" id="viewerView">
+    <header>
+      <div class="header-row">
+        <button id="backToLibBtn" class="btn-back">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
+          <span>목록</span>
+        </button>
 
-  <!-- 하단 오디오 콘솔 -->
-  <div id="audioBar">
-    <button id="audioPlayBtn" title="재생/일시정지">
-      <svg id="playIconSvg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3l14 9-14 9V3z"/></svg>
-    </button>
-    
-    <div class="part-track-selector" id="partTabSelector">
-      <button class="part-tab active" data-part="ALL">ALL</button>
-      <button class="part-tab" data-part="S">S</button>
-      <button class="part-tab" data-part="A">A</button>
-      <button class="part-tab" data-part="T">T</button>
-      <button class="part-tab" data-part="B">B</button>
+        <span class="viewer-song-name" id="viewerSongTitle">-</span>
+
+        <button id="openCurrentSongEditBtn" title="현재 악보 음원/음정 설정">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          <span>설정</span>
+        </button>
+
+        <button id="drawToggleBtn" title="메모 레이어">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/></svg>
+        </button>
+
+        <button id="metroToggleBtn" title="메트로놈 작동">
+          <span class="metro-led" id="metroLed"></span>
+          <span id="metroBpmLabel" style="font-size: 11px;">100</span>
+        </button>
+
+        <button id="openAppMenuBtn" title="전체 메뉴">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+        </button>
+      </div>
+
+      <div class="header-row" style="justify-content: space-between;">
+        <div class="header-row pitch-scroll-row" id="pitchBar" style="width: auto;"></div>
+        
+        <div style="display: flex; align-items: center; margin-left: auto; gap: 3px;">
+          <button id="prevPage" style="padding: 4px 6px;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
+          </button>
+          <span id="pageIndicator" style="font-size: 10.5px; font-weight: 600; min-width: 34px; text-align: center; color: var(--text-secondary);">- / -</span>
+          <button id="nextPage" style="padding: 4px 6px;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- 드로잉 모드 서브 툴바 -->
+    <div id="drawingToolbar">
+      <button class="active" id="toolPenBtn">펜</button>
+      <button id="toolBreathBtn">V 숨표</button>
+      <button id="toolHighlighterBtn">형광펜</button>
+      <button id="toolEraserBtn">지우개</button>
+      <button id="clearDrawBtn" style="color: #ef4444;">지우기</button>
+      <button id="closeDrawBarBtn" style="color: #888;">✕</button>
     </div>
 
-    <div class="audio-side-tools">
-      <span id="audioTimeText">0:00</span>
-      <button id="audioRateBtn">1.0x</button>
+    <!-- 메인 악보 뷰어 -->
+    <main id="viewerMain">
+      <div id="statusView" style="margin-top: 120px; text-align: center; color: var(--text-secondary);">
+        <div class="spinner" id="loadingSpinner"></div>
+        <p id="statusText" style="font-size: 13.5px; font-weight: 500;">악보를 불러오는 중...</p>
+      </div>
+      <div class="sheet-wrapper" id="sheetCard" style="display: none;">
+        <canvas id="pdfCanvas"></canvas>
+        <canvas id="drawCanvas"></canvas>
+      </div>
+    </main>
+
+    <!-- 하단 오디오 콘솔 -->
+    <div id="audioBar">
+      <button id="audioPlayBtn" title="재생/일시정지">
+        <svg id="playIconSvg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3l14 9-14 9V3z"/></svg>
+      </button>
+      
+      <div class="part-track-selector" id="partTabSelector">
+        <button class="part-tab active" data-part="ALL">ALL</button>
+        <button class="part-tab" data-part="S">S</button>
+        <button class="part-tab" data-part="A">A</button>
+        <button class="part-tab" data-part="T">T</button>
+        <button class="part-tab" data-part="B">B</button>
+      </div>
+
+      <div class="audio-side-tools">
+        <span id="audioTimeText">0:00</span>
+        <button id="audioRateBtn">1.0x</button>
+      </div>
+      
+      <button id="closeAudioBtn" style="border: none; background: transparent; padding: 4px 6px; color: var(--text-secondary); font-size: 13px;" title="플레이어 닫기">✕</button>
+      <audio id="guideAudioElement" preload="none"></audio>
     </div>
-    
-    <button id="closeAudioBtn" style="border: none; background: transparent; padding: 4px 6px; color: var(--text-secondary); font-size: 13px;" title="플레이어 닫기">✕</button>
-    <audio id="guideAudioElement" preload="none"></audio>
   </div>
 
   <!-- 모바일 더보기 메뉴 -->
@@ -494,11 +636,6 @@
     <div class="modal">
       <h3>도구 및 설정</h3>
       <div class="menu-action-list">
-        <button class="menu-action-btn" id="menuAddNewSongBtn" style="background: rgba(212, 175, 55, 0.12); color: var(--text-gold); border-color: var(--border-metallic);">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-          <span>새로운 악보 추가 등록</span>
-        </button>
-        
         <div style="display:flex; align-items:center; justify-content:space-between; background:#181a22; padding:8px 12px; border-radius:10px;">
           <span style="font-size:12.5px; font-weight:600;">화면 줌 크기</span>
           <div style="display:flex; align-items:center; gap:6px;">
@@ -509,7 +646,7 @@
         </div>
 
         <button class="menu-action-btn" id="menuOpenMetroBtn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83 2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           <span>메트로놈 템포 (BPM/소리) 설정</span>
         </button>
 
@@ -520,7 +657,7 @@
 
         <button class="menu-action-btn" id="menuRefreshBtn">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-          <span>악보 새로고침 및 캐시 동기화</span>
+          <span>캐시 비우기 및 새로고침</span>
         </button>
 
         <button class="menu-action-btn" id="deleteLocalBtn" style="display:none; color: #ef4444;">
@@ -534,14 +671,13 @@
     </div>
   </div>
 
-  <!-- 1. [현재 악보 음원/설정] 모달 -->
+  <!-- [현재 악보 음원/설정] 모달 -->
   <div class="modal-backdrop" id="currentSongEditModal">
     <div class="modal" style="max-height: 88vh; overflow-y: auto;">
       <h3 id="currentSongModalTitle">현재 곡 음원 & 첫 음 설정</h3>
       
       <div class="form-group" style="gap: 6px;">
         <label>파트별 구글 드라이브 음원 링크</label>
-        
         <div class="audio-upload-row">
           <div class="audio-row-header"><span>ALL (전체/MR)</span></div>
           <div class="audio-inputs"><input type="text" id="curAudioUrl_ALL" placeholder="구글 드라이브 링크 붙여넣기" /></div>
@@ -576,12 +712,12 @@
 
       <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 6px;">
         <button id="closeCurrentSongEditBtn">취소</button>
-        <button class="btn-gold" id="saveCurrentSongEditBtn" style="font-weight:600;">저장</button>
+        <button class="btn-back" id="saveCurrentSongEditBtn">저장</button>
       </div>
     </div>
   </div>
 
-  <!-- 2. [새로운 악보 추가] 모달 -->
+  <!-- [새로운 악보 추가] 모달 -->
   <div class="modal-backdrop" id="newSongModal">
     <div class="modal">
       <h3>새로운 악보 등록</h3>
@@ -595,7 +731,7 @@
       </div>
       <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px;">
         <button id="closeNewSongModalBtn">취소</button>
-        <button class="btn-gold" id="saveNewSongBtn" style="font-weight:600;">등록하기</button>
+        <button class="btn-back" id="saveNewSongBtn">등록하기</button>
       </div>
     </div>
   </div>
@@ -609,7 +745,7 @@
         <input type="range" id="bpmSlider" min="40" max="220" value="100" style="padding: 0; cursor: pointer;" />
       </div>
       <div style="display: flex; gap: 8px;">
-        <button id="tapTempoBtn" class="btn-gold" style="flex: 1; justify-content: center; padding: 10px;">TAP TEMPO</button>
+        <button id="tapTempoBtn" class="btn-back" style="flex: 1; justify-content: center; padding: 10px;">TAP TEMPO</button>
         <button id="metroSoundToggleBtn" style="flex: 1; justify-content: center;">오디오: 켜짐</button>
       </div>
       <div style="display: flex; justify-content: flex-end; margin-top: 6px;">
@@ -630,25 +766,24 @@
         GOOGLE_API_KEY = (config.googleApiKey || config.apiKey || config.GOOGLE_API_KEY || "").trim();
         DRIVE_FOLDER_ID = (config.driveFolderId || config.folderId || config.DRIVE_FOLDER_ID || "").trim();
       } catch (err) {
-        console.warn("로컬 모드로 실행:", err.message);
+        console.warn("로컬 모드:", err.message);
       }
     }
 
     pdfjsLib.GlobalWorkerOptions.workerSrc = 
       'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-    // IndexedDB: PDF 데이터까지 캐싱하도록 확장
     let db;
     function initDB() {
       return new Promise((resolve, reject) => {
-        const req = indexedDB.open('AcappellaStudioDB_FastV8', 1);
+        const req = indexedDB.open('AcappellaStudioDB_V9', 1);
         req.onupgradeneeded = (e) => {
           const d = e.target.result;
           if (!d.objectStoreNames.contains('custom_songs')) d.createObjectStore('custom_songs', { keyPath: 'id' });
           if (!d.objectStoreNames.contains('pitch_overrides')) d.createObjectStore('pitch_overrides', { keyPath: 'songId' });
           if (!d.objectStoreNames.contains('audio_overrides')) d.createObjectStore('audio_overrides', { keyPath: 'songId' });
           if (!d.objectStoreNames.contains('personal_drawings')) d.createObjectStore('personal_drawings', { keyPath: 'id' });
-          if (!d.objectStoreNames.contains('pdf_cache')) d.createObjectStore('pdf_cache', { keyPath: 'id' }); // 초고속 로컬 PDF 캐시
+          if (!d.objectStoreNames.contains('pdf_cache')) d.createObjectStore('pdf_cache', { keyPath: 'id' });
         };
         req.onsuccess = () => { db = req.result; resolve(); };
         req.onerror = () => reject(req.error);
@@ -687,7 +822,9 @@
       });
     }
 
-    // 오디오 엔진
+    // ==========================================
+    // 🎵 오디오 & 피치 엔진
+    // ==========================================
     let audioCtx = null;
     function getAudioContext() {
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -871,21 +1008,21 @@
     }
 
     // ==========================================
-    // 📂 초고속 PDF 로더 & 캔버스 렌더링 최적화
+    // 📂 초고속 PDF 로더 (CORS 없는 직접 통신)
     // ==========================================
     let allSongs = [];
     let currentSong = null;
     let currentPdfDoc = null;
     let currentPageNum = 1;
     let zoomScale = 1.0;
-    let currentRenderTask = null; // 중복 렌더링 방지 캔슬용
+    let currentRenderTask = null;
 
     const pdfCanvas = document.getElementById('pdfCanvas');
     const pdfCtx = pdfCanvas ? pdfCanvas.getContext('2d') : null;
     const drawCanvas = document.getElementById('drawCanvas');
     const drawCtx = drawCanvas ? drawCanvas.getContext('2d') : null;
 
-    const songSelect = document.getElementById('songSelect');
+    const viewerSongTitle = document.getElementById('viewerSongTitle');
     const pitchBar = document.getElementById('pitchBar');
     const pageIndicator = document.getElementById('pageIndicator');
     const statusView = document.getElementById('statusView');
@@ -895,47 +1032,56 @@
     const deleteLocalBtn = document.getElementById('deleteLocalBtn');
     const zoomLevelText = document.getElementById('zoomLevelText');
 
-    // 최적화된 PDF 데이터 가져오기 (캐시 ➔ 다이렉트 프록시 병렬 시도)
-    async function fetchPdfDataFast(song) {
+    // 403 차단 없는 직접 다운로드 파이프라인
+    async function fetchPdfDataSafe(song) {
       const cacheKey = `pdf_${song.id}`;
-      // 1. IndexedDB 캐시 확인 (0.05초 만에 열림)
+      // 1. IndexedDB 캐시 (초고속)
       const cached = await getStoredItem('pdf_cache', cacheKey);
       if (cached && cached.data) {
         return cached.data;
       }
 
-      // 2. 캐시가 없을 때만 네트워크 로드
+      // 2. Google Drive API 다이렉트 바이너리 로드
       const driveId = song.type === 'drive' ? song.driveId : extractDriveFileId(song.url);
       let targetUrl = '';
-      if (driveId) {
-        // 속도가 빠른 Cloudflare 기반 프록시 파이프라인
-        const direct = `https://drive.google.com/uc?id=${driveId}&export=download`;
-        targetUrl = `https://corsproxy.io/?${encodeURIComponent(direct)}`;
+
+      if (driveId && GOOGLE_API_KEY) {
+        // 공용 프록시 없이 구글 API 공식 엔드포인트로 직접 호출
+        targetUrl = `https://www.googleapis.com/drive/v3/files/${driveId}?alt=media&key=${GOOGLE_API_KEY}`;
       } else {
         targetUrl = song.url;
       }
 
-      let res = await fetch(targetUrl);
-      if (!res.ok && driveId) {
-        // 2차 백업 프록시
-        const direct = `https://drive.google.com/uc?id=${driveId}&export=download`;
-        res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(direct)}`);
-      }
+      const res = await fetch(targetUrl, { mode: 'cors' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
       const arrayBuffer = await res.arrayBuffer();
-
-      // IndexedDB에 영구 캐시 (다음 접속부터는 0초 로딩)
+      // IndexedDB에 영구 보관
       await putStored('pdf_cache', { id: cacheKey, data: arrayBuffer });
       return arrayBuffer;
     }
 
-    async function loadAllSongList(preferredSelectId = null) {
-      statusView.style.display = 'block';
-      sheetCard.style.display = 'none';
-      spinner.style.display = 'block';
-      statusText.innerHTML = "트랙 목록을 불러오는 중...";
+    // ==========================================
+    // 🏛️ 화면 전환 제어 (라이브러리 <-> 뷰어)
+    // ==========================================
+    const libraryView = document.getElementById('libraryView');
+    const viewerView = document.getElementById('viewerView');
 
+    function showLibraryScreen() {
+      viewerView.classList.remove('active');
+      libraryView.classList.add('active');
+      guideAudio.pause();
+      renderSongCardList();
+    }
+
+    function showViewerScreen() {
+      libraryView.classList.remove('active');
+      viewerView.classList.add('active');
+    }
+
+    document.getElementById('backToLibBtn').onclick = showLibraryScreen;
+
+    async function loadAllSongList() {
       let driveItems = [];
       if (GOOGLE_API_KEY && DRIVE_FOLDER_ID) {
         try {
@@ -967,35 +1113,74 @@
         partAudioUrls: audioMap.get(s.id) || s.partAudioUrls || {}
       }));
 
-      if (allSongs.length === 0) {
-        spinner.style.display = 'none';
-        statusText.innerHTML = "등록된 마스터 악보가 없습니다.<br>우측 메뉴(⋯)에서 [새로운 악보 추가]를 진행하세요.";
-        songSelect.innerHTML = '<option value="">(트랙 없음)</option>';
-        deleteLocalBtn.style.display = 'none';
+      renderSongCardList();
+    }
+
+    // 곡 목록 카드 렌더링
+    function renderSongCardList(searchTerm = "") {
+      const container = document.getElementById('songCardList');
+      container.innerHTML = "";
+
+      const filtered = allSongs.filter(s => 
+        s.title.toLowerCase().includes(searchTerm.toLowerCase().trim())
+      );
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div style="text-align:center; padding:40px 10px; color:var(--text-secondary);">
+            등록된 악보가 없습니다.<br>우측 상단 <b>[+ 새 악보]</b>를 눌러 등록해보세요.
+          </div>
+        `;
         return;
       }
 
-      songSelect.innerHTML = '<option value="">트랙 선택...</option>';
-      allSongs.forEach(s => {
-        const opt = document.createElement('option');
-        opt.value = s.id;
-        opt.textContent = (s.type === 'custom' ? '◈ ' : '◉ ') + s.title;
-        songSelect.appendChild(opt);
-      });
+      filtered.forEach(song => {
+        const card = document.createElement('div');
+        card.className = 'song-card';
 
-      const targetId = preferredSelectId || allSongs[0].id;
-      songSelect.value = targetId;
-      loadSong(targetId);
+        // 피치 텍스트 요약
+        const notes = song.notes || {};
+        const pitchText = ['S', 'A', 'T', 'B']
+          .filter(p => notes[p])
+          .map(p => `${p}:${notes[p]}`)
+          .join(' ') || '첫 음 미지정';
+
+        // 등록된 파트 음원 요약
+        const audioCount = Object.keys(song.partAudioUrls || {}).length;
+
+        card.innerHTML = `
+          <div class="song-card-title-row">
+            <span class="song-card-title">${song.type === 'custom' ? '◈ ' : '◉ '}${song.title}</span>
+            <span style="color:var(--text-gold); font-size:12px;">열기 →</span>
+          </div>
+          <div class="song-badges">
+            <span class="card-badge">${pitchText}</span>
+            ${audioCount > 0 ? `<span class="card-badge has-audio">파트 음원 (${audioCount})</span>` : ''}
+          </div>
+        `;
+
+        card.onclick = () => openSongInViewer(song.id);
+        container.appendChild(card);
+      });
     }
 
-    async function loadSong(songId) {
+    document.getElementById('libSearchInput').oninput = (e) => {
+      renderSongCardList(e.target.value);
+    };
+
+    // 악보 열기 (화면 전환)
+    async function openSongInViewer(songId) {
       const song = allSongs.find(s => s.id === songId);
       if (!song) return;
       currentSong = song;
 
+      showViewerScreen();
+      viewerSongTitle.textContent = song.title;
       deleteLocalBtn.style.display = song.type === 'custom' ? 'flex' : 'none';
+
       loadSongAudioTracks(song);
 
+      // 상단 피치 캡슐 렌더링
       pitchBar.innerHTML = '';
       const partClassMap = { 'S': 'sop', 'A': 'alto', 'T': 'tenor', 'B': 'bass' };
       const partFullMap = { 'S': 'SOP', 'A': 'ALT', 'T': 'TEN', 'B': 'BAS' };
@@ -1020,7 +1205,7 @@
       if (!hasAnyPitch) {
         const hint = document.createElement('span');
         hint.style.cssText = "font-size: 10px; color: var(--text-secondary); padding: 2px 4px;";
-        hint.textContent = "첫 음 없음 (곡 설정)";
+        hint.textContent = "첫 음 없음 (설정 버튼)";
         pitchBar.appendChild(hint);
       }
 
@@ -1030,7 +1215,7 @@
       statusText.innerHTML = `'${song.title}' 렌더링 중...`;
 
       try {
-        const arrayBuffer = await fetchPdfDataFast(song);
+        const arrayBuffer = await fetchPdfDataSafe(song);
         const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
         currentPdfDoc = await loadingTask.promise;
 
@@ -1047,11 +1232,10 @@
       }
     }
 
-    // 렌더링 태스크 캔슬 + 해상도 상한선(DPR 2.0) 최적화
+    // 렌더링 가속화
     function renderPage(num) {
       if (!currentPdfDoc || !pdfCanvas || !pdfCtx) return;
 
-      // 이전 진행 중이던 렌더링이 있으면 즉시 취소하여 부하 제거
       if (currentRenderTask) {
         currentRenderTask.cancel();
         currentRenderTask = null;
@@ -1065,7 +1249,6 @@
         const unscaledViewport = page.getViewport({ scale: 1.0 });
         const scale = targetWidth / unscaledViewport.width;
         
-        // 아이폰 초고밀도 해상도로 인한 병목 방지 (최대 2.0으로 캡)
         const dpr = Math.min(window.devicePixelRatio || 1, 2.0);
         const viewport = page.getViewport({ scale: scale * dpr });
 
@@ -1090,9 +1273,7 @@
         currentRenderTask.promise.then(() => {
           currentRenderTask = null;
         }).catch(err => {
-          if (err.name !== 'RenderingCancelledException') {
-            console.error(err);
-          }
+          if (err.name !== 'RenderingCancelledException') console.error(err);
         });
 
         pageIndicator.textContent = `${num} / ${currentPdfDoc.numPages}`;
@@ -1258,7 +1439,7 @@
     }
 
     document.getElementById('clearDrawBtn').onclick = async () => {
-      if (confirm('현재 페이지의 개인 메모를 모두 지우시겠습니까?')) {
+      if (confirm('현재 페이지의 메모를 모두 지우시겠습니까?')) {
         drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
         await savePageDrawing();
       }
@@ -1333,7 +1514,7 @@
       if (currentSongPartAudios[part]) {
         switchPartTrack(part, true);
       } else {
-        alert(`${part} 파트에 등록된 구글 드라이브 음원이 없습니다.\n상단 [곡 설정]을 눌러 링크를 등록해주세요.`);
+        alert(`${part} 파트에 등록된 구글 드라이브 음원이 없습니다.\n상단 [설정]을 눌러 링크를 등록해주세요.`);
       }
     });
 
@@ -1373,7 +1554,7 @@
       audioBar.classList.remove('show');
     };
 
-    // 스와이프 제스처
+    // 스와이프
     const viewerMain = document.getElementById('viewerMain');
     let touchStartX = 0;
     let touchStartY = 0;
@@ -1443,16 +1624,16 @@
       currentSong.notes = newNotes;
 
       currentSongEditModal.classList.remove('open');
-      loadSong(currentSong.id);
+      openSongInViewer(currentSong.id);
     };
 
     const newSongModal = document.getElementById('newSongModal');
-    document.getElementById('menuAddNewSongBtn').onclick = () => {
-      appMenuModal.classList.remove('open');
+    function openNewSongModal() {
       document.getElementById('newSongTitle').value = '';
       document.getElementById('newSongPdfUrl').value = '';
       newSongModal.classList.add('open');
-    };
+    }
+    document.getElementById('libAddNewBtn').onclick = openNewSongModal;
     document.getElementById('closeNewSongModalBtn').onclick = () => newSongModal.classList.remove('open');
 
     document.getElementById('saveNewSongBtn').onclick = async () => {
@@ -1473,7 +1654,8 @@
 
       await putStored('custom_songs', newSong);
       newSongModal.classList.remove('open');
-      await loadAllSongList(newSong.id);
+      await loadAllSongList();
+      openSongInViewer(newSong.id);
     };
 
     const appMenuModal = document.getElementById('appMenuModal');
@@ -1492,7 +1674,6 @@
       appMenuModal.classList.remove('open');
     };
 
-    // 캐시 동기화 버튼 (캐시 삭제 후 강제 갱신)
     document.getElementById('menuRefreshBtn').onclick = async () => {
       appMenuModal.classList.remove('open');
       if (currentSong) {
@@ -1503,11 +1684,7 @@
       window.location.href = url.toString();
     };
 
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') {
-        loadAllSongList(currentSong?.id);
-      }
-    });
+    document.getElementById('libRefreshBtn').onclick = () => loadAllSongList();
 
     deleteLocalBtn.onclick = async () => {
       if (!currentSong || currentSong.type !== 'custom') return;
@@ -1518,6 +1695,7 @@
         await deleteStored('pdf_cache', `pdf_${currentSong.id}`);
         appMenuModal.classList.remove('open');
         await loadAllSongList();
+        showLibraryScreen();
       }
     };
 
@@ -1538,7 +1716,6 @@
 
     document.getElementById('nextPage').onclick = nextPage;
     document.getElementById('prevPage').onclick = prevPage;
-    songSelect.onchange = (e) => { if (e.target.value) loadSong(e.target.value); };
 
     window.addEventListener('keydown', (e) => {
       if (['ArrowRight', 'PageDown', ' '].includes(e.key)) nextPage();
@@ -1551,8 +1728,10 @@
         initPitchSelectOptions();
         await loadConfig();
         await loadAllSongList();
+        // 첫 진입 시 보관함(라이브러리) 화면 출력
+        showLibraryScreen();
       } catch (err) {
-        console.error("오류 발생:", err);
+        console.error("초기화 실패:", err);
       }
     }
 
