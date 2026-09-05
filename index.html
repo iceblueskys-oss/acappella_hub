@@ -1078,39 +1078,56 @@
     const deleteLocalBtn = document.getElementById('deleteLocalBtn');
     const zoomLevelText = document.getElementById('zoomLevelText');
 
-    // 🚀 CORS/403 우회 수정된 fetchFileBuffer 함수
+    // 🚀 [Invalid PDF 완벽 해결] 바이너리 스트림 검증 로더
     async function fetchFileBuffer(fileId, fallbackUrl) {
       const cacheKey = `file_${fileId || fallbackUrl}`;
       const cached = await getStoredItem('pdf_cache', cacheKey);
       if (cached && cached.data) return cached.data;
 
-      const candidateUrls = [];
-      if (fileId) {
-        // 1순위: 브라우저 CORS를 허용하는 Google 공식 서빙 호스트
-        candidateUrls.push(`https://lh3.googleusercontent.com/d/${fileId}`);
-        // 2순위: Google Drive 뷰어 엔드포인트
-        candidateUrls.push(`https://drive.google.com/uc?export=view&id=${fileId}`);
-      } else if (fallbackUrl) {
-        candidateUrls.push(fallbackUrl);
-      }
-
+      const driveId = fileId || extractDriveFileId(fallbackUrl);
       let arrayBuffer = null;
       let lastError = null;
 
-      for (const url of candidateUrls) {
+      // 1순위: Google Drive API 엔드포인트
+      // 2순위: CORS 전용 바이너리 프록시 파이프라인 (HTML 반환 방지 & 순수 바이너리 보장)
+      const testUrls = [];
+      if (driveId) {
+        if (GOOGLE_API_KEY) {
+          testUrls.push(`https://www.googleapis.com/drive/v3/files/${driveId}?alt=media&key=${GOOGLE_API_KEY}`);
+        }
+        testUrls.push(`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://drive.google.com/uc?export=download&id=${driveId}`)}`);
+        testUrls.push(`https://lh3.googleusercontent.com/d/${driveId}`);
+      } else if (fallbackUrl) {
+        testUrls.push(fallbackUrl);
+      }
+
+      for (const url of testUrls) {
         try {
-          const res = await fetch(url, { mode: 'cors' });
-          if (res.ok) {
-            arrayBuffer = await res.arrayBuffer();
-            if (arrayBuffer && arrayBuffer.byteLength > 0) break;
+          const res = await fetch(url);
+          if (!res.ok) continue;
+
+          const buf = await res.arrayBuffer();
+          if (!buf || buf.byteLength < 100) continue;
+
+          // 받아온 데이터가 HTML인지 PDF/이미지인지 헤더 시그니처 체크
+          const firstBytes = new Uint8Array(buf.slice(0, 5));
+          const header = String.fromCharCode(...firstBytes);
+
+          // HTML이 반환된 경우 (구글 경고창 등) 무시하고 다음 URL 시도
+          if (header.includes('<') || header.includes('html')) {
+            continue;
           }
+
+          // 유효한 바이너리 확보 완료
+          arrayBuffer = buf;
+          break;
         } catch (err) {
           lastError = err;
         }
       }
 
       if (!arrayBuffer) {
-        throw new Error(lastError ? lastError.message : "파일을 불러오지 못했습니다. 드라이브 공유 권한을 확인해주세요.");
+        throw new Error(lastError ? lastError.message : "유효한 악보 바이너리를 수신하지 못했습니다. 구글 드라이브 파일 공유 설정을 확인해주세요.");
       }
 
       await putStored('pdf_cache', { id: cacheKey, data: arrayBuffer });
