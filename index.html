@@ -73,6 +73,7 @@
     }
     .view-screen.active { display: flex; }
 
+    /* 🏛️ 1. 스튜디오 라이브러리 화면 */
     #libraryView {
       background: #090a0e;
       overflow-y: auto;
@@ -228,6 +229,7 @@
       color: #000;
     }
 
+    /* 🎼 2. 악보 뷰어 화면 */
     header {
       background: rgba(15, 16, 21, 0.94);
       backdrop-filter: blur(16px);
@@ -551,6 +553,7 @@
 </head>
 <body>
 
+  <!-- SCREEN 1: 라이브러리 (곡 목록) -->
   <div class="view-screen active" id="libraryView">
     <div class="lib-header">
       <div class="lib-title-box">
@@ -581,6 +584,7 @@
     </div>
   </div>
 
+  <!-- SCREEN 2: 악보 뷰어 -->
   <div class="view-screen" id="viewerView">
     <header>
       <div class="header-row">
@@ -761,7 +765,7 @@
   <script>
     let GOOGLE_API_KEY = "";
     let DRIVE_FOLDER_ID = "";
-    let GAS_URL = ""; // Google Apps Script URL (선택 사항)
+    let GAS_URL = "";
 
     async function loadConfig() {
       try {
@@ -782,8 +786,8 @@
     let db;
     function initDB() {
       return new Promise((resolve, reject) => {
-        // 깨진 캐시 자동 초기화를 위해 버전 V30으로 상향
-        const req = indexedDB.open('AcappellaStudioDB_V30_DIRECT', 1);
+        // 캐시 무결성을 위해 DB 버전 V40으로 업그레이드
+        const req = indexedDB.open('AcappellaStudioDB_V40_JSONP', 1);
         req.onupgradeneeded = (e) => {
           const d = e.target.result;
           if (!d.objectStoreNames.contains('custom_songs')) d.createObjectStore('custom_songs', { keyPath: 'id' });
@@ -1064,7 +1068,6 @@
     const deleteLocalBtn = document.getElementById('deleteLocalBtn');
     const zoomLevelText = document.getElementById('zoomLevelText');
 
-    // Base64 문자열을 ArrayBuffer로 변환
     function base64ToArrayBuffer(base64) {
       const binaryString = window.atob(base64);
       const len = binaryString.length;
@@ -1075,7 +1078,51 @@
       return bytes.buffer;
     }
 
-    // 🚀 [HTML 안내문 및 CORS 차단 원천 해결 다운로더]
+    // 🚀 [CORS 100% 우회] JSONP 기반 구글 앱스 스크립트 통신 엔진
+    function fetchFileViaJSONP(gasUrl, driveId) {
+      return new Promise((resolve, reject) => {
+        const callbackName = 'gas_cb_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+        const script = document.createElement('script');
+        
+        const timeout = setTimeout(() => {
+          cleanup();
+          reject(new Error("GAS JSONP 요청 시간 초과"));
+        }, 15000);
+
+        function cleanup() {
+          if (timeout) clearTimeout(timeout);
+          if (window[callbackName]) delete window[callbackName];
+          if (script.parentNode) script.parentNode.removeChild(script);
+        }
+
+        window[callbackName] = function(response) {
+          cleanup();
+          if (response && response.data) {
+            try {
+              const buffer = base64ToArrayBuffer(response.data);
+              resolve(buffer);
+            } catch (err) {
+              reject(err);
+            }
+          } else if (response && response.error) {
+            reject(new Error(response.error));
+          } else {
+            reject(new Error("알 수 없는 응답 형식"));
+          }
+        };
+
+        script.onerror = function() {
+          cleanup();
+          reject(new Error("스크립트 태그 로드 실패"));
+        };
+
+        const delimiter = gasUrl.includes('?') ? '&' : '?';
+        script.src = `${gasUrl}${delimiter}id=${encodeURIComponent(driveId)}&callback=${callbackName}`;
+        document.body.appendChild(script);
+      });
+    }
+
+    // 🚀 [최종 무결성 다운로더]
     async function fetchFileBuffer(fileId, fallbackUrl) {
       const cacheKey = `file_${fileId || fallbackUrl}`;
       const cached = await getStoredItem('pdf_cache', cacheKey);
@@ -1085,30 +1132,21 @@
       let arrayBuffer = null;
       let lastError = null;
 
-      // 0순위: Google Apps Script 웹앱 (배포 시 100% 무조건 보장)
+      // 1순위: Google Apps Script JSONP 통신 (브라우저 CORS 정책을 100% 무시하고 직접 로드)
       if (GAS_URL && driveId) {
         try {
-          const gasFetchUrl = `${GAS_URL}?id=${driveId}`;
-          const res = await fetch(gasFetchUrl);
-          if (res.ok) {
-            const textData = await res.text();
-            if (!textData.startsWith("Error") && !textData.startsWith("<")) {
-              arrayBuffer = base64ToArrayBuffer(textData.trim());
-            }
-          }
+          arrayBuffer = await fetchFileViaJSONP(GAS_URL, driveId);
         } catch (e) {
-          console.warn("GAS 로드 실패, 백업 파이프라인 시도:", e);
+          console.warn("GAS JSONP 실패, 백업 스트림으로 시도:", e);
+          lastError = e;
         }
       }
 
+      // 2순위: 백업 다이렉트 스트림 (단독 링크 또는 API 키 통신)
       if (!arrayBuffer && driveId) {
-        // 1. Google Drive 직접 다운로드 스트림
-        // 2. Google 공식 유저 콘텐츠 호스트
-        // 3. 대체 CORS 릴레이 (HTML 검증 통과용)
         const candidateUrls = [
           `https://drive.usercontent.google.com/download?id=${driveId}&export=download&authuser=0&confirm=t`,
-          `https://lh3.googleusercontent.com/u/0/d/${driveId}`,
-          `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://drive.google.com/uc?export=download&id=${driveId}`)}`
+          `https://lh3.googleusercontent.com/u/0/d/${driveId}`
         ];
 
         for (const url of candidateUrls) {
@@ -1119,11 +1157,10 @@
             const buf = await res.arrayBuffer();
             if (!buf || buf.byteLength < 50) continue;
 
-            // HTML 문서가 섞여 들어왔는지 확인
             const firstBytes = new Uint8Array(buf.slice(0, 10));
             const header = String.fromCharCode(...firstBytes);
 
-            // HTML 에러/로그인 창이면 다음 URL 시도
+            // HTML 에러/경고창이 넘어온 경우 배제
             if (header.includes('<') || header.toLowerCase().includes('html')) {
               continue;
             }
@@ -1146,7 +1183,7 @@
       }
 
       if (!arrayBuffer) {
-        throw new Error(lastError ? lastError.message : "악보 바이너리를 수신하지 못했습니다. 구글 드라이브 파일 공유 권한('링크가 있는 모든 사용자 - 뷰어')을 확인해주세요.");
+        throw new Error(lastError ? lastError.message : "악보 파일을 받아오지 못했습니다. Google Apps Script 배포 버전을 확인해주세요.");
       }
 
       await putStored('pdf_cache', { id: cacheKey, data: arrayBuffer });
@@ -1439,7 +1476,7 @@
       } catch (err) {
         console.error("악보 로드 실패:", err);
         spinner.style.display = 'none';
-        statusText.innerHTML = `악보를 불러올 수 없습니다.<br><small style="color:#ef4444;">(${err.message})<br>Google Drive 파일 및 폴더 공유 권한(링크가 있는 모든 사용자 - 뷰어)을 확인해주세요.</small>`;
+        statusText.innerHTML = `악보를 불러올 수 없습니다.<br><small style="color:#ef4444;">(${err.message})<br>Google Apps Script의 최신 버전 배포 상태를 확인해주세요.</small>`;
       }
     }
 
