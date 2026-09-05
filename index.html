@@ -73,7 +73,6 @@
     }
     .view-screen.active { display: flex; }
 
-    /* 🏛️ 1. 스튜디오 라이브러리 화면 */
     #libraryView {
       background: #090a0e;
       overflow-y: auto;
@@ -229,7 +228,6 @@
       color: #000;
     }
 
-    /* 🎼 2. 악보 뷰어 화면 */
     header {
       background: rgba(15, 16, 21, 0.94);
       backdrop-filter: blur(16px);
@@ -372,7 +370,6 @@
     body.invert-mode { background: #000000; }
     body.invert-mode .sheet-wrapper { filter: invert(0.92) hue-rotate(180deg) brightness(0.95); }
 
-    /* 대형 하단 플레이어 */
     #audioBar {
       position: fixed;
       bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
@@ -554,7 +551,6 @@
 </head>
 <body>
 
-  <!-- SCREEN 1: 라이브러리 (곡 목록) -->
   <div class="view-screen active" id="libraryView">
     <div class="lib-header">
       <div class="lib-title-box">
@@ -585,7 +581,6 @@
     </div>
   </div>
 
-  <!-- SCREEN 2: 악보 뷰어 -->
   <div class="view-screen" id="viewerView">
     <header>
       <div class="header-row">
@@ -630,7 +625,6 @@
       </div>
     </header>
 
-    <!-- 드로잉 서브 툴바 -->
     <div id="drawingToolbar">
       <button class="active" id="toolPenBtn">펜</button>
       <button id="toolBreathBtn">V 숨표</button>
@@ -640,7 +634,6 @@
       <button id="closeDrawBarBtn" style="color: #888;">✕</button>
     </div>
 
-    <!-- 메인 악보 뷰어 -->
     <main id="viewerMain">
       <div id="statusView" style="margin-top: 120px; text-align: center; color: var(--text-secondary);">
         <div class="spinner" id="loadingSpinner"></div>
@@ -652,7 +645,6 @@
       </div>
     </main>
 
-    <!-- 하단 오디오 콘솔 -->
     <div id="audioBar">
       <button id="audioPlayBtn" title="재생/일시정지">
         <svg id="playIconSvg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3l14 9-14 9V3z"/></svg>
@@ -670,7 +662,6 @@
     </div>
   </div>
 
-  <!-- 모바일 더보기 메뉴 -->
   <div class="modal-backdrop" id="appMenuModal">
     <div class="modal">
       <h3>도구 및 설정</h3>
@@ -685,7 +676,7 @@
         </div>
 
         <button class="menu-action-btn" id="menuOpenMetroBtn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           <span>메트로놈 템포 (BPM/소리) 설정</span>
         </button>
 
@@ -710,7 +701,6 @@
     </div>
   </div>
 
-  <!-- [현재 악보 첫 음 설정] 모달 -->
   <div class="modal-backdrop" id="currentSongEditModal">
     <div class="modal">
       <h3 id="currentSongModalTitle">파트별 첫 음 지정</h3>
@@ -733,7 +723,6 @@
     </div>
   </div>
 
-  <!-- [새로운 악보 추가] 모달 -->
   <div class="modal-backdrop" id="newSongModal">
     <div class="modal">
       <h3>새로운 악보 등록</h3>
@@ -752,7 +741,6 @@
     </div>
   </div>
 
-  <!-- 메트로놈 설정 모달 -->
   <div class="modal-backdrop" id="metroModal">
     <div class="modal">
       <h3>메트로놈 설정</h3>
@@ -773,6 +761,7 @@
   <script>
     let GOOGLE_API_KEY = "";
     let DRIVE_FOLDER_ID = "";
+    let GAS_URL = ""; // Google Apps Script URL (선택 사항)
 
     async function loadConfig() {
       try {
@@ -781,6 +770,7 @@
         const config = await res.json();
         GOOGLE_API_KEY = (config.googleApiKey || config.apiKey || config.GOOGLE_API_KEY || "").trim();
         DRIVE_FOLDER_ID = (config.driveFolderId || config.folderId || config.DRIVE_FOLDER_ID || "").trim();
+        GAS_URL = (config.gasUrl || config.scriptUrl || "").trim();
       } catch (err) {
         console.warn("로컬 모드:", err.message);
       }
@@ -792,8 +782,8 @@
     let db;
     function initDB() {
       return new Promise((resolve, reject) => {
-        // 깨진 캐시 자동 초기화를 위해 DB 버전 상향
-        const req = indexedDB.open('AcappellaStudioDB_V25_STABLE', 1);
+        // 깨진 캐시 자동 초기화를 위해 버전 V30으로 상향
+        const req = indexedDB.open('AcappellaStudioDB_V30_DIRECT', 1);
         req.onupgradeneeded = (e) => {
           const d = e.target.result;
           if (!d.objectStoreNames.contains('custom_songs')) d.createObjectStore('custom_songs', { keyPath: 'id' });
@@ -838,7 +828,6 @@
       });
     }
 
-    // 오디오 엔진
     let audioCtx = null;
     function getAudioContext() {
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -913,7 +902,6 @@
       });
     }
 
-    // 메트로놈
     let metroBpm = 100;
     let isMetroRunning = false;
     let isMetroSoundOn = true;
@@ -1052,9 +1040,6 @@
       return mime.startsWith('image/') || /\.(png|jpe?g|webp)$/i.test(name);
     }
 
-    // ==========================================
-    // 📂 악보 뷰어 엔진
-    // ==========================================
     let allSongs = [];
     let currentSong = null;
     let currentPdfDoc = null;
@@ -1079,7 +1064,18 @@
     const deleteLocalBtn = document.getElementById('deleteLocalBtn');
     const zoomLevelText = document.getElementById('zoomLevelText');
 
-    // 🚀 [구글 드라이브 무결성 다운로더]
+    // Base64 문자열을 ArrayBuffer로 변환
+    function base64ToArrayBuffer(base64) {
+      const binaryString = window.atob(base64);
+      const len = binaryString.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      return bytes.buffer;
+    }
+
+    // 🚀 [HTML 안내문 및 CORS 차단 원천 해결 다운로더]
     async function fetchFileBuffer(fileId, fallbackUrl) {
       const cacheKey = `file_${fileId || fallbackUrl}`;
       const cached = await getStoredItem('pdf_cache', cacheKey);
@@ -1089,55 +1085,74 @@
       let arrayBuffer = null;
       let lastError = null;
 
-      // 1. 구글 공식 Drive API v3 (가장 높은 신뢰도)
-      // 2. 직통 다운로드 엔드포인트
-      // 3. Cloudflare 프록시 우회
-      const candidateUrls = [];
-      if (driveId) {
-        if (GOOGLE_API_KEY) {
-          candidateUrls.push(`https://www.googleapis.com/drive/v3/files/${driveId}?alt=media&key=${GOOGLE_API_KEY}`);
+      // 0순위: Google Apps Script 웹앱 (배포 시 100% 무조건 보장)
+      if (GAS_URL && driveId) {
+        try {
+          const gasFetchUrl = `${GAS_URL}?id=${driveId}`;
+          const res = await fetch(gasFetchUrl);
+          if (res.ok) {
+            const textData = await res.text();
+            if (!textData.startsWith("Error") && !textData.startsWith("<")) {
+              arrayBuffer = base64ToArrayBuffer(textData.trim());
+            }
+          }
+        } catch (e) {
+          console.warn("GAS 로드 실패, 백업 파이프라인 시도:", e);
         }
-        candidateUrls.push(`https://drive.usercontent.google.com/download?id=${driveId}&export=download&confirm=t`);
-        candidateUrls.push(`https://corsproxy.io/?url=${encodeURIComponent(`https://drive.google.com/uc?export=download&id=${driveId}&confirm=t`)}`);
-      } else if (fallbackUrl) {
-        candidateUrls.push(fallbackUrl);
       }
 
-      for (const url of candidateUrls) {
-        try {
-          const res = await fetch(url);
-          if (!res.ok) continue;
+      if (!arrayBuffer && driveId) {
+        // 1. Google Drive 직접 다운로드 스트림
+        // 2. Google 공식 유저 콘텐츠 호스트
+        // 3. 대체 CORS 릴레이 (HTML 검증 통과용)
+        const candidateUrls = [
+          `https://drive.usercontent.google.com/download?id=${driveId}&export=download&authuser=0&confirm=t`,
+          `https://lh3.googleusercontent.com/u/0/d/${driveId}`,
+          `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://drive.google.com/uc?export=download&id=${driveId}`)}`
+        ];
 
-          const buf = await res.arrayBuffer();
-          if (!buf || buf.byteLength < 50) continue;
+        for (const url of candidateUrls) {
+          try {
+            const res = await fetch(url);
+            if (!res.ok) continue;
 
-          // HTML 경고창이 아닌 순수 바이너리인지 헤더 시그니처 체크
-          const firstBytes = new Uint8Array(buf.slice(0, 10));
-          const header = String.fromCharCode(...firstBytes);
+            const buf = await res.arrayBuffer();
+            if (!buf || buf.byteLength < 50) continue;
 
-          // HTML 태그가 포함되어 있다면 구글 바이러스 검사 경고창이므로 무시
-          if (header.includes('<') || header.toLowerCase().includes('html')) {
-            continue;
+            // HTML 문서가 섞여 들어왔는지 확인
+            const firstBytes = new Uint8Array(buf.slice(0, 10));
+            const header = String.fromCharCode(...firstBytes);
+
+            // HTML 에러/로그인 창이면 다음 URL 시도
+            if (header.includes('<') || header.toLowerCase().includes('html')) {
+              continue;
+            }
+
+            arrayBuffer = buf;
+            break;
+          } catch (err) {
+            lastError = err;
           }
+        }
+      }
 
-          arrayBuffer = buf;
-          break;
-        } catch (err) {
-          lastError = err;
+      if (!arrayBuffer && fallbackUrl) {
+        try {
+          const res = await fetch(fallbackUrl);
+          if (res.ok) arrayBuffer = await res.arrayBuffer();
+        } catch (e) {
+          lastError = e;
         }
       }
 
       if (!arrayBuffer) {
-        throw new Error(lastError ? lastError.message : "악보 파일을 받아오지 못했습니다. 드라이브 공유 권한('링크가 있는 모든 사용자 - 뷰어')을 확인해주세요.");
+        throw new Error(lastError ? lastError.message : "악보 바이너리를 수신하지 못했습니다. 구글 드라이브 파일 공유 권한('링크가 있는 모든 사용자 - 뷰어')을 확인해주세요.");
       }
 
       await putStored('pdf_cache', { id: cacheKey, data: arrayBuffer });
       return arrayBuffer;
     }
 
-    // ==========================================
-    // 🏛️ 화면 전환
-    // ==========================================
     const libraryView = document.getElementById('libraryView');
     const viewerView = document.getElementById('viewerView');
 
@@ -1197,7 +1212,7 @@
                   if (isAudio) {
                     const part = parsePartFromAudioName(f.name);
                     if (part) {
-                      partAudios[part] = `https://www.googleapis.com/drive/v3/files/${f.id}?alt=media&key=${GOOGLE_API_KEY}`;
+                      partAudios[part] = `https://drive.google.com/uc?export=download&id=${f.id}`;
                     }
                   }
                 });
@@ -1329,7 +1344,6 @@
       renderSongCardList(e.target.value);
     };
 
-    // 악보 열기
     async function openSongInViewer(songId) {
       const song = allSongs.find(s => s.id === songId);
       if (!song) return;
@@ -1341,7 +1355,6 @@
 
       loadSongAudioTracks(song);
 
-      // 상단 피치 캡슐
       pitchBar.innerHTML = '';
       const partClassMap = { 'S': 'sop', 'A': 'alto', 'T': 'tenor', 'BAR': 'bari', 'B': 'bass' };
       const partFullMap = { 'S': 'SOP', 'A': 'ALT', 'T': 'TEN', 'BAR': 'BAR', 'B': 'BAS' };
@@ -1533,9 +1546,6 @@
     document.getElementById('zoomInBtn').onclick = () => setZoom(zoomScale + 0.15);
     document.getElementById('zoomOutBtn').onclick = () => setZoom(zoomScale - 0.15);
 
-    // ==========================================
-    // ✏️ 개인 메모 레이어
-    // ==========================================
     let isDrawingMode = false;
     let currentTool = 'pen';
     let isDrawing = false;
@@ -1684,9 +1694,6 @@
       }
     };
 
-    // ==========================================
-    // 🎧 파트별 음원 플레이어 로직
-    // ==========================================
     const audioBar = document.getElementById('audioBar');
     const guideAudio = document.getElementById('guideAudioElement');
     const audioPlayBtn = document.getElementById('audioPlayBtn');
@@ -1781,7 +1788,6 @@
       audioBar.classList.remove('show');
     };
 
-    // 스와이프
     const viewerMain = document.getElementById('viewerMain');
     let touchStartX = 0;
     let touchStartY = 0;
@@ -1807,9 +1813,6 @@
       }
     }, { passive: true });
 
-    // ==========================================
-    // ⚙️ 모달 제어
-    // ==========================================
     const currentSongEditModal = document.getElementById('currentSongEditModal');
     document.getElementById('openCurrentSongEditBtn').onclick = () => {
       if (!currentSong) return;
