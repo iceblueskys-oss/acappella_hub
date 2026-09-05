@@ -376,7 +376,7 @@
     body.invert-mode { background: #000000; }
     body.invert-mode .sheet-wrapper { filter: invert(0.92) hue-rotate(180deg) brightness(0.95); }
 
-    /* 대형 하단 플레이어 */
+    /* 대형 하단 플레이어 (슬림 & 노스크롤 패키징) */
     #audioBar {
       position: fixed;
       bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
@@ -387,21 +387,22 @@
       -webkit-backdrop-filter: blur(20px);
       border: 1px solid rgba(255, 255, 255, 0.14);
       border-radius: 18px;
-      padding: 7px 12px;
+      padding: 6px 12px;
       display: none;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       z-index: 150;
       box-shadow: 0 16px 40px rgba(0,0,0,0.85);
       max-width: 96%;
+      white-space: nowrap;
     }
     #audioBar.show { display: flex; }
 
     #audioPlayBtn {
       border-radius: 50%;
-      width: 42px;
-      height: 42px;
-      min-width: 42px;
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
       padding: 0;
       justify-content: center;
       background: #242836;
@@ -410,6 +411,7 @@
     }
     #audioPlayBtn:active { transform: scale(0.92); }
 
+    /* 동적 파트 탭 컨테이너 (음원 있는 파트만 나열) */
     .part-track-selector {
       display: flex;
       background: #08090d;
@@ -417,26 +419,23 @@
       padding: 3px;
       border: 1px solid rgba(255, 255, 255, 0.08);
       gap: 3px;
-      overflow-x: auto;
-      white-space: nowrap;
     }
-    .part-track-selector::-webkit-scrollbar { display: none; }
 
     .part-tab {
-      padding: 7px 10px;
-      min-width: 40px;
+      padding: 6px 11px;
+      min-width: 36px;
       border-radius: 7px;
-      font-size: 12.5px;
+      font-size: 12px;
       font-weight: 800;
       background: transparent;
       border: none;
-      color: #64748b;
+      color: #cbd5e1;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
+      transition: all 0.15s ease;
     }
-    .part-tab.has-audio { color: #cbd5e1; }
     .part-tab.active {
       background: #1e212b;
       color: var(--text-gold);
@@ -452,20 +451,20 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 3px;
+      gap: 2px;
     }
     #audioTimeText {
       font-size: 11px;
       font-weight: 600;
       color: var(--text-secondary);
-      min-width: 32px;
+      min-width: 30px;
       text-align: center;
       font-variant-numeric: tabular-nums;
     }
     #audioRateBtn {
-      font-size: 10px;
+      font-size: 9.5px;
       font-weight: 700;
-      padding: 2px 6px;
+      padding: 2px 5px;
       border-radius: 5px;
       background: #1c1e27;
     }
@@ -568,7 +567,7 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="color:var(--text-gold);"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
           <span>Acappella Studio</span>
         </div>
-        <span class="lib-subtitle">구글 드라이브 폴더형 보관함 (BAR 지원)</span>
+        <span class="lib-subtitle">구글 드라이브 보관함</span>
       </div>
       <div class="lib-tools">
         <button id="libAddNewBtn" class="btn-gold">
@@ -658,20 +657,14 @@
       </div>
     </main>
 
-    <!-- 하단 오디오 콘솔 (바리톤 탭 포함) -->
+    <!-- 하단 오디오 콘솔 (존재하는 음원 파트만 자동 렌더링) -->
     <div id="audioBar">
       <button id="audioPlayBtn" title="재생/일시정지">
         <svg id="playIconSvg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3l14 9-14 9V3z"/></svg>
       </button>
       
-      <div class="part-track-selector" id="partTabSelector">
-        <button class="part-tab active" data-part="ALL">ALL</button>
-        <button class="part-tab" data-part="S">S</button>
-        <button class="part-tab" data-part="A">A</button>
-        <button class="part-tab" data-part="T">T</button>
-        <button class="part-tab" data-part="BAR">BAR</button>
-        <button class="part-tab" data-part="B">B</button>
-      </div>
+      <!-- JavaScript로 음원 있는 파트만 동적 주입 -->
+      <div class="part-track-selector" id="partTabSelector"></div>
 
       <div class="audio-side-tools">
         <span id="audioTimeText">0:00</span>
@@ -723,7 +716,7 @@
     </div>
   </div>
 
-  <!-- [현재 악보 첫 음 설정] 모달 (바리톤 포함 5개 파트) -->
+  <!-- [현재 악보 첫 음 설정] 모달 -->
   <div class="modal-backdrop" id="currentSongEditModal">
     <div class="modal">
       <h3 id="currentSongModalTitle">파트별 첫 음 지정</h3>
@@ -805,7 +798,7 @@
     let db;
     function initDB() {
       return new Promise((resolve, reject) => {
-        const req = indexedDB.open('AcappellaStudioDB_V16_BAR', 1);
+        const req = indexedDB.open('AcappellaStudioDB_V17_SLIM', 1);
         req.onupgradeneeded = (e) => {
           const d = e.target.result;
           if (!d.objectStoreNames.contains('custom_songs')) d.createObjectStore('custom_songs', { keyPath: 'id' });
@@ -850,7 +843,9 @@
       });
     }
 
-    // 오디오 엔진
+    // ==========================================
+    // 🎵 오디오 & 피치 엔진
+    // ==========================================
     let audioCtx = null;
     function getAudioContext() {
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -1013,7 +1008,7 @@
       return match ? match[1] : null;
     }
 
-    // 파일/폴더명 파싱 (BAR 태그 지원)
+    // 파일/폴더명 파싱 (BAR 포함)
     function parseFileName(name) {
       const cleanName = name.replace(/\.(pdf|png|jpe?g|webp)$/i, '').trim();
       const match = cleanName.match(/^(.*?)\s*\[(.*?)\]$/);
@@ -1032,7 +1027,7 @@
       return { title, notes };
     }
 
-    // 음원 파일 파트 파싱 (바리톤 BAR 완벽 지원)
+    // 음원 파일 파트 파싱
     function parsePartFromAudioName(name) {
       const cleanName = name.replace(/\.(mp3|wav|m4a|aac|ogg|flac)$/i, '').trim().toUpperCase();
       const lastSep = Math.max(cleanName.lastIndexOf('_'), cleanName.lastIndexOf('-'));
@@ -1067,7 +1062,7 @@
     }
 
     // ==========================================
-    // 📂 고신뢰 악보 뷰어 엔진
+    // 📂 악보 뷰어 엔진
     // ==========================================
     let allSongs = [];
     let currentSong = null;
@@ -1114,7 +1109,7 @@
     }
 
     // ==========================================
-    // 🏛️ 화면 전환 (라이브러리 <-> 뷰어)
+    // 🏛️ 화면 전환
     // ==========================================
     const libraryView = document.getElementById('libraryView');
     const viewerView = document.getElementById('viewerView');
@@ -1664,7 +1659,7 @@
     };
 
     // ==========================================
-    // 🎧 파트별 음원 플레이어 로직 (BAR 추가)
+    // 🎧 파트별 음원 플레이어 로직 (음원 있는 파트만 동적 생성)
     // ==========================================
     const audioBar = document.getElementById('audioBar');
     const guideAudio = document.getElementById('guideAudioElement');
@@ -1675,28 +1670,32 @@
     const partTabSelector = document.getElementById('partTabSelector');
 
     let currentSongPartAudios = {};
-    let activePartTab = 'ALL';
+    let activePartTab = '';
 
     function loadSongAudioTracks(song) {
       currentSongPartAudios = {};
-      const parts = ['ALL', 'S', 'A', 'T', 'BAR', 'B'];
-      let hasAnyAudio = false;
+      partTabSelector.innerHTML = ''; // 탭 컨테이너 초기화
 
-      for (const p of parts) {
-        const tabBtn = partTabSelector.querySelector(`[data-part="${p}"]`);
-        if (song.partAudioUrls && song.partAudioUrls[p]) {
-          currentSongPartAudios[p] = song.partAudioUrls[p];
-          hasAnyAudio = true;
-          if (tabBtn) tabBtn.classList.add('has-audio');
-        } else {
-          if (tabBtn) tabBtn.classList.remove('has-audio');
-        }
-      }
+      const availableParts = song.partAudioUrls || {};
+      const partsOrder = ['ALL', 'S', 'A', 'T', 'BAR', 'B'];
+      const activeParts = partsOrder.filter(p => !!availableParts[p]);
 
-      if (hasAnyAudio) {
+      if (activeParts.length > 0) {
+        // 음원이 있는 파트만 탭 버튼 생성
+        activeParts.forEach(p => {
+          currentSongPartAudios[p] = availableParts[p];
+          const btn = document.createElement('button');
+          btn.className = 'part-tab';
+          btn.dataset.part = p;
+          btn.textContent = p;
+          btn.onclick = () => switchPartTrack(p, true);
+          partTabSelector.appendChild(btn);
+        });
+
         audioBar.classList.add('show');
-        const firstAvailable = parts.find(p => currentSongPartAudios[p]) || 'ALL';
-        switchPartTrack(firstAvailable, false);
+        // ALL이 있으면 ALL 우선, 없으면 첫 번째 파트 자동 활성화
+        const defaultPart = activeParts.includes('ALL') ? 'ALL' : activeParts[0];
+        switchPartTrack(defaultPart, false);
       } else {
         audioBar.classList.remove('show');
         guideAudio.pause();
@@ -1721,17 +1720,6 @@
         }
       }
     }
-
-    partTabSelector.addEventListener('click', (e) => {
-      const tab = e.target.closest('.part-tab');
-      if (!tab) return;
-      const part = tab.dataset.part;
-      if (currentSongPartAudios[part]) {
-        switchPartTrack(part, true);
-      } else {
-        alert(`${part} 파트 음원이 없습니다.\n해당 곡 폴더에 [${part}.mp3] 파일을 넣어주세요.`);
-      }
-    });
 
     audioPlayBtn.onclick = () => {
       if (!guideAudio.src) return;
