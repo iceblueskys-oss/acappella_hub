@@ -136,7 +136,7 @@
       pointer-events: none;
     }
 
-    /* 🎛️ 하이엔드 오디오 트랙 카드 디자인 */
+    /* 트랙 카드 리스트 */
     .song-card-list {
       display: flex;
       flex-direction: column;
@@ -509,28 +509,6 @@
       color: #fff;
     }
 
-    .audio-upload-row {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      background: #0b0c10;
-      border: 1px solid var(--border-subtle);
-      border-radius: 8px;
-      padding: 6px 8px;
-    }
-    .audio-row-header { display: flex; align-items: center; justify-content: space-between; }
-    .audio-row-header span { font-size: 10.5px; font-weight: 700; color: var(--text-gold); }
-    .audio-inputs { display: flex; gap: 4px; }
-    .audio-inputs input[type="text"] {
-      flex: 1;
-      font-size: 11px;
-      padding: 5px 6px;
-      border-radius: 5px;
-      background: #151720;
-      border: 1px solid rgba(255,255,255,0.08);
-      color: #fff;
-    }
-
     .pitch-slot-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
     .pitch-edit-card {
       background: #0c0d12;
@@ -579,7 +557,7 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="color:var(--text-gold);"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
           <span>Acappella Studio</span>
         </div>
-        <span class="lib-subtitle">보관함 트랙 목록</span>
+        <span class="lib-subtitle">구글 드라이브 자동 연동 보관함</span>
       </div>
       <div class="lib-tools">
         <button id="libAddNewBtn" class="btn-gold">
@@ -615,9 +593,9 @@
 
         <span class="viewer-song-name" id="viewerSongTitle">-</span>
 
-        <button id="openCurrentSongEditBtn" title="현재 악보 음원/음정 설정">
+        <button id="openCurrentSongEditBtn" title="첫 음 설정">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-          <span>설정</span>
+          <span>음정</span>
         </button>
 
         <button id="drawToggleBtn" title="메모 레이어">
@@ -735,37 +713,13 @@
     </div>
   </div>
 
-  <!-- [현재 악보 음원/설정] 모달 -->
+  <!-- [현재 악보 첫 음 설정] 모달 -->
   <div class="modal-backdrop" id="currentSongEditModal">
-    <div class="modal" style="max-height: 88vh; overflow-y: auto;">
-      <h3 id="currentSongModalTitle">현재 곡 음원 & 첫 음 설정</h3>
+    <div class="modal">
+      <h3 id="currentSongModalTitle">파트별 첫 음 지정</h3>
       
-      <div class="form-group" style="gap: 6px;">
-        <label>파트별 구글 드라이브 음원 링크</label>
-        <div class="audio-upload-row">
-          <div class="audio-row-header"><span>ALL (전체/MR)</span></div>
-          <div class="audio-inputs"><input type="text" id="curAudioUrl_ALL" placeholder="구글 드라이브 링크 붙여넣기" /></div>
-        </div>
-        <div class="audio-upload-row">
-          <div class="audio-row-header"><span style="color: var(--sop-accent);">SOP (소프라노)</span></div>
-          <div class="audio-inputs"><input type="text" id="curAudioUrl_S" placeholder="소프라노 드라이브 링크" /></div>
-        </div>
-        <div class="audio-upload-row">
-          <div class="audio-row-header"><span style="color: var(--alto-accent);">ALT (알토)</span></div>
-          <div class="audio-inputs"><input type="text" id="curAudioUrl_A" placeholder="알토 드라이브 링크" /></div>
-        </div>
-        <div class="audio-upload-row">
-          <div class="audio-row-header"><span style="color: var(--tenor-accent);">TEN (테너)</span></div>
-          <div class="audio-inputs"><input type="text" id="curAudioUrl_T" placeholder="테너 드라이브 링크" /></div>
-        </div>
-        <div class="audio-upload-row">
-          <div class="audio-row-header"><span style="color: var(--bass-accent);">BAS (베이스)</span></div>
-          <div class="audio-inputs"><input type="text" id="curAudioUrl_B" placeholder="베이스 드라이브 링크" /></div>
-        </div>
-      </div>
-
       <div class="form-group">
-        <label>파트별 첫 음 지정</label>
+        <label>파트별 첫 음 음정</label>
         <div class="pitch-slot-container">
           <div class="pitch-edit-card"><span style="color: var(--sop-accent);">SOP</span><select id="curQuickS"></select></div>
           <div class="pitch-edit-card"><span style="color: var(--alto-accent);">ALT</span><select id="curQuickA"></select></div>
@@ -840,12 +794,11 @@
     let db;
     function initDB() {
       return new Promise((resolve, reject) => {
-        const req = indexedDB.open('AcappellaStudioDB_V10', 1);
+        const req = indexedDB.open('AcappellaStudioDB_V12', 1);
         req.onupgradeneeded = (e) => {
           const d = e.target.result;
           if (!d.objectStoreNames.contains('custom_songs')) d.createObjectStore('custom_songs', { keyPath: 'id' });
           if (!d.objectStoreNames.contains('pitch_overrides')) d.createObjectStore('pitch_overrides', { keyPath: 'songId' });
-          if (!d.objectStoreNames.contains('audio_overrides')) d.createObjectStore('audio_overrides', { keyPath: 'songId' });
           if (!d.objectStoreNames.contains('personal_drawings')) d.createObjectStore('personal_drawings', { keyPath: 'id' });
           if (!d.objectStoreNames.contains('pdf_cache')) d.createObjectStore('pdf_cache', { keyPath: 'id' });
         };
@@ -886,7 +839,9 @@
       });
     }
 
-    // 오디오 엔진
+    // ==========================================
+    // 🎵 오디오 & 피치 엔진
+    // ==========================================
     let audioCtx = null;
     function getAudioContext() {
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -1046,17 +1001,19 @@
       return match ? match[1] : null;
     }
 
-    function resolveAudioStreamUrl(inputUrl) {
-      if (!inputUrl) return null;
-      const driveId = extractDriveFileId(inputUrl);
-      if (driveId && GOOGLE_API_KEY) {
-        return `https://www.googleapis.com/drive/v3/files/${driveId}?alt=media&key=${GOOGLE_API_KEY}`;
-      }
-      return inputUrl;
+    // ==========================================
+    // 🔍 대소문자 & 구분자 정규화 매칭 엔진
+    // ==========================================
+    function normalizeKey(str) {
+      return (str || '')
+        .toLowerCase()
+        .replace(/[\s\-_]/g, '') // 공백, 언더바, 대시를 완전히 제거하여 대조
+        .trim();
     }
 
+    // 악보 PDF 파일명 파싱
     function parseFileName(fileName) {
-      const cleanName = fileName.replace(/\.pdf$/i, '');
+      const cleanName = fileName.replace(/\.pdf$/i, '').trim();
       const match = cleanName.match(/^(.*?)\s*\[(.*?)\]$/);
       if (!match) return { title: cleanName, notes: {} };
 
@@ -1069,8 +1026,31 @@
       return { title, notes };
     }
 
+    // 음원 파일명 파싱 (대소문자/구분기호 완전 무시)
+    function parseAudioFileName(fileName) {
+      const cleanName = fileName.replace(/\.(mp3|wav|m4a|aac|ogg|flac)$/i, '').trim();
+      const lastSep = Math.max(cleanName.lastIndexOf('_'), cleanName.lastIndexOf('-'));
+      if (lastSep === -1) return null;
+
+      const songTitle = cleanName.substring(0, lastSep).trim();
+      const partRaw = cleanName.substring(lastSep + 1).trim().toUpperCase();
+
+      const partMap = {
+        'ALL': 'ALL', 'MR': 'ALL', 'FULL': 'ALL', 'GUIDE': 'ALL',
+        'S': 'S', 'SOP': 'S', 'SOPRANO': 'S',
+        'A': 'A', 'ALT': 'A', 'ALTO': 'A',
+        'T': 'T', 'TEN': 'T', 'TENOR': 'T',
+        'B': 'B', 'BAS': 'B', 'BASS': 'B'
+      };
+
+      const part = partMap[partRaw];
+      if (!part) return null;
+
+      return { songTitle, part };
+    }
+
     // ==========================================
-    // 📂 고신뢰 PDF 다운로드 파이프라인 (CORS/403 우회)
+    // 📂 고신뢰 PDF 다운로드 파이프라인
     // ==========================================
     let allSongs = [];
     let currentSong = null;
@@ -1094,56 +1074,24 @@
     const deleteLocalBtn = document.getElementById('deleteLocalBtn');
     const zoomLevelText = document.getElementById('zoomLevelText');
 
-    // 403 Forbidden 및 CORS 차단을 완벽 우회하는 PDF 로더
     async function fetchPdfDataSafe(song) {
       const cacheKey = `pdf_${song.id}`;
-      // 1. IndexedDB 캐시 (있으면 0.05초 만에 완료)
       const cached = await getStoredItem('pdf_cache', cacheKey);
-      if (cached && cached.data) {
-        return cached.data;
-      }
+      if (cached && cached.data) return cached.data;
 
       const driveId = song.type === 'drive' ? song.driveId : extractDriveFileId(song.url);
-      
-      // 구글 드라이브일 경우 우선순위 순차 다운로드 파이프라인
-      const candidateUrls = [];
-      if (driveId) {
-        // 1순위: Google의 CORS 허용 미디어 호스트
-        candidateUrls.push(`https://lh3.googleusercontent.com/d/${driveId}`);
-        // 2순위: Google Drive 공식 웹 다운로드 엔드포인트
-        candidateUrls.push(`https://drive.google.com/uc?export=download&id=${driveId}`);
-        // 3순위: 안정적인 백업 프록시 파이프라인
-        candidateUrls.push(`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://drive.google.com/uc?export=download&id=${driveId}`)}`);
+      let fetchUrl = '';
+
+      if (driveId && GOOGLE_API_KEY) {
+        fetchUrl = `https://www.googleapis.com/drive/v3/files/${driveId}?alt=media&key=${GOOGLE_API_KEY}`;
       } else {
-        candidateUrls.push(song.url);
+        fetchUrl = song.url;
       }
 
-      let arrayBuffer = null;
-      let lastError = null;
+      const res = await fetch(fetchUrl);
+      if (!res.ok) throw new Error(`HTTP ${res.status} (${res.statusText})`);
 
-      for (const url of candidateUrls) {
-        try {
-          const res = await fetch(url);
-          if (res.ok) {
-            arrayBuffer = await res.arrayBuffer();
-            // 유효한 PDF 파일 시그니처(%PDF)인지 확인
-            const headerStr = new TextDecoder("ascii").decode(new Uint8Array(arrayBuffer.slice(0, 5)));
-            if (headerStr.startsWith('%PDF')) {
-              break;
-            } else {
-              arrayBuffer = null;
-            }
-          }
-        } catch (err) {
-          lastError = err;
-        }
-      }
-
-      if (!arrayBuffer) {
-        throw new Error(lastError ? lastError.message : "구글 드라이브에서 악보를 내려받지 못했습니다.");
-      }
-
-      // IndexedDB에 영구 보관 (두 번째 열람부터는 네트워크를 타지 않음)
+      const arrayBuffer = await res.arrayBuffer();
       await putStored('pdf_cache', { id: cacheKey, data: arrayBuffer });
       return arrayBuffer;
     }
@@ -1168,42 +1116,70 @@
 
     document.getElementById('backToLibBtn').onclick = showLibraryScreen;
 
+    // 대소문자 무시 구글 드라이브 자동 매칭 로더
     async function loadAllSongList() {
       let driveItems = [];
+      const driveAudioMap = {}; // { [normKey]: { S: url, A: url, ... } }
+
       if (GOOGLE_API_KEY && DRIVE_FOLDER_ID) {
         try {
-          const q = `'${DRIVE_FOLDER_ID}' in parents and mimeType = 'application/pdf' and trashed = false`;
-          const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name)&orderBy=name&key=${GOOGLE_API_KEY}`;
+          const q = `'${DRIVE_FOLDER_ID}' in parents and trashed = false`;
+          const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name,mimeType)&orderBy=name&key=${GOOGLE_API_KEY}`;
           const res = await fetch(url);
           if (res.ok) {
             const data = await res.json();
-            driveItems = (data.files || []).map(f => {
-              const meta = parseFileName(f.name);
-              return { id: `drive_${f.id}`, driveId: f.id, type: 'drive', title: meta.title, notes: meta.notes };
+            const files = data.files || [];
+
+            // 1) 오디오 파일 수집 및 정규화 키 매핑
+            files.forEach(f => {
+              const isAudio = (f.mimeType && f.mimeType.startsWith('audio/')) ||
+                              /\.(mp3|wav|m4a|aac|ogg|flac)$/i.test(f.name);
+              if (isAudio) {
+                const parsed = parseAudioFileName(f.name);
+                if (parsed) {
+                  const normKey = normalizeKey(parsed.songTitle);
+                  if (!driveAudioMap[normKey]) driveAudioMap[normKey] = {};
+                  driveAudioMap[normKey][parsed.part] = `https://www.googleapis.com/drive/v3/files/${f.id}?alt=media&key=${GOOGLE_API_KEY}`;
+                }
+              }
+            });
+
+            // 2) PDF 악보 파일 매칭
+            files.forEach(f => {
+              if (f.mimeType === 'application/pdf' || /\.pdf$/i.test(f.name)) {
+                const meta = parseFileName(f.name);
+                const normKey = normalizeKey(meta.title);
+                const matchedAudios = driveAudioMap[normKey] || {};
+                driveItems.push({
+                  id: `drive_${f.id}`,
+                  driveId: f.id,
+                  type: 'drive',
+                  title: meta.title,
+                  notes: meta.notes,
+                  partAudioUrls: matchedAudios
+                });
+              }
             });
           }
         } catch (e) {
-          console.warn("구글 드라이브 연동 예외:", e);
+          console.warn("구글 드라이브 자동 스캔 예외:", e);
         }
       }
 
       const customItems = await getStored('custom_songs');
       const pitchOverrides = await getStored('pitch_overrides');
-      const audioOverrides = await getStored('audio_overrides');
-      
       const pitchMap = new Map(pitchOverrides.map(o => [o.songId, o.notes]));
-      const audioMap = new Map(audioOverrides.map(o => [o.songId, o.partAudioUrls]));
 
       allSongs = [...customItems, ...driveItems].map(s => ({
         ...s,
         notes: pitchMap.get(s.id) || s.notes || {},
-        partAudioUrls: audioMap.get(s.id) || s.partAudioUrls || {}
+        partAudioUrls: s.partAudioUrls || {}
       }));
 
       renderSongCardList();
     }
 
-    // 세련된 트랙 리스트 카드 렌더링
+    // 트랙 리스트 카드 렌더링
     function renderSongCardList(searchTerm = "") {
       const container = document.getElementById('songCardList');
       container.innerHTML = "";
@@ -1215,7 +1191,7 @@
       if (filtered.length === 0) {
         container.innerHTML = `
           <div style="text-align:center; padding:50px 10px; color:var(--text-secondary); font-size:13px;">
-            검색 결과가 없거나 등록된 악보가 없습니다.<br>우측 상단 <b>[+ 새 악보]</b>를 눌러 등록해보세요.
+            검색 결과가 없거나 등록된 악보가 없습니다.<br>구글 드라이브 폴더를 확인하거나 <b>[+ 새 악보]</b>를 등록해보세요.
           </div>
         `;
         return;
@@ -1256,7 +1232,7 @@
       renderSongCardList(e.target.value);
     };
 
-    // [수정된 악보 열기 로직 - CORS/403 해결]
+    // 악보 열기
     async function openSongInViewer(songId) {
       const song = allSongs.find(s => s.id === songId);
       if (!song) return;
@@ -1268,7 +1244,7 @@
 
       loadSongAudioTracks(song);
 
-      // 상단 피치 캡슐 렌더링
+      // 상단 피치 캡슐
       pitchBar.innerHTML = '';
       const partClassMap = { 'S': 'sop', 'A': 'alto', 'T': 'tenor', 'B': 'bass' };
       const partFullMap = { 'S': 'SOP', 'A': 'ALT', 'T': 'TEN', 'B': 'BAS' };
@@ -1293,44 +1269,17 @@
       if (!hasAnyPitch) {
         const hint = document.createElement('span');
         hint.style.cssText = "font-size: 10px; color: var(--text-secondary); padding: 2px 4px;";
-        hint.textContent = "첫 음 없음 (설정 버튼)";
+        hint.textContent = "첫 음 없음 (음정 버튼)";
         pitchBar.appendChild(hint);
       }
 
       statusView.style.display = 'block';
       sheetCard.style.display = 'none';
       spinner.style.display = 'block';
-      statusText.innerHTML = `'${song.title}' 렌더링 중...`;
+      statusText.innerHTML = `'${song.title}' 악보 로딩 중...`;
 
       try {
-        const cacheKey = `pdf_${song.id}`;
-        let arrayBuffer = null;
-
-        // 1. IndexedDB 캐시 확인 (캐시가 있으면 네트워크 없이 즉시 오픈)
-        const cached = await getStoredItem('pdf_cache', cacheKey);
-        if (cached && cached.data) {
-          arrayBuffer = cached.data;
-        } else {
-          // 2. Google Drive API 바이너리 다이렉트 호출 (403 및 CORS 우회)
-          const driveId = song.type === 'drive' ? song.driveId : extractDriveFileId(song.url);
-          let fetchUrl = '';
-
-          if (driveId && GOOGLE_API_KEY) {
-            fetchUrl = `https://www.googleapis.com/drive/v3/files/${driveId}?alt=media&key=${GOOGLE_API_KEY}`;
-          } else {
-            fetchUrl = song.url;
-          }
-
-          const res = await fetch(fetchUrl);
-          if (!res.ok) throw new Error(`HTTP ${res.status} (${res.statusText})`);
-
-          arrayBuffer = await res.arrayBuffer();
-
-          // IndexedDB에 영구 보관
-          await putStored('pdf_cache', { id: cacheKey, data: arrayBuffer });
-        }
-
-        // PDF.js에 ArrayBuffer 직접 전달
+        const arrayBuffer = await fetchPdfDataSafe(song);
         const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
         currentPdfDoc = await loadingTask.promise;
 
@@ -1343,10 +1292,10 @@
       } catch (err) {
         console.error("PDF 로드 실패:", err);
         spinner.style.display = 'none';
-        statusText.innerHTML = `악보를 불러올 수 없습니다.<br><small style="color:#ef4444;">(${err.message})<br>구글 드라이브 파일의 공유 권한이 '링크가 있는 모든 사용자(뷰어)'인지 확인해주세요.</small>`;
+        statusText.innerHTML = `악보를 불러올 수 없습니다.<br><small style="color:#ef4444;">(${err.message})<br>Google Drive API 사용 설정 및 폴더 공유 권한을 확인해주세요.</small>`;
       }
     }
-    
+
     function renderPage(num) {
       if (!currentPdfDoc || !pdfCanvas || !pdfCtx) return;
 
@@ -1581,15 +1530,12 @@
       for (const p of parts) {
         const tabBtn = partTabSelector.querySelector(`[data-part="${p}"]`);
         if (song.partAudioUrls && song.partAudioUrls[p]) {
-          const resolvedStream = resolveAudioStreamUrl(song.partAudioUrls[p]);
-          if (resolvedStream) {
-            currentSongPartAudios[p] = resolvedStream;
-            hasAnyAudio = true;
-            tabBtn.classList.add('has-audio');
-            continue;
-          }
+          currentSongPartAudios[p] = song.partAudioUrls[p];
+          hasAnyAudio = true;
+          tabBtn.classList.add('has-audio');
+        } else {
+          tabBtn.classList.remove('has-audio');
         }
-        tabBtn.classList.remove('has-audio');
       }
 
       if (hasAnyAudio) {
@@ -1628,7 +1574,7 @@
       if (currentSongPartAudios[part]) {
         switchPartTrack(part, true);
       } else {
-        alert(`${part} 파트에 등록된 구글 드라이브 음원이 없습니다.\n상단 [설정]을 눌러 링크를 등록해주세요.`);
+        alert(`${part} 파트에 등록된 구글 드라이브 음원이 없습니다.\n드라이브 폴더에 [곡명_${part}.mp3] 파일을 업로드해주세요.`);
       }
     });
 
@@ -1700,12 +1646,8 @@
     const currentSongEditModal = document.getElementById('currentSongEditModal');
     document.getElementById('openCurrentSongEditBtn').onclick = () => {
       if (!currentSong) return;
-      document.getElementById('currentSongModalTitle').textContent = `[${currentSong.title}] 음원 & 첫 음 설정`;
+      document.getElementById('currentSongModalTitle').textContent = `[${currentSong.title}] 첫 음 설정`;
       
-      ['ALL', 'S', 'A', 'T', 'B'].forEach(p => {
-        document.getElementById(`curAudioUrl_${p}`).value = currentSong.partAudioUrls?.[p] || '';
-      });
-
       document.getElementById('curQuickS').value = currentSong.notes?.S || '';
       document.getElementById('curQuickA').value = currentSong.notes?.A || '';
       document.getElementById('curQuickT').value = currentSong.notes?.T || '';
@@ -1717,12 +1659,6 @@
 
     document.getElementById('saveCurrentSongEditBtn').onclick = async () => {
       if (!currentSong) return;
-      
-      const partAudioUrls = {};
-      ['ALL', 'S', 'A', 'T', 'B'].forEach(p => {
-        const val = document.getElementById(`curAudioUrl_${p}`).value.trim();
-        if (val) partAudioUrls[p] = val;
-      });
 
       const newNotes = {
         S: document.getElementById('curQuickS').value,
@@ -1731,10 +1667,7 @@
         B: document.getElementById('curQuickB').value
       };
 
-      await putStored('audio_overrides', { songId: currentSong.id, partAudioUrls: partAudioUrls });
       await putStored('pitch_overrides', { songId: currentSong.id, notes: newNotes });
-
-      currentSong.partAudioUrls = partAudioUrls;
       currentSong.notes = newNotes;
 
       currentSongEditModal.classList.remove('open');
@@ -1805,7 +1738,6 @@
       if (confirm(`'${currentSong.title}' 트랙을 삭제하시겠습니까?`)) {
         await deleteStored('custom_songs', currentSong.id);
         await deleteStored('pitch_overrides', currentSong.id);
-        await deleteStored('audio_overrides', currentSong.id);
         await deleteStored('pdf_cache', `pdf_${currentSong.id}`);
         appMenuModal.classList.remove('open');
         await loadAllSongList();
