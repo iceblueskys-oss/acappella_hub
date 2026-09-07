@@ -2,4 +2,14 @@
   "googleApiKey": "AIzaSyCvRa2jV0lWoX9-rayyu5vNG7K4GuMUSSQ",
   "driveFolderId": "1BDl7bfBY0S0kWRvtbJ5Kqgl9o9HgwUEj",
   "gasUrl": "https://script.google.com/macros/s/AKfycbytfi3DbFGd0setAz9MmavkHZkODpj3IngxXVADfgg5Bf7UuKi-tiD67ZzoNUtnEelSSQ/exec"
+  "firebase":{
+  "apiKey": "AIzaSyBKSdmoQ0dcwXp7o1i4udlhPMWPeJpdVEE",
+  "authDomain": "acappella-c987e.firebaseapp.com",
+  "projectId": "acappella-c987e",
+  "storageBucket": "acappella-c987e.firebasestorage.app",
+  "messagingSenderId": "756106714353",
+  "appId": "1:756106714353:web:f674ab705354010b1fdd50",
+  "measurementId": "G-3J3PTPGQHG"
+  }
 }
+  
