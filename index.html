@@ -14,6 +14,10 @@
   <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=2" />
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <!-- Firebase SDK (Firestore Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
   <style>
     :root {
       --bg-base: #07080a;
@@ -233,7 +237,6 @@
       color: #000;
     }
 
-    /* 📱 최적화된 헤더 레이아웃 */
     header {
       background: rgba(15, 16, 21, 0.94);
       backdrop-filter: blur(16px);
@@ -384,7 +387,6 @@
     body.invert-mode { background: #000000; }
     body.invert-mode .sheet-wrapper { filter: invert(0.92) hue-rotate(180deg) brightness(0.95); }
 
-    /* 📱 하단 플레이어 모바일 최적화 (가로 짤림 방지 및 슬림화) */
     #audioBar {
       position: fixed;
       bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
@@ -666,7 +668,7 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="color:var(--text-gold);"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
           <span>Acappella Studio</span>
         </div>
-        <span class="lib-subtitle">구글 드라이브 보관함</span>
+        <span class="lib-subtitle">클라우드 동기화 보관함</span>
       </div>
       <div class="lib-tools">
         <button id="libAddNewBtn" class="btn-gold">
@@ -699,7 +701,6 @@
 
         <span class="viewer-song-name" id="viewerSongTitle">-</span>
 
-        <!-- 📱 모바일 최적화: 아이콘형 슬림 버튼 -->
         <button id="openCurrentSongEditBtn" title="악보 및 음정/음원 설정" style="padding: 5px 7px;">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
         </button>
@@ -764,7 +765,6 @@
       <iframe id="ytIframe" width="100%" height="100%" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
     </div>
 
-    <!-- 📱 모바일 최적화 하단 플레이어 -->
     <div id="audioBar">
       <button id="audioPlayBtn" title="재생/일시정지">
         <svg id="playIconSvg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3l14 9-14 9V3z"/></svg>
@@ -828,7 +828,7 @@
 
   <div class="modal-backdrop" id="currentSongEditModal">
     <div class="modal">
-      <h3 id="currentSongModalTitle">악보 설정 (음정 / 파트음원 / 유튜브)</h3>
+      <h3 id="currentSongModalTitle">악보 설정 (클라우드 동기화)</h3>
       
       <div class="form-group">
         <label>유튜브 음원/영상 URL</label>
@@ -847,7 +847,7 @@
       </div>
 
       <div class="form-group">
-        <label>파트별 오디오 파일 링크 (드라이브 또는 MP3 URL)</label>
+        <label>파트별 오디오 링크 (클라우드 영구 저장)</label>
         <div class="part-audio-edit-grid">
           <div class="audio-field-row">
             <span class="audio-part-label" style="color: var(--text-gold);">ALL</span>
@@ -878,7 +878,7 @@
 
       <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 6px;">
         <button id="closeCurrentSongEditBtn">취소</button>
-        <button class="btn-gold" id="saveCurrentSongEditBtn">저장하기</button>
+        <button class="btn-gold" id="saveCurrentSongEditBtn">클라우드에 저장</button>
       </div>
     </div>
   </div>
@@ -925,7 +925,7 @@
   <script>
     let GOOGLE_API_KEY = "";
     let DRIVE_FOLDER_ID = "";
-    let GAS_URL = "";
+    let firestoreDb = null;
 
     function resetViewportZoom() {
       const activeEl = document.activeElement;
@@ -947,11 +947,22 @@
         const res = await fetch('./config.json', { cache: 'no-cache' });
         if (!res.ok) throw new Error("config.json 없음");
         const config = await res.json();
-        GOOGLE_API_KEY = (config.googleApiKey || config.apiKey || config.GOOGLE_API_KEY || "").trim();
-        DRIVE_FOLDER_ID = (config.driveFolderId || config.folderId || config.DRIVE_FOLDER_ID || "").trim();
-        GAS_URL = (config.gasUrl || config.scriptUrl || "").trim();
+        GOOGLE_API_KEY = (config.googleApiKey || config.apiKey || "").trim();
+        DRIVE_FOLDER_ID = (config.driveFolderId || config.folderId || "").trim();
+
+        // 🔥 Firebase 초기화
+        if (config.firebase && config.firebase.projectId) {
+          try {
+            if (!firebase.apps.length) {
+              firebase.initializeApp(config.firebase);
+            }
+            firestoreDb = firebase.firestore();
+          } catch (fbErr) {
+            console.warn("Firebase 초기화 오류:", fbErr.message);
+          }
+        }
       } catch (err) {
-        console.warn("로컬 모드:", err.message);
+        console.warn("설정 로드 예외:", err.message);
       }
     }
 
@@ -961,7 +972,7 @@
     let db;
     function initDB() {
       return new Promise((resolve, reject) => {
-        const req = indexedDB.open('AcappellaStudioDB_V76_MOBILE_UI', 1);
+        const req = indexedDB.open('AcappellaStudioDB_V80_FIREBASE', 1);
         req.onupgradeneeded = (e) => {
           const d = e.target.result;
           if (!d.objectStoreNames.contains('custom_songs')) d.createObjectStore('custom_songs', { keyPath: 'id' });
@@ -1004,6 +1015,31 @@
         tx.objectStore(storeName).delete(id);
         tx.oncomplete = () => resolve();
       });
+    }
+
+    // 🚀 [Firestore 동기화 엔진]
+    async function syncSongDataFromFirestore() {
+      if (!firestoreDb) return new Map();
+      try {
+        const snap = await firestoreDb.collection('song_settings').get();
+        const map = new Map();
+        snap.forEach(doc => {
+          map.set(doc.id, doc.data());
+        });
+        return map;
+      } catch (err) {
+        console.warn("Firestore 동기화 실패 (로컬 데이터로 대체):", err.message);
+        return new Map();
+      }
+    }
+
+    async function saveSongDataToFirestore(songId, data) {
+      if (!firestoreDb) return;
+      try {
+        await firestoreDb.collection('song_settings').doc(songId).set(data, { merge: true });
+      } catch (err) {
+        console.error("Firestore 저장 실패:", err);
+      }
     }
 
     let audioCtx = null;
@@ -1426,13 +1462,19 @@
 
       const customItems = await getStored('custom_songs');
       const pitchOverrides = await getStored('pitch_overrides');
-      const pitchMap = new Map(pitchOverrides.map(o => [o.songId, o]));
+      const localPitchMap = new Map(pitchOverrides.map(o => [o.songId, o]));
+
+      // 🌐 Firebase Firestore 데이터 병합
+      const firestoreMap = await syncSongDataFromFirestore();
 
       allSongs = [...customItems, ...driveItems].map(s => {
-        const override = pitchMap.get(s.id);
+        const localOverride = localPitchMap.get(s.id);
+        const cloudOverride = firestoreMap.get(s.id);
+        
         const mergedAudios = {
           ...(s.partAudioUrls || {}),
-          ...(override?.partAudioUrls || {})
+          ...(localOverride?.partAudioUrls || {}),
+          ...(cloudOverride?.partAudioUrls || {})
         };
         Object.keys(mergedAudios).forEach(k => {
           if (!mergedAudios[k]) delete mergedAudios[k];
@@ -1440,9 +1482,9 @@
 
         return {
           ...s,
-          notes: override?.notes || s.notes || {},
+          notes: cloudOverride?.notes || localOverride?.notes || s.notes || {},
           partAudioUrls: mergedAudios,
-          youtubeUrl: override?.youtubeUrl !== undefined ? override.youtubeUrl : (s.youtubeUrl || null)
+          youtubeUrl: cloudOverride?.youtubeUrl !== undefined ? cloudOverride.youtubeUrl : (localOverride?.youtubeUrl !== undefined ? localOverride.youtubeUrl : (s.youtubeUrl || null))
         };
       });
 
@@ -2100,6 +2142,7 @@
       currentSongEditModal.classList.remove('open');
     };
 
+    // 🚀 [클라우드 저장 핸들러]
     document.getElementById('saveCurrentSongEditBtn').onclick = async () => {
       if (!currentSong) return;
 
@@ -2119,12 +2162,19 @@
         if (val) newAudios[p] = val;
       });
 
-      await putStored('pitch_overrides', { 
+      const payload = { 
         songId: currentSong.id, 
         notes: newNotes,
         youtubeUrl: ytUrl || null,
-        partAudioUrls: newAudios
-      });
+        partAudioUrls: newAudios,
+        updatedAt: Date.now()
+      };
+
+      // 1. 로컬 DB 백업
+      await putStored('pitch_overrides', payload);
+
+      // 2. Firebase Firestore 클라우드 영구 동기화
+      await saveSongDataToFirestore(currentSong.id, payload);
 
       currentSong.notes = newNotes;
       currentSong.youtubeUrl = ytUrl || null;
@@ -2176,6 +2226,10 @@
       };
 
       await putStored('custom_songs', newSong);
+
+      // 새 곡도 Firestore에 백업
+      await saveSongDataToFirestore(newSongId, newSong);
+
       resetViewportZoom();
       newSongModal.classList.remove('open');
       await loadAllSongList();
@@ -2222,6 +2276,9 @@
         await deleteStored('custom_songs', currentSong.id);
         await deleteStored('pitch_overrides', currentSong.id);
         await deleteStored('pdf_cache', `file_${currentSong.driveId || currentSong.url}`);
+        if (firestoreDb) {
+          try { await firestoreDb.collection('song_settings').doc(currentSong.id).delete(); } catch(e){}
+        }
         resetViewportZoom();
         appMenuModal.classList.remove('open');
         await loadAllSongList();
