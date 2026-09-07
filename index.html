@@ -13,7 +13,6 @@
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='gold' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23F6E09E'/%3E%3Cstop offset='50%25' stop-color='%23D4AF37'/%3E%3Cstop offset='100%25' stop-color='%238A6F1D'/%3E%3C/linearGradient%3E%3CradialGradient id='bg' cx='50%25' cy='50%25' r='50%25'%3E%3Cstop offset='0%25' stop-color='%231B1C22'/%3E%3Cstop offset='100%25' stop-color='%2308090C'/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23bg)' stroke='rgba(255,255,255,0.1)' stroke-width='1.5'/%3E%3Cpath d='M25 15v18a7 7 0 0 0 14 0V15' fill='none' stroke='url(%23gold)' stroke-width='3.5' stroke-linecap='round'/%3E%3Cpath d='M32 39v12' fill='none' stroke='url(%23gold)' stroke-width='3.8' stroke-linecap='round'/%3E%3Ccircle cx='32' cy='53' r='2.8' fill='url(%23gold)'/%3E%3Ccircle cx='17' cy='23' r='1.8' fill='%23E06C75'/%3E%3Ccircle cx='47' cy='23' r='1.8' fill='%2361AFEF'/%3E%3C/svg%3E" />
   <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=2" />
 
-  <!-- PDF.js CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <style>
     :root {
@@ -35,6 +34,7 @@
       --tenor-accent: #34d399;
       --bari-accent: #c084fc;
       --bass-accent: #60a5fa;
+      --yt-accent: #ff0000;
     }
 
     * { 
@@ -212,6 +212,11 @@
       color: var(--text-gold);
       border: 1px solid rgba(212, 175, 55, 0.25);
     }
+    .meta-chip.yt-chip {
+      background: rgba(255, 0, 0, 0.12);
+      color: #ff4d4d;
+      border: 1px solid rgba(255, 0, 0, 0.3);
+    }
     .song-action-cue {
       display: flex;
       align-items: center;
@@ -279,6 +284,12 @@
       color: var(--text-gold);
       border-color: var(--border-metallic);
       background: rgba(212, 175, 55, 0.08);
+    }
+    .btn-yt {
+      color: #ff5252;
+      border-color: rgba(255, 82, 82, 0.35);
+      background: rgba(255, 0, 0, 0.1);
+      font-weight: 700;
     }
 
     .viewer-song-name {
@@ -461,7 +472,6 @@
       background: #1c1e27;
     }
 
-    /* 📱 휴대폰 화면 오버랩 방지를 위한 툴바 가로 스크롤 및 배치 최적화 */
     #drawingToolbar {
       position: fixed;
       top: calc(env(safe-area-inset-top, 0px) + 78px);
@@ -486,6 +496,47 @@
       padding: 5px 10px;
       font-size: 11.5px;
       flex-shrink: 0;
+    }
+
+    /* 🎥 플로팅 유튜브 플레이어 모달 */
+    #ytFloatingContainer {
+      position: fixed;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 80px);
+      right: 14px;
+      width: 280px;
+      height: 180px;
+      background: #11131a;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      overflow: hidden;
+      z-index: 160;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.8);
+      display: none;
+      flex-direction: column;
+    }
+    #ytFloatingContainer.show { display: flex; }
+    .yt-float-header {
+      background: #181a24;
+      padding: 4px 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .yt-float-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .yt-float-close {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      padding: 2px 6px;
+      font-size: 12px;
     }
 
     .modal-backdrop {
@@ -656,12 +707,30 @@
       </div>
     </main>
 
+    <!-- 🎥 플로팅 유튜브 플레이어 -->
+    <div id="ytFloatingContainer">
+      <div class="yt-float-header">
+        <span class="yt-float-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#ff0000"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+          유튜브 음원 재생
+        </span>
+        <button class="yt-float-close" id="closeYtFloatBtn">✕</button>
+      </div>
+      <iframe id="ytIframe" width="100%" height="100%" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </div>
+
     <div id="audioBar">
       <button id="audioPlayBtn" title="재생/일시정지">
         <svg id="playIconSvg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3l14 9-14 9V3z"/></svg>
       </button>
       
       <div class="part-track-selector" id="partTabSelector"></div>
+
+      <!-- 유튜브 음원 토글 버튼 -->
+      <button id="ytToggleBtn" class="btn-yt" style="display:none; padding:5px 8px;" title="유튜브 음원 듣기">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+        <span>YouTube</span>
+      </button>
 
       <div class="audio-side-tools">
         <span id="audioTimeText">0:00</span>
@@ -687,7 +756,7 @@
         </div>
 
         <button class="menu-action-btn" id="menuOpenMetroBtn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l-.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           <span>메트로놈 템포 (BPM/소리) 설정</span>
         </button>
 
@@ -714,8 +783,13 @@
 
   <div class="modal-backdrop" id="currentSongEditModal">
     <div class="modal">
-      <h3 id="currentSongModalTitle">파트별 첫 음 지정</h3>
+      <h3 id="currentSongModalTitle">악보 설정 및 첫 음 지정</h3>
       
+      <div class="form-group">
+        <label>유튜브 음원/참고영상 링크</label>
+        <input type="text" id="curQuickYtUrl" placeholder="https://www.youtube.com/watch?v=... 또는 https://youtu.be/..." />
+      </div>
+
       <div class="form-group">
         <label>파트별 첫 음 음정</label>
         <div class="pitch-slot-container">
@@ -744,6 +818,10 @@
       <div class="form-group">
         <label>악보 PDF 또는 이미지 URL</label>
         <input type="text" id="newSongPdfUrl" placeholder="https://drive.google.com/file/d/..." required />
+      </div>
+      <div class="form-group">
+        <label>유튜브 음원 URL (선택)</label>
+        <input type="text" id="newSongYtUrl" placeholder="https://youtu.be/..." />
       </div>
       <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px;">
         <button id="closeNewSongModalBtn">취소</button>
@@ -793,7 +871,7 @@
     let db;
     function initDB() {
       return new Promise((resolve, reject) => {
-        const req = indexedDB.open('AcappellaStudioDB_V71_FIX', 1);
+        const req = indexedDB.open('AcappellaStudioDB_V72_YT', 1);
         req.onupgradeneeded = (e) => {
           const d = e.target.result;
           if (!d.objectStoreNames.contains('custom_songs')) d.createObjectStore('custom_songs', { keyPath: 'id' });
@@ -999,6 +1077,14 @@
       return match ? match[1] : null;
     }
 
+    // 🎥 유튜브 Video ID 추출 함수
+    function extractYouTubeId(url) {
+      if (!url) return null;
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+      const match = url.match(regExp);
+      return (match && match[2].length === 11) ? match[2] : null;
+    }
+
     function parseFileName(name) {
       const cleanName = name.replace(/\.(pdf|png|jpe?g|webp)$/i, '').trim();
       const match = cleanName.match(/^(.*?)\s*\[(.*?)\]$/);
@@ -1024,11 +1110,11 @@
 
       const partMap = {
         'ALL': 'ALL', 'MR': 'ALL', 'FULL': 'ALL', 'GUIDE': 'ALL',
-        'S': 'S', 'SOP': 'S', 'SOPRANO': 'S', '소프라노': 'S',
-        'A': 'A', 'ALT': 'A', 'ALTO': 'A','알토': 'A',
-        'T': 'T', 'TEN': 'T', 'TENOR': 'T', '테너': 'T',
-        'BAR': 'BAR', 'BARI': 'BAR', 'BARITONE': 'BAR', 'BR': 'BAR', '바리톤': 'BAR',
-        'B': 'B', 'BAS': 'B', 'BASS': 'B', '베이스': 'B',
+        'S': 'S', 'SOP': 'S', 'SOPRANO': 'S',
+        'A': 'A', 'ALT': 'A', 'ALTO': 'A',
+        'T': 'T', 'TEN': 'T', 'TENOR': 'T',
+        'BAR': 'BAR', 'BARI': 'BAR', 'BARITONE': 'BAR', 'BR': 'BAR',
+        'B': 'B', 'BAS': 'B', 'BASS': 'B'
       };
 
       return partMap[token] || null;
@@ -1118,6 +1204,7 @@
       viewerView.classList.remove('active');
       libraryView.classList.add('active');
       guideAudio.pause();
+      closeYouTubePlayer();
       renderSongCardList(document.getElementById('libSearchInput').value);
     }
 
@@ -1134,7 +1221,7 @@
       if (GOOGLE_API_KEY && DRIVE_FOLDER_ID) {
         try {
           const q = `'${DRIVE_FOLDER_ID}' in parents and trashed = false`;
-          const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name,mimeType)&orderBy=name&key=${GOOGLE_API_KEY}`;
+          const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name,mimeType,description)&orderBy=name&key=${GOOGLE_API_KEY}`;
           const res = await fetch(url);
 
           if (res.ok) {
@@ -1147,7 +1234,7 @@
             const folderPromises = subFolders.map(async (folder) => {
               try {
                 const subQ = `'${folder.id}' in parents and trashed = false`;
-                const subUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(subQ)}&fields=files(id,name,mimeType)&key=${GOOGLE_API_KEY}`;
+                const subUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(subQ)}&fields=files(id,name,mimeType,description)&key=${GOOGLE_API_KEY}`;
                 const subRes = await fetch(subUrl);
                 if (!subRes.ok) return null;
 
@@ -1163,6 +1250,7 @@
 
                 const meta = parseFileName(folder.name);
                 const partAudios = {};
+                let youtubeUrl = extractYouTubeId(folder.description) ? folder.description : null;
 
                 subFiles.forEach(f => {
                   const isAudio = (f.mimeType && f.mimeType.startsWith('audio/')) ||
@@ -1172,6 +1260,11 @@
                     if (part) {
                       partAudios[part] = `https://www.googleapis.com/drive/v3/files/${f.id}?alt=media&key=${GOOGLE_API_KEY}`;
                     }
+                  }
+                  // 유튜브 파일명 기반 감지 (예: youtube.txt, url 등)
+                  if (!youtubeUrl && (f.name.toLowerCase().includes('youtube') || f.name.toLowerCase().includes('youtu.be'))) {
+                    const yid = extractYouTubeId(f.name);
+                    if (yid) youtubeUrl = `https://www.youtube.com/watch?v=${yid}`;
                   }
                 });
 
@@ -1185,7 +1278,8 @@
                     isFolder: true,
                     title: meta.title,
                     notes: Object.keys(meta.notes).length > 0 ? meta.notes : pdfMeta.notes,
-                    partAudioUrls: partAudios
+                    partAudioUrls: partAudios,
+                    youtubeUrl: youtubeUrl
                   };
                 } else {
                   return {
@@ -1196,7 +1290,8 @@
                     title: meta.title,
                     notes: meta.notes,
                     partAudioUrls: partAudios,
-                    imagePages: imageFiles
+                    imagePages: imageFiles,
+                    youtubeUrl: youtubeUrl
                   };
                 }
               } catch (err) {
@@ -1220,7 +1315,8 @@
                 title: meta.title,
                 notes: meta.notes,
                 partAudioUrls: {},
-                imagePages: isImg ? [f] : null
+                imagePages: isImg ? [f] : null,
+                youtubeUrl: null
               });
             });
           }
@@ -1231,13 +1327,17 @@
 
       const customItems = await getStored('custom_songs');
       const pitchOverrides = await getStored('pitch_overrides');
-      const pitchMap = new Map(pitchOverrides.map(o => [o.songId, o.notes]));
+      const pitchMap = new Map(pitchOverrides.map(o => [o.songId, o]));
 
-      allSongs = [...customItems, ...driveItems].map(s => ({
-        ...s,
-        notes: pitchMap.get(s.id) || s.notes || {},
-        partAudioUrls: s.partAudioUrls || {}
-      }));
+      allSongs = [...customItems, ...driveItems].map(s => {
+        const override = pitchMap.get(s.id);
+        return {
+          ...s,
+          notes: override?.notes || s.notes || {},
+          partAudioUrls: s.partAudioUrls || {},
+          youtubeUrl: override?.youtubeUrl || s.youtubeUrl || null
+        };
+      });
 
       renderSongCardList();
     }
@@ -1272,6 +1372,7 @@
 
         const audioParts = Object.keys(song.partAudioUrls || {});
         const hasAudio = audioParts.length > 0;
+        const hasYt = !!song.youtubeUrl;
         const formatLabel = song.fileType === 'image' ? 'IMAGE' : 'PDF';
 
         card.innerHTML = `
@@ -1286,6 +1387,7 @@
               <span class="meta-chip">${formatLabel}</span>
               <span class="meta-chip">${pitchText}</span>
               ${hasAudio ? `<span class="meta-chip audio-chip">PART AUDIO (${audioParts.join(',')})</span>` : ''}
+              ${hasYt ? `<span class="meta-chip yt-chip">YOUTUBE</span>` : ''}
             </div>
           </div>
           <div class="song-action-cue">
@@ -1302,6 +1404,32 @@
       renderSongCardList(e.target.value);
     };
 
+    const ytToggleBtn = document.getElementById('ytToggleBtn');
+    const ytFloatingContainer = document.getElementById('ytFloatingContainer');
+    const ytIframe = document.getElementById('ytIframe');
+    const closeYtFloatBtn = document.getElementById('closeYtFloatBtn');
+
+    function openYouTubePlayer(url) {
+      const vid = extractYouTubeId(url);
+      if (!vid) return;
+      ytIframe.src = `https://www.youtube.com/embed/${vid}?autoplay=1&enablejsapi=1`;
+      ytFloatingContainer.classList.add('show');
+      guideAudio.pause();
+    }
+
+    function closeYouTubePlayer() {
+      ytIframe.src = '';
+      ytFloatingContainer.classList.remove('show');
+    }
+
+    closeYtFloatBtn.onclick = closeYouTubePlayer;
+    ytToggleBtn.onclick = () => {
+      if (currentSong && currentSong.youtubeUrl) {
+        if (ytFloatingContainer.classList.contains('show')) closeYouTubePlayer();
+        else openYouTubePlayer(currentSong.youtubeUrl);
+      }
+    };
+
     async function openSongInViewer(songId) {
       const song = allSongs.find(s => s.id === songId);
       if (!song) return;
@@ -1311,7 +1439,16 @@
       viewerSongTitle.textContent = song.title;
       deleteLocalBtn.style.display = song.type === 'custom' ? 'flex' : 'none';
 
+      closeYouTubePlayer();
       loadSongAudioTracks(song);
+
+      // 유튜브 버튼 노출 제어
+      if (song.youtubeUrl) {
+        ytToggleBtn.style.display = 'inline-flex';
+        audioBar.classList.add('show');
+      } else {
+        ytToggleBtn.style.display = 'none';
+      }
 
       pitchBar.innerHTML = '';
       const partClassMap = { 'S': 'sop', 'A': 'alto', 'T': 'tenor', 'BAR': 'bari', 'B': 'bass' };
@@ -1646,14 +1783,11 @@
       }
     }
 
+    // 🚀 [초기화 로직 보완] IndexedDB 데이터 삭제 반영
     document.getElementById('clearDrawBtn').onclick = async () => {
       if (confirm('현재 페이지의 메모를 모두 지우시겠습니까?')) {
         if (!drawCtx || !currentSong) return;
-        
-        // 1. 화면 캔버스 즉시 소거
         drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
-        
-        // 2. IndexedDB에서 해당 페이지 필기 키를 완전히 삭제
         const key = `${currentSong.id}_p${currentPageNum}`;
         await deleteStored('personal_drawings', key);
       }
@@ -1690,11 +1824,15 @@
         });
 
         audioBar.classList.add('show');
+        audioPlayBtn.style.display = 'inline-flex';
         const defaultPart = activeParts.includes('ALL') ? 'ALL' : activeParts[0];
         switchPartTrack(defaultPart, false);
       } else {
-        audioBar.classList.remove('show');
+        audioPlayBtn.style.display = 'none';
         guideAudio.pause();
+        if (!song.youtubeUrl) {
+          audioBar.classList.remove('show');
+        }
       }
     }
 
@@ -1750,6 +1888,7 @@
 
     document.getElementById('closeAudioBtn').onclick = () => {
       guideAudio.pause();
+      closeYouTubePlayer();
       audioBar.classList.remove('show');
     };
 
@@ -1781,8 +1920,9 @@
     const currentSongEditModal = document.getElementById('currentSongEditModal');
     document.getElementById('openCurrentSongEditBtn').onclick = () => {
       if (!currentSong) return;
-      document.getElementById('currentSongModalTitle').textContent = `[${currentSong.title}] 첫 음 설정`;
+      document.getElementById('currentSongModalTitle').textContent = `[${currentSong.title}] 첫 음 및 음원 설정`;
       
+      document.getElementById('curQuickYtUrl').value = currentSong.youtubeUrl || '';
       document.getElementById('curQuickS').value = currentSong.notes?.S || '';
       document.getElementById('curQuickA').value = currentSong.notes?.A || '';
       document.getElementById('curQuickT').value = currentSong.notes?.T || '';
@@ -1803,9 +1943,16 @@
         BAR: document.getElementById('curQuickBAR').value,
         B: document.getElementById('curQuickB').value
       };
+      const ytUrl = document.getElementById('curQuickYtUrl').value.trim();
 
-      await putStored('pitch_overrides', { songId: currentSong.id, notes: newNotes });
+      await putStored('pitch_overrides', { 
+        songId: currentSong.id, 
+        notes: newNotes,
+        youtubeUrl: ytUrl || null
+      });
+
       currentSong.notes = newNotes;
+      currentSong.youtubeUrl = ytUrl || null;
 
       currentSongEditModal.classList.remove('open');
       openSongInViewer(currentSong.id);
@@ -1815,6 +1962,7 @@
     function openNewSongModal() {
       document.getElementById('newSongTitle').value = '';
       document.getElementById('newSongPdfUrl').value = '';
+      document.getElementById('newSongYtUrl').value = '';
       newSongModal.classList.add('open');
     }
     document.getElementById('libAddNewBtn').onclick = openNewSongModal;
@@ -1823,6 +1971,7 @@
     document.getElementById('saveNewSongBtn').onclick = async () => {
       const title = document.getElementById('newSongTitle').value.trim();
       const url = document.getElementById('newSongPdfUrl').value.trim();
+      const ytUrl = document.getElementById('newSongYtUrl').value.trim();
       if (!title || !url) { alert('곡 명과 악보 URL을 입력해주세요.'); return; }
 
       const isImg = /\.(png|jpe?g|webp)$/i.test(url);
@@ -1833,6 +1982,7 @@
         fileType: isImg ? 'image' : 'pdf',
         title: title,
         url: url,
+        youtubeUrl: ytUrl || null,
         partAudioUrls: {},
         notes: {},
         createdAt: Date.now()
