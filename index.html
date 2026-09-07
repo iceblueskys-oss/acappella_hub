@@ -1648,8 +1648,14 @@
 
     document.getElementById('clearDrawBtn').onclick = async () => {
       if (confirm('현재 페이지의 메모를 모두 지우시겠습니까?')) {
+        if (!drawCtx || !currentSong) return;
+        
+        // 1. 화면 캔버스 즉시 소거
         drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
-        await savePageDrawing();
+        
+        // 2. IndexedDB에서 해당 페이지 필기 키를 완전히 삭제
+        const key = `${currentSong.id}_p${currentPageNum}`;
+        await deleteStored('personal_drawings', key);
       }
     };
 
