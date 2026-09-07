@@ -444,6 +444,7 @@
       color: var(--text-gold);
       box-shadow: 0 2px 8px rgba(0,0,0,0.5);
     }
+    .part-tab.active[data-part="ALL"] { color: var(--text-gold); }
     .part-tab.active[data-part="S"] { color: var(--sop-accent); }
     .part-tab.active[data-part="A"] { color: var(--alto-accent); }
     .part-tab.active[data-part="T"] { color: var(--tenor-accent); }
@@ -498,7 +499,6 @@
       flex-shrink: 0;
     }
 
-    /* 🎥 플로팅 유튜브 플레이어 모달 */
     #ytFloatingContainer {
       position: fixed;
       bottom: calc(env(safe-area-inset-bottom, 0px) + 80px);
@@ -555,7 +555,9 @@
       background: #14161d;
       border: 1px solid rgba(255, 255, 255, 0.1);
       width: 92%;
-      max-width: 460px;
+      max-width: 480px;
+      max-height: 85vh;
+      overflow-y: auto;
       border-radius: 18px;
       padding: 16px;
       display: flex;
@@ -573,6 +575,7 @@
       border: 1px solid rgba(255, 255, 255, 0.1);
       background: #0b0c10;
       color: #fff;
+      font-size: 12px;
     }
 
     .pitch-slot-container { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
@@ -588,6 +591,28 @@
     }
     .pitch-edit-card span { font-size: 9px; font-weight: 800; }
     .pitch-edit-card select { width: 100%; font-size: 11.5px; font-weight: 700; padding: 4px 0; text-align: center; }
+
+    .part-audio-edit-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 5px;
+      background: #0c0d13;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid var(--border-subtle);
+    }
+    .audio-field-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .audio-part-label {
+      font-size: 10px;
+      font-weight: 800;
+      width: 32px;
+      text-align: center;
+      flex-shrink: 0;
+    }
 
     .menu-action-list { display: flex; flex-direction: column; gap: 6px; }
     .menu-action-btn {
@@ -653,9 +678,9 @@
 
         <span class="viewer-song-name" id="viewerSongTitle">-</span>
 
-        <button id="openCurrentSongEditBtn" title="첫 음 설정">
+        <button id="openCurrentSongEditBtn" title="악보 및 음정/음원 설정">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-          <span>음정</span>
+          <span>설정</span>
         </button>
 
         <button id="drawToggleBtn" title="메모 레이어">
@@ -707,7 +732,6 @@
       </div>
     </main>
 
-    <!-- 🎥 플로팅 유튜브 플레이어 -->
     <div id="ytFloatingContainer">
       <div class="yt-float-header">
         <span class="yt-float-title">
@@ -726,7 +750,6 @@
       
       <div class="part-track-selector" id="partTabSelector"></div>
 
-      <!-- 유튜브 음원 토글 버튼 -->
       <button id="ytToggleBtn" class="btn-yt" style="display:none; padding:5px 8px;" title="유튜브 음원 듣기">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
         <span>YouTube</span>
@@ -756,7 +779,7 @@
         </div>
 
         <button class="menu-action-btn" id="menuOpenMetroBtn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           <span>메트로놈 템포 (BPM/소리) 설정</span>
         </button>
 
@@ -781,17 +804,18 @@
     </div>
   </div>
 
+  <!-- 🛠️ 악보 음정 및 파트별 음원 수정 모달 -->
   <div class="modal-backdrop" id="currentSongEditModal">
     <div class="modal">
-      <h3 id="currentSongModalTitle">악보 설정 및 첫 음 지정</h3>
+      <h3 id="currentSongModalTitle">악보 설정 (음정 / 파트음원 / 유튜브)</h3>
       
       <div class="form-group">
-        <label>유튜브 음원/참고영상 링크</label>
-        <input type="text" id="curQuickYtUrl" placeholder="https://www.youtube.com/watch?v=... 또는 https://youtu.be/..." />
+        <label>유튜브 음원/영상 URL</label>
+        <input type="text" id="curQuickYtUrl" placeholder="https://youtu.be/... 또는 https://www.youtube.com/watch?v=..." />
       </div>
 
       <div class="form-group">
-        <label>파트별 첫 음 음정</label>
+        <label>파트별 첫 음 지정</label>
         <div class="pitch-slot-container">
           <div class="pitch-edit-card"><span style="color: var(--sop-accent);">SOP</span><select id="curQuickS"></select></div>
           <div class="pitch-edit-card"><span style="color: var(--alto-accent);">ALT</span><select id="curQuickA"></select></div>
@@ -801,9 +825,40 @@
         </div>
       </div>
 
+      <!-- 파트별 음원 링크 직접 수정 구역 -->
+      <div class="form-group">
+        <label>파트별 오디오 파일 링크 (드라이브 또는 MP3 URL)</label>
+        <div class="part-audio-edit-grid">
+          <div class="audio-field-row">
+            <span class="audio-part-label" style="color: var(--text-gold);">ALL</span>
+            <input type="text" id="editAudio_ALL" placeholder="전체 합창 또는 MR 음원 링크" />
+          </div>
+          <div class="audio-field-row">
+            <span class="audio-part-label" style="color: var(--sop-accent);">SOP</span>
+            <input type="text" id="editAudio_S" placeholder="소프라노 가이드 링크" />
+          </div>
+          <div class="audio-field-row">
+            <span class="audio-part-label" style="color: var(--alto-accent);">ALT</span>
+            <input type="text" id="editAudio_A" placeholder="알토 가이드 링크" />
+          </div>
+          <div class="audio-field-row">
+            <span class="audio-part-label" style="color: var(--tenor-accent);">TEN</span>
+            <input type="text" id="editAudio_T" placeholder="테너 가이드 링크" />
+          </div>
+          <div class="audio-field-row">
+            <span class="audio-part-label" style="color: var(--bari-accent);">BAR</span>
+            <input type="text" id="editAudio_BAR" placeholder="바리톤 가이드 링크" />
+          </div>
+          <div class="audio-field-row">
+            <span class="audio-part-label" style="color: var(--bass-accent);">BAS</span>
+            <input type="text" id="editAudio_B" placeholder="베이스 가이드 링크" />
+          </div>
+        </div>
+      </div>
+
       <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 6px;">
         <button id="closeCurrentSongEditBtn">취소</button>
-        <button class="btn-gold" id="saveCurrentSongEditBtn">저장</button>
+        <button class="btn-gold" id="saveCurrentSongEditBtn">저장하기</button>
       </div>
     </div>
   </div>
@@ -871,7 +926,7 @@
     let db;
     function initDB() {
       return new Promise((resolve, reject) => {
-        const req = indexedDB.open('AcappellaStudioDB_V72_YT', 1);
+        const req = indexedDB.open('AcappellaStudioDB_V73_AUDIO_EDIT', 1);
         req.onupgradeneeded = (e) => {
           const d = e.target.result;
           if (!d.objectStoreNames.contains('custom_songs')) d.createObjectStore('custom_songs', { keyPath: 'id' });
@@ -1077,12 +1132,21 @@
       return match ? match[1] : null;
     }
 
-    // 🎥 유튜브 Video ID 추출 함수
     function extractYouTubeId(url) {
       if (!url) return null;
       const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
       const match = url.match(regExp);
       return (match && match[2].length === 11) ? match[2] : null;
+    }
+
+    // 입력된 오디오 링크(드라이브 공유 링크 등)를 실제 재생 가능한 URL로 자동 변환
+    function resolvePlayableAudioUrl(rawUrl) {
+      if (!rawUrl) return "";
+      const driveId = extractDriveFileId(rawUrl);
+      if (driveId && GOOGLE_API_KEY) {
+        return `https://www.googleapis.com/drive/v3/files/${driveId}?alt=media&key=${GOOGLE_API_KEY}`;
+      }
+      return rawUrl;
     }
 
     function parseFileName(name) {
@@ -1261,7 +1325,6 @@
                       partAudios[part] = `https://www.googleapis.com/drive/v3/files/${f.id}?alt=media&key=${GOOGLE_API_KEY}`;
                     }
                   }
-                  // 유튜브 파일명 기반 감지 (예: youtube.txt, url 등)
                   if (!youtubeUrl && (f.name.toLowerCase().includes('youtube') || f.name.toLowerCase().includes('youtu.be'))) {
                     const yid = extractYouTubeId(f.name);
                     if (yid) youtubeUrl = `https://www.youtube.com/watch?v=${yid}`;
@@ -1331,11 +1394,20 @@
 
       allSongs = [...customItems, ...driveItems].map(s => {
         const override = pitchMap.get(s.id);
+        const mergedAudios = {
+          ...(s.partAudioUrls || {}),
+          ...(override?.partAudioUrls || {})
+        };
+        // 빈 값 문자열 제거
+        Object.keys(mergedAudios).forEach(k => {
+          if (!mergedAudios[k]) delete mergedAudios[k];
+        });
+
         return {
           ...s,
           notes: override?.notes || s.notes || {},
-          partAudioUrls: s.partAudioUrls || {},
-          youtubeUrl: override?.youtubeUrl || s.youtubeUrl || null
+          partAudioUrls: mergedAudios,
+          youtubeUrl: override?.youtubeUrl !== undefined ? override.youtubeUrl : (s.youtubeUrl || null)
         };
       });
 
@@ -1442,7 +1514,6 @@
       closeYouTubePlayer();
       loadSongAudioTracks(song);
 
-      // 유튜브 버튼 노출 제어
       if (song.youtubeUrl) {
         ytToggleBtn.style.display = 'inline-flex';
         audioBar.classList.add('show');
@@ -1474,7 +1545,7 @@
       if (!hasAnyPitch) {
         const hint = document.createElement('span');
         hint.style.cssText = "font-size: 10px; color: var(--text-secondary); padding: 2px 4px;";
-        hint.textContent = "첫 음 없음 (음정 버튼)";
+        hint.textContent = "첫 음 없음 (설정 버튼)";
         pitchBar.appendChild(hint);
       }
 
@@ -1783,7 +1854,6 @@
       }
     }
 
-    // 🚀 [초기화 로직 보완] IndexedDB 데이터 삭제 반영
     document.getElementById('clearDrawBtn').onclick = async () => {
       if (confirm('현재 페이지의 메모를 모두 지우시겠습니까?')) {
         if (!drawCtx || !currentSong) return;
@@ -1842,7 +1912,8 @@
         btn.classList.toggle('active', btn.dataset.part === part);
       });
 
-      const audioUrl = currentSongPartAudios[part];
+      const rawUrl = currentSongPartAudios[part];
+      const audioUrl = resolvePlayableAudioUrl(rawUrl);
       if (audioUrl) {
         const prevTime = guideAudio.currentTime;
         const isPlaying = !guideAudio.paused;
@@ -1917,10 +1988,11 @@
       }
     }, { passive: true });
 
+    // 🛠️ [설정 모달 열기] 음정 및 파트별 음원 값 바인딩
     const currentSongEditModal = document.getElementById('currentSongEditModal');
     document.getElementById('openCurrentSongEditBtn').onclick = () => {
       if (!currentSong) return;
-      document.getElementById('currentSongModalTitle').textContent = `[${currentSong.title}] 첫 음 및 음원 설정`;
+      document.getElementById('currentSongModalTitle').textContent = `[${currentSong.title}] 악보 설정`;
       
       document.getElementById('curQuickYtUrl').value = currentSong.youtubeUrl || '';
       document.getElementById('curQuickS').value = currentSong.notes?.S || '';
@@ -1929,10 +2001,19 @@
       document.getElementById('curQuickBAR').value = currentSong.notes?.BAR || '';
       document.getElementById('curQuickB').value = currentSong.notes?.B || '';
 
+      const audios = currentSong.partAudioUrls || {};
+      document.getElementById('editAudio_ALL').value = audios.ALL || '';
+      document.getElementById('editAudio_S').value = audios.S || '';
+      document.getElementById('editAudio_A').value = audios.A || '';
+      document.getElementById('editAudio_T').value = audios.T || '';
+      document.getElementById('editAudio_BAR').value = audios.BAR || '';
+      document.getElementById('editAudio_B').value = audios.B || '';
+
       currentSongEditModal.classList.add('open');
     };
     document.getElementById('closeCurrentSongEditBtn').onclick = () => currentSongEditModal.classList.remove('open');
 
+    // 🛠️ [설정 모달 저장] 음정, 유튜브, 파트 음원 저장 및 즉시 반영
     document.getElementById('saveCurrentSongEditBtn').onclick = async () => {
       if (!currentSong) return;
 
@@ -1945,14 +2026,31 @@
       };
       const ytUrl = document.getElementById('curQuickYtUrl').value.trim();
 
+      const newAudios = {};
+      const parts = ['ALL', 'S', 'A', 'T', 'BAR', 'B'];
+      parts.forEach(p => {
+        const val = document.getElementById(`editAudio_${p}`).value.trim();
+        if (val) newAudios[p] = val;
+      });
+
       await putStored('pitch_overrides', { 
         songId: currentSong.id, 
         notes: newNotes,
-        youtubeUrl: ytUrl || null
+        youtubeUrl: ytUrl || null,
+        partAudioUrls: newAudios
       });
 
       currentSong.notes = newNotes;
       currentSong.youtubeUrl = ytUrl || null;
+      currentSong.partAudioUrls = newAudios;
+
+      // 전체 목록 메모리도 업데이트
+      const targetInAll = allSongs.find(s => s.id === currentSong.id);
+      if (targetInAll) {
+        targetInAll.notes = newNotes;
+        targetInAll.youtubeUrl = ytUrl || null;
+        targetInAll.partAudioUrls = newAudios;
+      }
 
       currentSongEditModal.classList.remove('open');
       openSongInViewer(currentSong.id);
