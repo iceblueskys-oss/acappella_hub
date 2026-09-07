@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Acappella Studio — Master Suite</title>
   
   <meta name="mobile-web-app-capable" content="yes" />
@@ -50,7 +50,7 @@
       height: 100dvh;
       overflow: hidden;
       position: fixed;
-      touch-action: none;
+      touch-action: manipulation;
       overscroll-behavior: none;
     }
 
@@ -352,8 +352,7 @@
       padding: 0;
       padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 90px);
       position: relative;
-      touch-action: pan-y pinch-zoom;
-      overscroll-behavior-y: contain;
+      touch-action: pan-x pan-y;
       -webkit-overflow-scrolling: touch;
       background: #090a0d;
     }
@@ -779,7 +778,7 @@
         </div>
 
         <button class="menu-action-btn" id="menuOpenMetroBtn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           <span>메트로놈 템포 (BPM/소리) 설정</span>
         </button>
 
@@ -804,7 +803,6 @@
     </div>
   </div>
 
-  <!-- 🛠️ 악보 음정 및 파트별 음원 수정 모달 -->
   <div class="modal-backdrop" id="currentSongEditModal">
     <div class="modal">
       <h3 id="currentSongModalTitle">악보 설정 (음정 / 파트음원 / 유튜브)</h3>
@@ -825,7 +823,6 @@
         </div>
       </div>
 
-      <!-- 파트별 음원 링크 직접 수정 구역 -->
       <div class="form-group">
         <label>파트별 오디오 파일 링크 (드라이브 또는 MP3 URL)</label>
         <div class="part-audio-edit-grid">
@@ -926,7 +923,7 @@
     let db;
     function initDB() {
       return new Promise((resolve, reject) => {
-        const req = indexedDB.open('AcappellaStudioDB_V73_AUDIO_EDIT', 1);
+        const req = indexedDB.open('AcappellaStudioDB_V74_PINCH_ZOOM', 1);
         req.onupgradeneeded = (e) => {
           const d = e.target.result;
           if (!d.objectStoreNames.contains('custom_songs')) d.createObjectStore('custom_songs', { keyPath: 'id' });
@@ -1139,7 +1136,6 @@
       return (match && match[2].length === 11) ? match[2] : null;
     }
 
-    // 입력된 오디오 링크(드라이브 공유 링크 등)를 실제 재생 가능한 URL로 자동 변환
     function resolvePlayableAudioUrl(rawUrl) {
       if (!rawUrl) return "";
       const driveId = extractDriveFileId(rawUrl);
@@ -1398,7 +1394,6 @@
           ...(s.partAudioUrls || {}),
           ...(override?.partAudioUrls || {})
         };
-        // 빈 값 문자열 제거
         Object.keys(mergedAudios).forEach(k => {
           if (!mergedAudios[k]) delete mergedAudios[k];
         });
@@ -1966,29 +1961,77 @@
     const viewerMain = document.getElementById('viewerMain');
     let touchStartX = 0;
     let touchStartY = 0;
+    let initialPinchDist = 0;
+    let initialZoomScale = 1.0;
+    let isPinching = false;
+    let pinchCooldown = false;
+
+    function getTouchDistance(e) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      return Math.hypot(dx, dy);
+    }
 
     viewerMain.addEventListener('touchstart', (e) => {
       if (isDrawingMode) return;
-      if (e.touches.length === 1) {
+
+      if (e.touches.length === 2) {
+        isPinching = true;
+        initialPinchDist = getTouchDistance(e);
+        initialZoomScale = zoomScale;
+      } else if (e.touches.length === 1) {
+        isPinching = false;
         touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
       }
-    }, { passive: true });
+    }, { passive: false });
+
+    viewerMain.addEventListener('touchmove', (e) => {
+      if (isDrawingMode) return;
+
+      if (e.touches.length === 2 && initialPinchDist > 0) {
+        if (e.cancelable) e.preventDefault();
+        const currentDist = getTouchDistance(e);
+        const factor = currentDist / initialPinchDist;
+        const targetZoom = Math.min(Math.max(initialZoomScale * factor, 0.6), 2.5);
+
+        zoomScale = targetZoom;
+        updateZoomDisplay();
+
+        if (!pinchCooldown) {
+          pinchCooldown = true;
+          requestAnimationFrame(() => {
+            renderCurrentPage(currentPageNum);
+            pinchCooldown = false;
+          });
+        }
+      }
+    }, { passive: false });
 
     viewerMain.addEventListener('touchend', (e) => {
       if (isDrawingMode) return;
-      const touchEndX = e.changedTouches[0].clientX;
-      const touchEndY = e.changedTouches[0].clientY;
-      const diffX = touchEndX - touchStartX;
-      const diffY = touchEndY - touchStartY;
 
-      if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(diffY) * 1.4) {
-        if (diffX < 0) nextPage();
-        else prevPage();
+      if (e.touches.length < 2) {
+        if (isPinching) {
+          renderCurrentPage(currentPageNum);
+        }
+        isPinching = false;
+        initialPinchDist = 0;
+      }
+
+      if (!isPinching && e.changedTouches.length === 1 && e.touches.length === 0) {
+        const touchEndX = e.changedTouches[0].clientX;
+        const touchEndY = e.changedTouches[0].clientY;
+        const diffX = touchEndX - touchStartX;
+        const diffY = touchEndY - touchStartY;
+
+        if (Math.abs(diffX) > 60 && Math.abs(diffX) > Math.abs(diffY) * 1.5) {
+          if (diffX < 0) nextPage();
+          else prevPage();
+        }
       }
     }, { passive: true });
 
-    // 🛠️ [설정 모달 열기] 음정 및 파트별 음원 값 바인딩
     const currentSongEditModal = document.getElementById('currentSongEditModal');
     document.getElementById('openCurrentSongEditBtn').onclick = () => {
       if (!currentSong) return;
@@ -2013,7 +2056,6 @@
     };
     document.getElementById('closeCurrentSongEditBtn').onclick = () => currentSongEditModal.classList.remove('open');
 
-    // 🛠️ [설정 모달 저장] 음정, 유튜브, 파트 음원 저장 및 즉시 반영
     document.getElementById('saveCurrentSongEditBtn').onclick = async () => {
       if (!currentSong) return;
 
@@ -2044,7 +2086,6 @@
       currentSong.youtubeUrl = ytUrl || null;
       currentSong.partAudioUrls = newAudios;
 
-      // 전체 목록 메모리도 업데이트
       const targetInAll = allSongs.find(s => s.id === currentSong.id);
       if (targetInAll) {
         targetInAll.notes = newNotes;
