@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="viewport" id="viewportMeta" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Acappella Studio — Master Suite</title>
   
   <meta name="mobile-web-app-capable" content="yes" />
@@ -577,6 +577,15 @@
       font-size: 12px;
     }
 
+    /* 📱 iOS 사파리 텍스트 클릭 시 자동 줌인 원천 차단 (16px 미만 확대 정책 대응) */
+    @media (max-width: 768px) {
+      .modal input[type="text"],
+      .modal select,
+      .search-input {
+        font-size: 16px !important;
+      }
+    }
+
     .pitch-slot-container { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
     .pitch-edit-card {
       background: #0c0d12;
@@ -778,7 +787,7 @@
         </div>
 
         <button class="menu-action-btn" id="menuOpenMetroBtn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           <span>메트로놈 템포 (BPM/소리) 설정</span>
         </button>
 
@@ -803,6 +812,7 @@
     </div>
   </div>
 
+  <!-- 🛠️ 악보 음정 및 파트별 음원 수정 모달 -->
   <div class="modal-backdrop" id="currentSongEditModal">
     <div class="modal">
       <h3 id="currentSongModalTitle">악보 설정 (음정 / 파트음원 / 유튜브)</h3>
@@ -904,6 +914,22 @@
     let DRIVE_FOLDER_ID = "";
     let GAS_URL = "";
 
+    // 📱 [사파리 줌인 강제 복구 엔진] 키보드 닫힘/모달 닫힘/화면 전환 시 뷰포트 100% 정상화
+    function resetViewportZoom() {
+      const activeEl = document.activeElement;
+      if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'SELECT' || activeEl.tagName === 'TEXTAREA')) {
+        activeEl.blur();
+      }
+      const meta = document.getElementById('viewportMeta');
+      if (meta) {
+        meta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
+        setTimeout(() => {
+          meta.setAttribute('content', 'width=device-width, initial-scale=1.0, viewport-fit=cover');
+        }, 150);
+      }
+      window.scrollTo(0, 0);
+    }
+
     async function loadConfig() {
       try {
         const res = await fetch('./config.json', { cache: 'no-cache' });
@@ -923,7 +949,7 @@
     let db;
     function initDB() {
       return new Promise((resolve, reject) => {
-        const req = indexedDB.open('AcappellaStudioDB_V74_PINCH_ZOOM', 1);
+        const req = indexedDB.open('AcappellaStudioDB_V75_ZOOM_RESET', 1);
         req.onupgradeneeded = (e) => {
           const d = e.target.result;
           if (!d.objectStoreNames.contains('custom_songs')) d.createObjectStore('custom_songs', { keyPath: 'id' });
@@ -1261,6 +1287,7 @@
     const viewerView = document.getElementById('viewerView');
 
     function showLibraryScreen() {
+      resetViewportZoom();
       viewerView.classList.remove('active');
       libraryView.classList.add('active');
       guideAudio.pause();
@@ -1269,6 +1296,7 @@
     }
 
     function showViewerScreen() {
+      resetViewportZoom();
       libraryView.classList.remove('active');
       viewerView.classList.add('active');
     }
@@ -2054,7 +2082,11 @@
 
       currentSongEditModal.classList.add('open');
     };
-    document.getElementById('closeCurrentSongEditBtn').onclick = () => currentSongEditModal.classList.remove('open');
+
+    document.getElementById('closeCurrentSongEditBtn').onclick = () => {
+      resetViewportZoom();
+      currentSongEditModal.classList.remove('open');
+    };
 
     document.getElementById('saveCurrentSongEditBtn').onclick = async () => {
       if (!currentSong) return;
@@ -2093,6 +2125,7 @@
         targetInAll.partAudioUrls = newAudios;
       }
 
+      resetViewportZoom();
       currentSongEditModal.classList.remove('open');
       openSongInViewer(currentSong.id);
     };
@@ -2105,7 +2138,10 @@
       newSongModal.classList.add('open');
     }
     document.getElementById('libAddNewBtn').onclick = openNewSongModal;
-    document.getElementById('closeNewSongModalBtn').onclick = () => newSongModal.classList.remove('open');
+    document.getElementById('closeNewSongModalBtn').onclick = () => {
+      resetViewportZoom();
+      newSongModal.classList.remove('open');
+    };
 
     document.getElementById('saveNewSongBtn').onclick = async () => {
       const title = document.getElementById('newSongTitle').value.trim();
@@ -2128,6 +2164,7 @@
       };
 
       await putStored('custom_songs', newSong);
+      resetViewportZoom();
       newSongModal.classList.remove('open');
       await loadAllSongList();
       openSongInViewer(newSong.id);
@@ -2135,14 +2172,20 @@
 
     const appMenuModal = document.getElementById('appMenuModal');
     document.getElementById('openAppMenuBtn').onclick = () => appMenuModal.classList.add('open');
-    document.getElementById('closeAppMenuBtn').onclick = () => appMenuModal.classList.remove('open');
+    document.getElementById('closeAppMenuBtn').onclick = () => {
+      resetViewportZoom();
+      appMenuModal.classList.remove('open');
+    };
 
     const metroModal = document.getElementById('metroModal');
     document.getElementById('menuOpenMetroBtn').onclick = () => {
       appMenuModal.classList.remove('open');
       metroModal.classList.add('open');
     };
-    document.getElementById('closeMetroModalBtn').onclick = () => metroModal.classList.remove('open');
+    document.getElementById('closeMetroModalBtn').onclick = () => {
+      resetViewportZoom();
+      metroModal.classList.remove('open');
+    };
 
     document.getElementById('menuToggleInvertBtn').onclick = () => {
       document.body.classList.toggle('invert-mode');
@@ -2167,6 +2210,7 @@
         await deleteStored('custom_songs', currentSong.id);
         await deleteStored('pitch_overrides', currentSong.id);
         await deleteStored('pdf_cache', `file_${currentSong.driveId || currentSong.url}`);
+        resetViewportZoom();
         appMenuModal.classList.remove('open');
         await loadAllSongList();
         showLibraryScreen();
