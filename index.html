@@ -952,6 +952,18 @@
     let DRIVE_FOLDER_ID = "";
     let firestoreDb = null;
 
+    // Firestore(클라우드 동기화)에서 불러온 값은 인증 없이 누구나 쓸 수 있는 문서이므로
+    // 제목/음정 등을 innerHTML로 그릴 때 반드시 이스케이프해서 저장형 XSS를 막습니다.
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
     function resetViewportZoom() {
       const activeEl = document.activeElement;
       if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'SELECT' || activeEl.tagName === 'TEXTAREA')) {
@@ -1144,26 +1156,47 @@
     let isMetroSoundOn = true;
     let metroTimerId = null;
 
-    function playMetroClick() {
+    // --- 정밀 스케줄링 메트로놈 (Web Audio lookahead scheduler) ---
+    // 기존 setInterval 기반 방식은 탭이 백그라운드로 가거나 메인 스레드가 바쁠 때
+    // 타이머가 지연/드리프트되어 박자가 밀리는 문제가 있었습니다.
+    // AudioContext의 정밀한 하드웨어 클럭을 기준으로 다음 틱들을 미리 예약(lookahead)하고,
+    // 짧은 주기(25ms)로만 "예약이 더 필요한지" 확인하는 방식으로 바꿔 정확도를 높였습니다.
+    const METRO_SCHEDULE_AHEAD_SEC = 0.12;
+    const METRO_LOOKAHEAD_MS = 25;
+    let metroNextTickTime = 0;
+
+    function scheduleMetroClickSound(time) {
       if (!isMetroSoundOn) return;
       const ctx = getAudioContext();
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(1000, ctx.currentTime);
-      gain.gain.setValueAtTime(0.3, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+      osc.frequency.setValueAtTime(1000, time);
+      gain.gain.setValueAtTime(0.3, time);
+      gain.gain.exponentialRampToValueAtTime(0.001, time + 0.05);
       osc.connect(gain);
       gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.05);
+      osc.start(time);
+      osc.stop(time + 0.05);
     }
 
     const metroLed = document.getElementById('metroLed');
-    function metroTick() {
-      metroLed.classList.add('flash');
-      setTimeout(() => metroLed.classList.remove('flash'), 80);
-      playMetroClick();
+    function scheduleMetroFlash(time) {
+      const ctx = getAudioContext();
+      const delayMs = Math.max(0, (time - ctx.currentTime) * 1000);
+      setTimeout(() => {
+        metroLed.classList.add('flash');
+        setTimeout(() => metroLed.classList.remove('flash'), 80);
+      }, delayMs);
+    }
+
+    function metroScheduler() {
+      const ctx = getAudioContext();
+      while (metroNextTickTime < ctx.currentTime + METRO_SCHEDULE_AHEAD_SEC) {
+        scheduleMetroClickSound(metroNextTickTime);
+        scheduleMetroFlash(metroNextTickTime);
+        metroNextTickTime += 60 / metroBpm;
+      }
     }
 
     function startMetro() {
@@ -1171,9 +1204,9 @@
       if (ctx.state === 'suspended') ctx.resume();
       isMetroRunning = true;
       document.getElementById('metroToggleBtn').classList.add('active');
-      const interval = (60 / metroBpm) * 1000;
-      metroTick();
-      metroTimerId = setInterval(metroTick, interval);
+      metroNextTickTime = ctx.currentTime + 0.05;
+      metroScheduler();
+      metroTimerId = setInterval(metroScheduler, METRO_LOOKAHEAD_MS);
     }
 
     function stopMetro() {
@@ -1551,12 +1584,12 @@
               ${song.isFolder ? `
                 <svg class="folder-tag-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
               ` : ''}
-              <span>${song.title}</span>
+              <span>${escapeHtml(song.title)}</span>
             </div>
             <div class="song-meta-row">
               <span class="meta-chip">${formatLabel}</span>
-              <span class="meta-chip">${pitchText}</span>
-              ${hasAudio ? `<span class="meta-chip audio-chip">PART AUDIO (${audioParts.join(',')})</span>` : ''}
+              <span class="meta-chip">${escapeHtml(pitchText)}</span>
+              ${hasAudio ? `<span class="meta-chip audio-chip">PART AUDIO (${escapeHtml(audioParts.join(','))})</span>` : ''}
               ${hasYt ? `<span class="meta-chip yt-chip">YOUTUBE</span>` : ''}
             </div>
           </div>
@@ -1689,7 +1722,7 @@
           btn.className = `pitch-capsule ${partClassMap[p] || ''}`;
           btn.innerHTML = `
             <span class="pitch-badge">${partFullMap[p]}</span>
-            <span class="pitch-val">${note}</span>
+            <span class="pitch-val">${escapeHtml(note)}</span>
           `;
           btn.onclick = () => playNote(note);
           pitchBar.appendChild(btn);
@@ -1706,22 +1739,25 @@
       statusView.style.display = 'block';
       sheetCard.style.display = 'none';
       spinner.style.display = 'block';
-      statusText.innerHTML = `'${song.title}' 악보 로딩 중...`;
+      statusText.innerHTML = `'${escapeHtml(song.title)}' 악보 로딩 중...`;
 
       try {
         currentPageNum = 1;
         zoomScale = 1.0;
         updateZoomDisplay();
 
-        if (song.fileType === 'image') {
-          if (currentImagePages && currentImagePages.length > 0) {
-            currentImagePages.forEach(img => {
-              if (img._blobUrl) URL.revokeObjectURL(img._blobUrl);
-            });
-          }
+        // 이전 곡이 이미지 악보였다면 blob URL을 여기서 반드시 해제합니다.
+        // (이전에는 '이미지 → 이미지' 전환일 때만 해제되어, '이미지 → PDF' 전환 시
+        // 메모리에 누적되는 누수가 있었습니다.)
+        if (currentImagePages && currentImagePages.length > 0) {
+          currentImagePages.forEach(img => {
+            if (img._blobUrl) URL.revokeObjectURL(img._blobUrl);
+          });
+        }
+        currentImagePages = [];
 
+        if (song.fileType === 'image') {
           currentPdfDoc = null;
-          currentImagePages = [];
 
           const imgFiles = song.imagePages || [{ id: song.driveId, name: song.title }];
           totalPageCount = imgFiles.length;
@@ -1746,7 +1782,6 @@
           sheetCard.style.display = 'flex';
           renderImagePage(currentPageNum);
         } else {
-          currentImagePages = [];
           const buffer = await fetchFileBuffer(song.driveId, song.url);
           
           const loadingTask = pdfjsLib.getDocument({ data: buffer });
@@ -1760,7 +1795,7 @@
       } catch (err) {
         console.error("악보 로드 실패:", err);
         spinner.style.display = 'none';
-        statusText.innerHTML = `악보를 불러올 수 없습니다.<br><small style="color:#ef4444;">(${err.message})</small>`;
+        statusText.innerHTML = `악보를 불러올 수 없습니다.<br><small style="color:#ef4444;">(${escapeHtml(err.message)})</small>`;
       }
     }
 
@@ -1809,6 +1844,8 @@
 
         pageIndicator.textContent = `${num} / ${totalPageCount}`;
         loadPageDrawing(num);
+      }).catch(err => {
+        console.error("페이지 렌더링 실패:", err);
       });
     }
 
