@@ -282,6 +282,23 @@
       font-weight: 700;
     }
 
+    /* 무대 위에서 급하게 눌러도 오터치가 덜 나도록, 주요 헤더/페이지 넘김 버튼은
+       애플 HIG 권장 터치 영역(44x44pt)에 최대한 맞춥니다. 아이콘 자체 크기는 그대로 두고
+       버튼의 히트 영역(box)만 키우는 방식이라 화면이 과도하게 커지지 않습니다. */
+    #backToLibBtn,
+    #openCurrentSongEditBtn,
+    #drawToggleBtn,
+    #metroToggleBtn,
+    #openAppMenuBtn {
+      min-width: 44px;
+      min-height: 44px;
+    }
+    #prevPage,
+    #nextPage {
+      min-width: 40px;
+      min-height: 40px;
+    }
+
     .btn-gold {
       font-weight: 700;
       color: var(--text-gold);
@@ -382,6 +399,20 @@
       display: none;
     }
     #drawCanvas.active { display: block; }
+
+    .page-tap-zone {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      width: 28%;
+      z-index: 5;
+      touch-action: pan-x pan-y;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .page-tap-zone.left { left: 0; }
+    .page-tap-zone.right { right: 0; }
+    /* 메모 그리기 모드에서는 펜 입력이 전체 영역을 다 써야 하므로 탭존을 꺼둡니다. */
+    body.drawing-active .page-tap-zone { pointer-events: none; }
 
     body.invert-mode { background: #000000; }
     body.invert-mode .sheet-wrapper { filter: invert(0.92) hue-rotate(180deg) brightness(0.95); }
@@ -678,6 +709,37 @@
       margin: 20px auto;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    .ios-add-hint {
+      display: none;
+      position: fixed;
+      left: 12px;
+      right: 12px;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+      background: rgba(18, 20, 26, 0.97);
+      border: 1px solid rgba(212, 175, 55, 0.35);
+      border-radius: 12px;
+      padding: 10px 12px;
+      align-items: center;
+      gap: 8px;
+      z-index: 200;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    .ios-add-hint.show { display: flex; }
+    .ios-add-hint-text {
+      flex: 1;
+      font-size: 11.5px;
+      line-height: 1.5;
+      color: #e5e7eb;
+    }
+    .ios-add-hint-text b { color: var(--text-gold); }
+    #iosAddHintClose {
+      flex-shrink: 0;
+      padding: 6px 10px;
+      font-size: 11px;
+    }
   </style>
 </head>
 <body>
@@ -710,6 +772,14 @@
     <div class="song-card-list" id="songCardList">
       <div class="spinner"></div>
     </div>
+  </div>
+
+  <!-- Safari로 직접 접속한 iOS 사용자에게 "홈 화면에 추가"를 한 번 안내합니다. -->
+  <div id="iosAddHint" class="ios-add-hint">
+    <span class="ios-add-hint-text">
+      📱 <b>홈 화면에 추가</b>하면 전체화면 앱처럼 더 편하게 쓸 수 있어요 — 하단 공유 버튼(<b>⬆️</b>) → <b>홈 화면에 추가</b>
+    </span>
+    <button id="iosAddHintClose">닫기</button>
   </div>
 
   <div class="view-screen" id="viewerView">
@@ -773,6 +843,11 @@
         <canvas id="pdfCanvas"></canvas>
         <canvas id="drawCanvas"></canvas>
       </div>
+
+      <!-- 페이지 넘기기 탭 영역: 왼쪽/오른쪽을 탭하면 이전/다음 페이지로 넘어갑니다.
+           스와이프·핀치줌·메모 그리기와 겹치지 않도록 투명하게 깔아둡니다. -->
+      <div id="pageTapZoneLeft" class="page-tap-zone left" aria-hidden="true"></div>
+      <div id="pageTapZoneRight" class="page-tap-zone right" aria-hidden="true"></div>
     </main>
 
     <!-- 🎥 자유 드래그 & 접기 가능한 플로팅 유튜브 -->
@@ -1396,19 +1471,76 @@
     const libraryView = document.getElementById('libraryView');
     const viewerView = document.getElementById('viewerView');
 
+    // --- 화면 자동 잠금 방지 (Wake Lock) ---
+    // 공연/연습 중 몇 분간 화면을 안 건드리면 iOS가 화면을 꺼버려서 악보가 사라지는 문제를 막습니다.
+    // 악보 보는 화면(뷰어)에 있는 동안에만 켜두고, 목록 화면으로 돌아가면 풀어줍니다.
+    // (iOS 16.4+ Safari 지원. 미지원 브라우저에서는 조용히 무시됩니다.)
+    let wakeLockSentinel = null;
+
+    async function acquireWakeLock() {
+      if (!('wakeLock' in navigator)) return;
+      try {
+        wakeLockSentinel = await navigator.wakeLock.request('screen');
+        wakeLockSentinel.addEventListener('release', () => { wakeLockSentinel = null; });
+      } catch (err) {
+        console.warn('화면 잠금 방지 요청 실패:', err.message);
+      }
+    }
+
+    function releaseWakeLock() {
+      if (wakeLockSentinel) {
+        wakeLockSentinel.release().catch(() => {});
+        wakeLockSentinel = null;
+      }
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      // 탭 전환/화면 끔 등으로 브라우저가 자동으로 Wake Lock을 풀어버리면,
+      // 다시 화면이 보일 때(뷰어 화면인 경우) 재요청합니다.
+      if (document.visibilityState === 'visible' && viewerView.classList.contains('active') && !wakeLockSentinel) {
+        acquireWakeLock();
+      }
+    });
+
+    // --- "홈 화면에 추가" 안내 (iOS Safari 전용) ---
+    // 이미 홈 화면에서 실행 중(standalone)이거나, 이전에 닫은 적이 있으면 다시 보여주지 않습니다.
+    const iosAddHint = document.getElementById('iosAddHint');
+    function maybeShowIOSAddHint() {
+      try {
+        const isIOS = /iP(hone|od|ad)/.test(navigator.platform) ||
+          (navigator.userAgent.includes('Macintosh') && navigator.maxTouchPoints > 1);
+        const isStandalone = window.navigator.standalone === true ||
+          window.matchMedia('(display-mode: standalone)').matches;
+        const dismissed = localStorage.getItem('acappella_hideAddHint') === '1';
+        if (isIOS && !isStandalone && !dismissed) {
+          iosAddHint.classList.add('show');
+        }
+      } catch (e) {
+        // localStorage 접근 불가(프라이빗 모드 등) — 안내를 그냥 생략합니다.
+      }
+    }
+    document.getElementById('iosAddHintClose').onclick = () => {
+      iosAddHint.classList.remove('show');
+      try { localStorage.setItem('acappella_hideAddHint', '1'); } catch (e) {}
+    };
+
     function showLibraryScreen() {
       resetViewportZoom();
       viewerView.classList.remove('active');
       libraryView.classList.add('active');
       guideAudio.pause();
       closeYouTubePlayer();
+      releaseWakeLock();
       renderSongCardList(document.getElementById('libSearchInput').value);
+      maybeShowIOSAddHint();
     }
 
     function showViewerScreen() {
       resetViewportZoom();
       libraryView.classList.remove('active');
       viewerView.classList.add('active');
+      iosAddHint.classList.remove('show');
+      acquireWakeLock();
     }
 
     document.getElementById('backToLibBtn').onclick = showLibraryScreen;
@@ -1919,6 +2051,7 @@
 
     function toggleDrawingMode(forcedState = null) {
       isDrawingMode = forcedState !== null ? forcedState : !isDrawingMode;
+      document.body.classList.toggle('drawing-active', isDrawingMode);
       if (isDrawingMode) {
         drawToggleBtn.classList.add('active');
         drawingToolbar.style.display = 'flex';
@@ -2418,6 +2551,15 @@
     document.getElementById('nextPage').onclick = nextPage;
     document.getElementById('prevPage').onclick = prevPage;
 
+    // 좌/우 탭존: 스와이프가 익숙하지 않은 상황(한 손 사용 등)에서도 큰 영역을 탭해서 넘길 수 있게.
+    // 드래그(스와이프/핀치)는 movement가 있어 click으로 합성되지 않으므로 기존 제스처와 겹치지 않음.
+    document.getElementById('pageTapZoneLeft').addEventListener('click', () => {
+      if (!isDrawingMode) prevPage();
+    });
+    document.getElementById('pageTapZoneRight').addEventListener('click', () => {
+      if (!isDrawingMode) nextPage();
+    });
+
     window.addEventListener('keydown', (e) => {
       if (['ArrowRight', 'PageDown', ' '].includes(e.key)) nextPage();
       else if (['ArrowLeft', 'PageUp'].includes(e.key)) prevPage();
@@ -2436,6 +2578,16 @@
     }
 
     startApp();
+
+    // 오프라인 지원: 앱 셸(이 페이지)과 pdf.js/Firebase SDK를 서비스워커로 캐싱해서,
+    // 한 번 로딩한 뒤로는 네트워크가 불안정해도 앱이 뜨도록 합니다.
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch((err) => {
+          console.warn('서비스워커 등록 실패:', err.message);
+        });
+      });
+    }
   </script>
 </body>
 </html>
