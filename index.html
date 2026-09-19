@@ -1160,23 +1160,35 @@
 
     let audioCtx = null;
     function getAudioContext() {
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if (audioCtx.state === 'suspended') audioCtx.resume();
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        // 전화 수신, 다른 앱의 오디오 개입, 화면 잠금 등으로 브라우저가 컨텍스트를
+        // 임의로 suspend 시키는 경우가 있어, 상태가 바뀔 때마다 즉시 재개를 시도합니다.
+        audioCtx.onstatechange = () => {
+          if (audioCtx.state === 'suspended' && isMetroRunning) {
+            audioCtx.resume().catch(() => {});
+          }
+        };
+      }
+      if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
       return audioCtx;
     }
 
     function unlockIOSAudio() {
       const ctx = getAudioContext();
-      if (ctx.state === 'suspended') ctx.resume();
+      if (ctx.state === 'suspended') ctx.resume().catch(() => {});
       const buffer = ctx.createBuffer(1, 1, 22050);
       const source = ctx.createBufferSource();
       source.buffer = buffer;
       source.connect(ctx.destination);
       source.start(0);
 
-      window.removeEventListener('touchstart', unlockIOSAudio);
-      window.removeEventListener('click', unlockIOSAudio);
+      // 주의: 여기서 리스너를 제거하면(removeEventListener) 앱 최초 1회만 잠금 해제되고,
+      // 이후 전화/알람 등으로 오디오 컨텍스트가 다시 suspend 됐을 때는 사용자가 화면을
+      // 아무리 탭해도 다시 풀리지 않아 "메트로놈이 켜져 있는데 소리가 안 나는" 현상이
+      // 생겼습니다. 항상 등록해두고, 매 탭/클릭마다 재개를 시도합니다.
     }
+    // passive 리스너는 유지한 채 매번 실행 — 오디오가 끊겼을 때 사용자의 다음 탭에서 바로 복구됩니다.
     window.addEventListener('touchstart', unlockIOSAudio, { passive: true });
     window.addEventListener('click', unlockIOSAudio, { passive: true });
 
@@ -1242,23 +1254,42 @@
     // 타이머가 지연/드리프트되어 박자가 밀리는 문제가 있었습니다.
     // AudioContext의 정밀한 하드웨어 클럭을 기준으로 다음 틱들을 미리 예약(lookahead)하고,
     // 짧은 주기(25ms)로만 "예약이 더 필요한지" 확인하는 방식으로 바꿔 정확도를 높였습니다.
-    const METRO_SCHEDULE_AHEAD_SEC = 0.12;
+    // 화면이 백그라운드로 가면 브라우저가 setInterval을 초당 1회 정도로 강하게 제한하기 때문에,
+    // 그 상태에서는 미리 예약해두는 구간(lookahead)을 크게 늘려 소리가 끊기지 않게 합니다.
+    const METRO_SCHEDULE_AHEAD_VISIBLE_SEC = 0.12;
+    const METRO_SCHEDULE_AHEAD_HIDDEN_SEC = 1.5;
     const METRO_LOOKAHEAD_MS = 25;
     let metroNextTickTime = 0;
 
     function scheduleMetroClickSound(time) {
       if (!isMetroSoundOn) return;
       const ctx = getAudioContext();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(1000, time);
-      gain.gain.setValueAtTime(0.3, time);
-      gain.gain.exponentialRampToValueAtTime(0.001, time + 0.05);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(time);
-      osc.stop(time + 0.05);
+
+      // 또렷하고 큰 "딱" 소리를 위해 짧은 톤(tick)과 낮은 바디(body) 두 개를 겹쳐 재생합니다.
+      // 기존에는 사인파 하나 + 낮은 볼륨(0.3)이라 스피커가 작은 휴대폰에서는 소리가 잘 안 들렸습니다.
+      const tick = ctx.createOscillator();
+      const tickGain = ctx.createGain();
+      tick.type = 'square';
+      tick.frequency.setValueAtTime(1800, time);
+      tickGain.gain.setValueAtTime(0.0001, time);
+      tickGain.gain.linearRampToValueAtTime(0.9, time + 0.002);
+      tickGain.gain.exponentialRampToValueAtTime(0.001, time + 0.045);
+      tick.connect(tickGain);
+      tickGain.connect(ctx.destination);
+      tick.start(time);
+      tick.stop(time + 0.05);
+
+      const body = ctx.createOscillator();
+      const bodyGain = ctx.createGain();
+      body.type = 'triangle';
+      body.frequency.setValueAtTime(700, time);
+      bodyGain.gain.setValueAtTime(0.0001, time);
+      bodyGain.gain.linearRampToValueAtTime(0.7, time + 0.002);
+      bodyGain.gain.exponentialRampToValueAtTime(0.001, time + 0.09);
+      body.connect(bodyGain);
+      bodyGain.connect(ctx.destination);
+      body.start(time);
+      body.stop(time + 0.1);
     }
 
     const metroLed = document.getElementById('metroLed');
@@ -1273,7 +1304,17 @@
 
     function metroScheduler() {
       const ctx = getAudioContext();
-      while (metroNextTickTime < ctx.currentTime + METRO_SCHEDULE_AHEAD_SEC) {
+      if (ctx.state === 'suspended') {
+        ctx.resume().catch(() => {});
+        return; // currentTime이 멈춰있는 동안은 예약하지 않고 다음 tick에서 다시 시도합니다.
+      }
+      const aheadSec = document.hidden ? METRO_SCHEDULE_AHEAD_HIDDEN_SEC : METRO_SCHEDULE_AHEAD_VISIBLE_SEC;
+      // 오랫동안(예: 화면 잠금) 예약이 밀려 있었다면, 쌓인 박자를 한꺼번에 재생하지 않고
+      // 현재 시각 기준으로 다시 맞춥니다.
+      if (metroNextTickTime < ctx.currentTime - 1) {
+        metroNextTickTime = ctx.currentTime + 0.05;
+      }
+      while (metroNextTickTime < ctx.currentTime + aheadSec) {
         scheduleMetroClickSound(metroNextTickTime);
         scheduleMetroFlash(metroNextTickTime);
         metroNextTickTime += 60 / metroBpm;
@@ -1282,12 +1323,13 @@
 
     function startMetro() {
       const ctx = getAudioContext();
-      if (ctx.state === 'suspended') ctx.resume();
+      if (ctx.state === 'suspended') ctx.resume().catch(() => {});
       isMetroRunning = true;
       document.getElementById('metroToggleBtn').classList.add('active');
       metroNextTickTime = ctx.currentTime + 0.05;
       metroScheduler();
       metroTimerId = setInterval(metroScheduler, METRO_LOOKAHEAD_MS);
+      acquireWakeLock();
     }
 
     function stopMetro() {
@@ -1499,6 +1541,16 @@
       // 다시 화면이 보일 때(뷰어 화면인 경우) 재요청합니다.
       if (document.visibilityState === 'visible' && viewerView.classList.contains('active') && !wakeLockSentinel) {
         acquireWakeLock();
+      }
+
+      // 화면이 다시 보일 때 메트로놈이 켜져 있었다면 오디오 컨텍스트를 강제로 재개하고
+      // 예약을 즉시 다시 채웁니다. 백그라운드에서 멈춰 있다가 돌아왔을 때 "눌러져 있는데
+      // 소리가 안 나는" 상태로 남는 것을 막기 위함입니다.
+      if (document.visibilityState === 'visible' && isMetroRunning) {
+        const ctx = getAudioContext();
+        ctx.resume().catch(() => {}).then(() => {
+          metroScheduler();
+        });
       }
     });
 
@@ -1937,6 +1989,26 @@
       }
     }
 
+    // 한 페이지가 스크롤 없이 화면(뷰어 영역)에 통째로 들어오도록 맞춥니다.
+    // 기존에는 "가로 폭"에만 맞춰서(최대 900px) 키웠기 때문에, 세로로 긴 악보는
+    // 화면보다 훨씬 길어져 한 화면에 다 안 보이고 계속 스크롤해야 했습니다.
+    // 가로/세로 중 더 작게 맞춰지는 쪽(contain) 기준으로 100% 줌 기준폭을 계산합니다.
+    function computeFitBaseWidth(contentWidth, contentHeight) {
+      const vm = document.getElementById('viewerMain');
+      const viewerWidth = vm.clientWidth;
+      const cs = getComputedStyle(vm);
+      const padTop = parseFloat(cs.paddingTop) || 0;
+      const padBottom = parseFloat(cs.paddingBottom) || 0;
+      const availableHeight = Math.max(vm.clientHeight - padTop - padBottom - 10, 100);
+      const widthLimit = Math.min(viewerWidth, 900);
+
+      const scaleForWidth = widthLimit / contentWidth;
+      const scaleForHeight = availableHeight / contentHeight;
+      const fitScale = Math.min(scaleForWidth, scaleForHeight);
+
+      return contentWidth * fitScale;
+    }
+
     function renderPdfPage(num) {
       if (!currentPdfDoc || !pdfCanvas || !pdfCtx) return;
 
@@ -1946,11 +2018,10 @@
       }
 
       currentPdfDoc.getPage(num).then(page => {
-        const viewerWidth = document.getElementById('viewerMain').clientWidth;
-        const baseWidth = Math.min(viewerWidth, 900);
+        const unscaledViewport = page.getViewport({ scale: 1.0 });
+        const baseWidth = computeFitBaseWidth(unscaledViewport.width, unscaledViewport.height);
         const targetWidth = baseWidth * zoomScale;
 
-        const unscaledViewport = page.getViewport({ scale: 1.0 });
         const scale = targetWidth / unscaledViewport.width;
         
         const dpr = Math.min(window.devicePixelRatio || 1, 2.0);
@@ -1993,8 +2064,7 @@
       const img = currentImagePages[num - 1];
       if (!img) return;
 
-      const viewerWidth = document.getElementById('viewerMain').clientWidth;
-      const baseWidth = Math.min(viewerWidth, 900);
+      const baseWidth = computeFitBaseWidth(img.width, img.height);
       const targetWidth = baseWidth * zoomScale;
 
       const scale = targetWidth / img.width;
