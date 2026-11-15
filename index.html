@@ -7,7 +7,7 @@
   
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   <meta name="apple-mobile-web-app-title" content="Acappella" />
 
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='gold' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23F6E09E'/%3E%3Cstop offset='50%25' stop-color='%23D4AF37'/%3E%3Cstop offset='100%25' stop-color='%238A6F1D'/%3E%3C/linearGradient%3E%3CradialGradient id='bg' cx='50%25' cy='50%25' r='50%25'%3E%3Cstop offset='0%25' stop-color='%231B1C22'/%3E%3Cstop offset='100%25' stop-color='%2308090C'/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23bg)' stroke='rgba(255,255,255,0.1)' stroke-width='1.5'/%3E%3Cpath d='M25 15v18a7 7 0 0 0 14 0V15' fill='none' stroke='url(%23gold)' stroke-width='3.5' stroke-linecap='round'/%3E%3Cpath d='M32 39v12' fill='none' stroke='url(%23gold)' stroke-width='3.8' stroke-linecap='round'/%3E%3Ccircle cx='32' cy='53' r='2.8' fill='url(%23gold)'/%3E%3Ccircle cx='17' cy='23' r='1.8' fill='%23E06C75'/%3E%3Ccircle cx='47' cy='23' r='1.8' fill='%2361AFEF'/%3E%3C/svg%3E" />
@@ -239,9 +239,7 @@
     }
 
     header {
-      background: rgba(15, 16, 21, 0.94);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      background: #0f1015;
       border-bottom: 1px solid var(--border-subtle);
       padding: calc(var(--safe-top) + 6px) 10px 6px 10px;
       display: flex;
@@ -375,7 +373,7 @@
       flex-direction: column;
       align-items: center;
       padding: 0;
-      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 90px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
       position: relative;
       touch-action: pan-x pan-y;
       -webkit-overflow-scrolling: touch;
@@ -418,6 +416,8 @@
 
     body.invert-mode { background: #000000; }
     body.invert-mode .sheet-wrapper { filter: invert(0.92) hue-rotate(180deg) brightness(0.95); }
+
+    body.audio-on main { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 58px); }
 
     #audioBar {
       position: fixed;
@@ -746,7 +746,7 @@
     /* 홈 화면 앱(standalone)으로 실행 시 iPadOS 상태바/메뉴바가 헤더 버튼을 덮지 않도록
        최소 24px을 보장하고 14px 여유를 더 둡니다. */
     @media (display-mode: standalone) {
-      :root { --safe-top: calc(max(env(safe-area-inset-top, 0px), 24px) + 14px); }
+      :root { --safe-top: calc(env(safe-area-inset-top, 0px) + 6px); }
     }
   </style>
 </head>
@@ -1953,6 +1953,7 @@
           });
         }
         currentImagePages = [];
+        cropCache.clear();
 
         if (song.fileType === 'image') {
           currentPdfDoc = null;
@@ -2007,14 +2008,77 @@
       const cs = getComputedStyle(vm);
       const padTop = parseFloat(cs.paddingTop) || 0;
       const padBottom = parseFloat(cs.paddingBottom) || 0;
-      const availableHeight = Math.max(vm.clientHeight - padTop - padBottom - 10, 100);
-      const widthLimit = Math.min(viewerWidth, 900);
+      const availableHeight = Math.max(vm.clientHeight - padTop - padBottom - 2, 100);
+      const widthLimit = Math.max(viewerWidth - 2, 100);
 
       const scaleForWidth = widthLimit / contentWidth;
       const scaleForHeight = availableHeight / contentHeight;
       const fitScale = Math.min(scaleForWidth, scaleForHeight);
 
       return contentWidth * fitScale;
+    }
+
+    // ✂️ 악보 바깥의 흰 여백을 자동으로 찾아 잘라내서, 실제 오선이 화면을 최대한 채우게 합니다.
+    // 결과는 페이지 크기 대비 비율(0~1)로 저장합니다.
+    let currentCrop = { x: 0, y: 0, w: 1, h: 1 };
+    let renderToken = 0;
+    const cropCache = new Map();
+
+    function findContentBox(srcCanvas) {
+      const w = srcCanvas.width, h = srcCanvas.height;
+      const data = srcCanvas.getContext('2d').getImageData(0, 0, w, h).data;
+      let minX = w, minY = h, maxX = -1, maxY = -1;
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+          const i = (y * w + x) * 4;
+          if (data[i + 3] > 20 && (data[i] + data[i + 1] + data[i + 2]) < 690) {
+            if (x < minX) minX = x; if (x > maxX) maxX = x;
+            if (y < minY) minY = y; if (y > maxY) maxY = y;
+          }
+        }
+      }
+      if (maxX < 0 || (maxX - minX) < w * 0.2 || (maxY - minY) < h * 0.2) return { x: 0, y: 0, w: 1, h: 1 };
+      const padX = w * 0.012, padY = h * 0.012;
+      const x0 = Math.max(0, minX - padX), y0 = Math.max(0, minY - padY);
+      const x1 = Math.min(w, maxX + 1 + padX), y1 = Math.min(h, maxY + 1 + padY);
+      return { x: x0 / w, y: y0 / h, w: (x1 - x0) / w, h: (y1 - y0) / h };
+    }
+
+    async function getPdfCrop(page, num) {
+      const key = `pdf_${num}`;
+      if (cropCache.has(key)) return cropCache.get(key);
+      try {
+        const vp1 = page.getViewport({ scale: 1.0 });
+        const s = 500 / Math.max(vp1.width, vp1.height);
+        const vp = page.getViewport({ scale: s });
+        const c = document.createElement('canvas');
+        c.width = Math.ceil(vp.width); c.height = Math.ceil(vp.height);
+        const ctx = c.getContext('2d', { willReadFrequently: true });
+        ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
+        await page.render({ canvasContext: ctx, viewport: vp }).promise;
+        const box = findContentBox(c);
+        cropCache.set(key, box);
+        return box;
+      } catch (e) {
+        return { x: 0, y: 0, w: 1, h: 1 };
+      }
+    }
+
+    function getImageCrop(img, num) {
+      const key = `img_${num}`;
+      if (cropCache.has(key)) return cropCache.get(key);
+      let box = { x: 0, y: 0, w: 1, h: 1 };
+      try {
+        const s = 500 / Math.max(img.width, img.height);
+        const c = document.createElement('canvas');
+        c.width = Math.ceil(img.width * s); c.height = Math.ceil(img.height * s);
+        const ctx = c.getContext('2d', { willReadFrequently: true });
+        ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
+        ctx.drawImage(img, 0, 0, c.width, c.height);
+        box = findContentBox(c);
+      } catch (e) { /* 교차 출처 이미지 등은 자르지 않음 */ }
+      cropCache.set(key, box);
+      return box;
     }
 
     function renderPdfPage(num) {
@@ -2024,35 +2088,46 @@
         currentRenderTask.cancel();
         currentRenderTask = null;
       }
+      const myToken = ++renderToken;
+      const doc = currentPdfDoc;
 
-      currentPdfDoc.getPage(num).then(page => {
-        const unscaledViewport = page.getViewport({ scale: 1.0 });
-        const baseWidth = computeFitBaseWidth(unscaledViewport.width, unscaledViewport.height);
+      doc.getPage(num).then(async page => {
+        const crop = await getPdfCrop(page, num);
+        if (myToken !== renderToken || doc !== currentPdfDoc) return;
+
+        const full = page.getViewport({ scale: 1.0 });
+        const cropW = full.width * crop.w, cropH = full.height * crop.h;
+        const baseWidth = computeFitBaseWidth(cropW, cropH);
         const targetWidth = baseWidth * zoomScale;
+        const scale = targetWidth / cropW;
 
-        const scale = targetWidth / unscaledViewport.width;
-        
         const dpr = Math.min(window.devicePixelRatio || 1, 2.0);
-        const viewport = page.getViewport({ scale: scale * dpr });
+        const s = scale * dpr;
+        const viewport = page.getViewport({
+          scale: s,
+          offsetX: -full.width * crop.x * s,
+          offsetY: -full.height * crop.y * s
+        });
 
-        pdfCanvas.width = viewport.width;
-        pdfCanvas.height = viewport.height;
+        const pxW = Math.round(cropW * s), pxH = Math.round(cropH * s);
+        const cssH = pxH / dpr;
+
+        pdfCanvas.width = pxW;
+        pdfCanvas.height = pxH;
         pdfCanvas.style.width = `${targetWidth}px`;
-        pdfCanvas.style.height = `${(viewport.height / dpr)}px`;
+        pdfCanvas.style.height = `${cssH}px`;
 
-        drawCanvas.width = viewport.width;
-        drawCanvas.height = viewport.height;
+        drawCanvas.width = pxW;
+        drawCanvas.height = pxH;
         drawCanvas.style.width = `${targetWidth}px`;
-        drawCanvas.style.height = `${(viewport.height / dpr)}px`;
+        drawCanvas.style.height = `${cssH}px`;
 
         sheetCard.style.width = `${targetWidth}px`;
+        currentCrop = crop;
 
-        const renderContext = {
-          canvasContext: pdfCtx,
-          viewport: viewport
-        };
-
-        currentRenderTask = page.render(renderContext);
+        pdfCtx.fillStyle = '#fff';
+        pdfCtx.fillRect(0, 0, pxW, pxH);
+        currentRenderTask = page.render({ canvasContext: pdfCtx, viewport: viewport });
         currentRenderTask.promise.then(() => {
           currentRenderTask = null;
         }).catch(err => {
@@ -2072,11 +2147,14 @@
       const img = currentImagePages[num - 1];
       if (!img) return;
 
-      const baseWidth = computeFitBaseWidth(img.width, img.height);
+      const crop = getImageCrop(img, num);
+      const srcX = img.width * crop.x, srcY = img.height * crop.y;
+      const srcW = img.width * crop.w, srcH = img.height * crop.h;
+      const baseWidth = computeFitBaseWidth(srcW, srcH);
       const targetWidth = baseWidth * zoomScale;
 
-      const scale = targetWidth / img.width;
-      const targetHeight = img.height * scale;
+      const scale = targetWidth / srcW;
+      const targetHeight = srcH * scale;
 
       const dpr = Math.min(window.devicePixelRatio || 1, 2.0);
 
@@ -2093,7 +2171,8 @@
       sheetCard.style.width = `${targetWidth}px`;
 
       pdfCtx.clearRect(0, 0, pdfCanvas.width, pdfCanvas.height);
-      pdfCtx.drawImage(img, 0, 0, pdfCanvas.width, pdfCanvas.height);
+      pdfCtx.drawImage(img, srcX, srcY, srcW, srcH, 0, 0, pdfCanvas.width, pdfCanvas.height);
+      currentCrop = crop;
 
       pageIndicator.textContent = `${num} / ${totalPageCount}`;
       loadPageDrawing(num);
@@ -2244,7 +2323,7 @@
       if (!currentSong) return;
       const key = `${currentSong.id}_p${currentPageNum}`;
       const dataUrl = drawCanvas.toDataURL();
-      await putStored('personal_drawings', { id: key, data: dataUrl });
+      await putStored('personal_drawings', { id: key, data: dataUrl, crop: currentCrop });
     }
 
     async function loadPageDrawing(num) {
@@ -2256,7 +2335,11 @@
         const img = new Image();
         img.onload = () => {
           drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
-          drawCtx.drawImage(img, 0, 0, drawCanvas.width, drawCanvas.height);
+          // 저장 당시 영역(예전 메모는 페이지 전체)과 지금 잘라낸 영역의 차이만큼 위치를 보정
+          const sc = saved.crop || { x: 0, y: 0, w: 1, h: 1 };
+          const cc = currentCrop;
+          const sx = drawCanvas.width / cc.w, sy = drawCanvas.height / cc.h;
+          drawCtx.drawImage(img, (sc.x - cc.x) * sx, (sc.y - cc.y) * sy, sc.w * sx, sc.h * sy);
         };
         img.src = saved.data;
       }
@@ -2372,6 +2455,26 @@
     };
 
     const viewerMain = document.getElementById('viewerMain');
+
+    let refitTimer = null;
+    function scheduleRefit() {
+      clearTimeout(refitTimer);
+      refitTimer = setTimeout(() => {
+        if (viewerMain.offsetParent !== null && (currentPdfDoc || currentImagePages.length)) {
+          renderCurrentPage(currentPageNum);
+        }
+      }, 150);
+    }
+    window.addEventListener('resize', scheduleRefit);
+    window.addEventListener('orientationchange', scheduleRefit);
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', scheduleRefit);
+    new MutationObserver(() => {
+      const on = audioBar.classList.contains('show');
+      if (document.body.classList.contains('audio-on') !== on) {
+        document.body.classList.toggle('audio-on', on);
+        scheduleRefit();
+      }
+    }).observe(audioBar, { attributes: true, attributeFilter: ['class'] });
     let touchStartX = 0;
     let touchStartY = 0;
     let initialPinchDist = 0;
