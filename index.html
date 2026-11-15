@@ -19,6 +19,8 @@
 
   <style>
     :root {
+      /* 상단 안전 여백: 브라우저에서는 시스템 값 그대로 사용 */
+      --safe-top: env(safe-area-inset-top, 0px);
       --bg-base: #07080a;
       --surface-deep: #0f1015;
       --surface-elevated: #161820;
@@ -81,7 +83,7 @@
       overflow-y: auto;
       touch-action: pan-y;
       -webkit-overflow-scrolling: touch;
-      padding: calc(env(safe-area-inset-top, 0px) + 14px) 16px 40px 16px;
+      padding: calc(var(--safe-top) + 14px) 16px 40px 16px;
     }
     .lib-header {
       display: flex;
@@ -241,7 +243,7 @@
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border-subtle);
-      padding: calc(env(safe-area-inset-top, 0px) + 6px) 10px 6px 10px;
+      padding: calc(var(--safe-top) + 6px) 10px 6px 10px;
       display: flex;
       flex-direction: column;
       gap: 6px;
@@ -520,7 +522,7 @@
 
     #drawingToolbar {
       position: fixed;
-      top: calc(env(safe-area-inset-top, 0px) + 78px);
+      top: calc(var(--safe-top) + 78px);
       left: 50%;
       transform: translateX(-50%);
       background: rgba(18, 20, 26, 0.96);
@@ -547,7 +549,7 @@
     /* 🎥 악보 가림 방지 플로팅 뷰어 (드래그 & 접기 최적화) */
     #ytFloatingContainer {
       position: fixed;
-      top: calc(env(safe-area-inset-top, 0px) + 65px);
+      top: calc(var(--safe-top) + 65px);
       right: 12px;
       width: 230px;
       height: 145px;
@@ -739,6 +741,12 @@
       flex-shrink: 0;
       padding: 6px 10px;
       font-size: 11px;
+    }
+  
+    /* 홈 화면 앱(standalone)으로 실행 시 iPadOS 상태바/메뉴바가 헤더 버튼을 덮지 않도록
+       최소 24px을 보장하고 14px 여유를 더 둡니다. */
+    @media (display-mode: standalone) {
+      :root { --safe-top: calc(max(env(safe-area-inset-top, 0px), 24px) + 14px); }
     }
   </style>
 </head>
