@@ -288,6 +288,7 @@
     #backToLibBtn,
     #openCurrentSongEditBtn,
     #drawToggleBtn,
+    #focusToggleBtn,
     #metroToggleBtn,
     #openAppMenuBtn {
       min-width: 44px;
@@ -443,6 +444,27 @@
     }
     #audioBar::-webkit-scrollbar { display: none; }
     #audioBar.show { display: flex; }
+
+    /* 오디오 바를 ✕로 닫았을 때 다시 열 수 있는 작은 버튼 */
+    #audioReopenBtn {
+      display: none;
+      position: fixed;
+      right: 12px;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+      z-index: 120;
+      width: 44px;
+      height: 44px;
+      min-width: 44px;
+      padding: 0;
+      border-radius: 50%;
+      justify-content: center;
+      background: rgba(16, 18, 24, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: var(--text-gold);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    body.focus-mode #audioReopenBtn { display: none !important; }
 
     #audioPlayBtn {
       border-radius: 50%;
@@ -743,6 +765,38 @@
       font-size: 11px;
     }
   
+    /* 🔍 악보 집중 모드: 헤더·플레이어·툴바를 모두 숨기고 악보만 크게 봅니다.
+       안쪽 여백을 줄이면 computeFitBaseWidth가 자동으로 더 큰 크기로 맞춰줍니다. */
+    body.focus-mode #viewerView > header { display: none; }
+    body.focus-mode #audioBar { display: none !important; }
+    body.focus-mode:not(.drawing-active) #drawingToolbar { display: none !important; }
+    body.focus-mode #drawingToolbar { top: calc(var(--safe-top) + 8px); }
+    body.focus-mode #viewerMain {
+      padding-top: var(--safe-top);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    #focusExitBtn {
+      display: none;
+      position: fixed;
+      top: calc(var(--safe-top) + 8px);
+      right: 10px;
+      z-index: 120;
+      min-height: 40px;
+      padding: 0 12px;
+      gap: 6px;
+      border-radius: 20px;
+      background: rgba(16, 18, 24, 0.82);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      opacity: 0.5;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    #focusExitBtn:active { opacity: 1; }
+    body.focus-mode #focusExitBtn { display: inline-flex; }
+
     /* 홈 화면 앱(standalone)으로 실행 시 iPadOS 상태바/메뉴바가 헤더 버튼을 덮지 않도록
        최소 24px을 보장하고 14px 여유를 더 둡니다. */
     @media (display-mode: standalone) {
@@ -813,6 +867,10 @@
           <span id="metroBpmLabel" style="font-size: 10.5px;">100</span>
         </button>
 
+        <button id="focusToggleBtn" title="악보만 보기 (메뉴 숨기기)" style="padding: 5px 7px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+        </button>
+
         <button id="openAppMenuBtn" title="전체 메뉴" style="padding: 5px 7px;">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
         </button>
@@ -858,6 +916,11 @@
       <div id="pageTapZoneRight" class="page-tap-zone right" aria-hidden="true"></div>
     </main>
 
+    <button id="focusExitBtn" title="메뉴 다시 보기">
+      <span id="focusPageText"></span>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></svg>
+    </button>
+
     <!-- 🎥 자유 드래그 & 접기 가능한 플로팅 유튜브 -->
     <div id="ytFloatingContainer">
       <div class="yt-float-header" id="ytDragHandle">
@@ -872,6 +935,10 @@
       </div>
       <iframe id="ytIframe" width="100%" height="100%" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
     </div>
+
+    <button id="audioReopenBtn" title="음원 플레이어 열기">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+    </button>
 
     <div id="audioBar">
       <button id="audioPlayBtn" title="재생/일시정지">
@@ -907,6 +974,11 @@
             <button id="zoomInBtn" style="padding:4px 8px;">＋</button>
           </div>
         </div>
+
+        <button class="menu-action-btn" id="menuOpenAudioBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          <span>음원 플레이어 열기</span>
+        </button>
 
         <button class="menu-action-btn" id="menuOpenMetroBtn">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -1586,6 +1658,7 @@
 
     function showLibraryScreen() {
       resetViewportZoom();
+      document.body.classList.remove('focus-mode');
       viewerView.classList.remove('active');
       libraryView.classList.add('active');
       guideAudio.pause();
@@ -1736,7 +1809,8 @@
           ...s,
           notes: cloudOverride?.notes || localOverride?.notes || s.notes || {},
           partAudioUrls: mergedAudios,
-          youtubeUrl: cloudOverride?.youtubeUrl !== undefined ? cloudOverride.youtubeUrl : (localOverride?.youtubeUrl !== undefined ? localOverride.youtubeUrl : (s.youtubeUrl || null))
+          // 링크가 실제로 들어 있는 값만 우선합니다. 비어 있거나 null이면 드라이브 폴더 설명의 링크를 씁니다.
+          youtubeUrl: cloudOverride?.youtubeUrl || localOverride?.youtubeUrl || s.youtubeUrl || null
         };
       });
 
@@ -1905,6 +1979,7 @@
       } else {
         ytToggleBtn.style.display = 'none';
       }
+      updateAudioReopenBtn();
 
       pitchBar.innerHTML = '';
       const partClassMap = { 'S': 'sop', 'A': 'alto', 'T': 'tenor', 'BAR': 'bari', 'B': 'bass' };
@@ -2468,12 +2543,39 @@
     window.addEventListener('resize', scheduleRefit);
     window.addEventListener('orientationchange', scheduleRefit);
     if (window.visualViewport) window.visualViewport.addEventListener('resize', scheduleRefit);
+
+    // 🔍 악보 집중 모드 켜기/끄기 (켜면 메뉴가 모두 숨고, 우상단 버튼으로 다시 나옵니다)
+    function setFocusMode(on) {
+      document.body.classList.toggle('focus-mode', on);
+      scheduleRefit();
+    }
+    document.getElementById('focusToggleBtn').onclick = () => setFocusMode(true);
+    document.getElementById('focusExitBtn').onclick = () => setFocusMode(false);
+    const focusPageText = document.getElementById('focusPageText');
+    new MutationObserver(() => { focusPageText.textContent = pageIndicator.textContent; })
+      .observe(pageIndicator, { childList: true, characterData: true, subtree: true });
+    // 🎵 음원(파트 오디오/유튜브)이 있는 곡에서 오디오 바가 닫혀 있으면 다시 열기 버튼을 보여줍니다.
+    const audioReopenBtn = document.getElementById('audioReopenBtn');
+    function updateAudioReopenBtn() {
+      const hasSources = Object.keys(currentSongPartAudios).length > 0 || !!(currentSong && currentSong.youtubeUrl);
+      audioReopenBtn.style.display = (hasSources && !audioBar.classList.contains('show')) ? 'inline-flex' : 'none';
+    }
+    function openAudioBar() {
+      audioBar.classList.add('show');
+      updateAudioReopenBtn();
+    }
+    audioReopenBtn.onclick = openAudioBar;
+    document.getElementById('menuOpenAudioBtn').onclick = () => {
+      appMenuModal.classList.remove('open');
+      openAudioBar();
+    };
     new MutationObserver(() => {
       const on = audioBar.classList.contains('show');
       if (document.body.classList.contains('audio-on') !== on) {
         document.body.classList.toggle('audio-on', on);
         scheduleRefit();
       }
+      updateAudioReopenBtn();
     }).observe(audioBar, { attributes: true, attributeFilter: ['class'] });
     let touchStartX = 0;
     let touchStartY = 0;
