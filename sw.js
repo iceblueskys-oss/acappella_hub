@@ -6,7 +6,7 @@
 // Google Drive/Firestore/YouTube 같은 API 요청은 항상 네트워크로 그대로 흘려보낸다(가로채지 않음).
 //
 // 버전을 올리면(CACHE_VERSION 변경) 구 캐시는 activate 시점에 자동 정리된다.
-const CACHE_VERSION = 'v3';
+const CACHE_VERSION = 'v5';
 const SHELL_CACHE = `acappella-shell-${CACHE_VERSION}`;
 const VENDOR_CACHE = `acappella-vendor-${CACHE_VERSION}`;
 
